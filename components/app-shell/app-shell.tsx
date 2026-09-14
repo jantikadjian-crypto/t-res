@@ -3,15 +3,23 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  // Desktop: collapse the fixed sidebar. Phone: open it as a drawer.
+  const toggleSidebar = () => {
+    if (window.matchMedia("(min-width: 768px)").matches) setCollapsed((c) => !c);
+    else setMenuOpen(true);
+  };
 
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 border-r md:block">
+      <aside className={cn("fixed inset-y-0 left-0 z-30 hidden w-64 border-r", !collapsed && "md:block")}>
         <Sidebar />
       </aside>
 
@@ -22,7 +30,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             aria-label="Close menu"
             onClick={() => setMenuOpen(false)}
           />
-          <aside className="relative h-full w-64 max-w-[80vw] shadow-xl">
+          <aside className="relative h-full w-72 max-w-[85vw] shadow-xl">
             <Sidebar onNavigate={() => setMenuOpen(false)} />
             <Button
               variant="ghost"
@@ -37,9 +45,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <div className="md:pl-60">
-        <Topbar onOpenMenu={() => setMenuOpen(true)} />
-        <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8 md:py-8">{children}</main>
+      <div className={cn(!collapsed && "md:pl-64")}>
+        <Topbar onToggleSidebar={toggleSidebar} />
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6">{children}</main>
       </div>
     </div>
   );

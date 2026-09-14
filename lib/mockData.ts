@@ -257,6 +257,8 @@ export const notifications: AppNotification[] = [
   { id: "n3", date: "2026-09-02", message: "New notice received: CP504 for 2021.", read: false },
 ];
 
+export const caseNumber = "TR-2026-0142";
+
 // Derived values — compute here so every screen agrees.
 export function yearBalance(y: TaxYear): number {
   return y.balance ? y.balance.tax + y.balance.penalties + y.balance.interest : 0;
@@ -264,6 +266,16 @@ export function yearBalance(y: TaxYear): number {
 
 export const totalOwed = taxYears.reduce((sum, y) => sum + yearBalance(y), 0);
 
-export const openActionItems = actionItems.filter((a) => !a.done);
+export const openActionItems = actionItems
+  .filter((a) => !a.done)
+  .sort((a, b) => a.dueBy.localeCompare(b.dueBy));
 
-export const openNotices = notices.filter((n) => n.status !== "resolved");
+export const openNotices = notices
+  .filter((n) => n.status !== "resolved")
+  .sort((a, b) => a.respondBy.localeCompare(b.respondBy));
+
+export const currentStageIndex = caseStages.findIndex((s) => s.key === currentStageKey);
+
+export const nextActionItem = openActionItems[0];
+
+export const nextNotice = openNotices[0];

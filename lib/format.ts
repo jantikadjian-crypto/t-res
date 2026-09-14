@@ -1,4 +1,4 @@
-import { MOCK_TODAY } from "@/lib/mockData";
+import { MOCK_TODAY, type Tone } from "@/lib/mockData";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -28,6 +28,14 @@ export function formatDate(iso: string): string {
 /** Whole days from mock today until `iso`. Negative when in the past. */
 export function daysUntil(iso: string, today: string = MOCK_TODAY): number {
   return Math.round((toUtc(iso) - toUtc(today)) / DAY_MS);
+}
+
+/** Urgency tone for a deadline: 3 days or less is red, two weeks or less is amber. */
+export function deadlineTone(iso: string): Tone {
+  const days = daysUntil(iso);
+  if (days <= 3) return "bad";
+  if (days <= 14) return "warn";
+  return "neutral";
 }
 
 /** "12 days left", "Due today", "3 days overdue". */
