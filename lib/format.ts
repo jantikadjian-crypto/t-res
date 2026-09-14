@@ -54,3 +54,18 @@ export function daysAgoLabel(iso: string): string {
   if (days === 1) return "yesterday";
   return `${days} days ago`;
 }
+
+/** "5 yrs 8 mos" for a span of days. */
+export function durationLabel(days: number): string {
+  const months = Math.max(0, Math.round(days / 30.44));
+  const years = Math.floor(months / 12);
+  const rest = months % 12;
+  const parts: string[] = [];
+  if (years) parts.push(`${years} ${years === 1 ? "yr" : "yrs"}`);
+  if (rest || !years) parts.push(`${rest} ${rest === 1 ? "mo" : "mos"}`);
+  return parts.join(" ");
+}
+
+export function formatFileSize(kb: number): string {
+  return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
+}

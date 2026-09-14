@@ -24,8 +24,8 @@ import {
   currentStageIndex,
   enrolledAgent,
   nextActionItem,
-  notices,
   openActionItems,
+  openNotices,
   taxpayer,
 } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,7 @@ type NavItem = {
 
 type NavGroup = { id: string; label: string; items: NavItem[] };
 
-const noticesNeedingAction = notices.filter((n) => n.status === "action-needed").length;
+const noticesNeedingAction = openNotices.filter((n) => n.status === "action-needed").length;
 
 const navGroups: NavGroup[] = [
   {
@@ -55,7 +55,7 @@ const navGroups: NavGroup[] = [
     id: "case",
     label: "Your Case",
     items: [
-      { href: "/notices", label: "Notices", icon: FileWarning, count: notices.length, urgent: noticesNeedingAction > 0 },
+      { href: "/notices", label: "Notices", icon: FileWarning, count: openNotices.length, urgent: noticesNeedingAction > 0 },
       { href: "/tax-years", label: "Tax Years", icon: CalendarRange },
       { href: "/action-items", label: "Action Items", icon: ListChecks, count: openActionItems.length },
       { href: "/documents", label: "Documents", icon: FolderOpen },

@@ -1,13 +1,6 @@
-import { ComingNext, PageHeader } from "@/components/page-header";
+import { NoticeCenter } from "@/components/notices/notice-center";
+import { nextNotice } from "@/lib/mockData";
 
 export default function NoticesPage() {
-  return (
-    <>
-      <PageHeader
-        title="Notices"
-        description="Every letter the IRS has sent you, translated into plain English."
-      />
-      <ComingNext>Notice Center: notice list, plain-English decode, and upload.</ComingNext>
-    </>
-  );
+  return <NoticeCenter selectedId={nextNotice.id} />;
 }

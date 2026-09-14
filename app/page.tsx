@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
 import { LinkButton } from "@/components/link-button";
+import { MetricTile } from "@/components/metric-tile";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge, StatusDot } from "@/components/status";
 import { daysRemainingLabel, daysUntil, deadlineTone, formatDate, formatMoney } from "@/lib/format";
@@ -31,16 +32,15 @@ import {
   currentStageIndex,
   nextActionItem,
   nextNotice,
-  notices,
   openActionItems,
+  openNotices,
   taxpayer,
   taxYears,
   totalOwed,
   yearBalance,
+  yearNextStep,
   type ActionItemType,
-  type TaxYear,
 } from "@/lib/mockData";
-import { cn } from "@/lib/utils";
 
 const actionIcons: Record<ActionItemType, LucideIcon> = {
   sign: PenLine,
@@ -53,45 +53,6 @@ const actionVerb: Record<ActionItemType, string> = {
   upload: "Upload",
   "approve-letter": "Review",
 };
-
-// Every red or amber year gets a way forward next to it.
-function yearCta(y: TaxYear): { href: string; label: string; primary: boolean } {
-  if (y.status === "unfiled") return { href: "/action-items", label: "Start filing", primary: true };
-  if (y.lienFiled) return { href: "/notices", label: "Respond now", primary: true };
-  return { href: "/tax-years", label: "Details", primary: false };
-}
-
-function Vital({
-  icon: Icon,
-  iconClass,
-  label,
-  value,
-  caption,
-  children,
-}: {
-  icon: LucideIcon;
-  iconClass: string;
-  label: string;
-  value: string;
-  caption: string;
-  children?: React.ReactNode;
-}) {
-  return (
-    <Card className="gap-3">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
-          <Icon className={cn("size-4", iconClass)} aria-hidden />
-          {label}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold tabular-nums">{value}</div>
-        <p className="mt-0.5 text-xs text-muted-foreground">{caption}</p>
-        {children}
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function DashboardPage() {
   const stage = caseStages[currentStageIndex];
@@ -141,7 +102,7 @@ export default function DashboardPage() {
         </div>
         <div className="flex shrink-0 flex-wrap gap-2 pl-8 sm:pl-0">
           <LinkButton
-            href="/notices"
+            href={`/notices/${nextNotice.id}`}
             variant="outline"
             className="border-red-200 bg-white text-red-700 hover:bg-red-100 hover:text-red-800"
           >
@@ -156,21 +117,21 @@ export default function DashboardPage() {
 
       {/* Vitals */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Vital
+        <MetricTile
           icon={DollarSign}
           iconClass="text-red-600"
           label="Total owed"
           value={formatMoney(totalOwed)}
           caption={`Across ${yearsWithBalance} tax years · ${unfiledYears} year not filed`}
         />
-        <Vital
+        <MetricTile
           icon={Clock}
           iconClass="text-orange-600"
           label="Next deadline"
           value={`${nextDays} ${nextDays === 1 ? "day" : "days"}`}
           caption={`${nextNotice.code} response · ${formatDate(nextNotice.respondBy)}`}
         />
-        <Vital
+        <MetricTile
           icon={Scale}
           iconClass="text-blue-600"
           label="Case stage"
@@ -180,8 +141,8 @@ export default function DashboardPage() {
           <div className="mt-3 h-2 w-full rounded-full bg-secondary">
             <div className="h-2 rounded-full bg-primary" style={{ width: `${stagePct}%` }} />
           </div>
-        </Vital>
-        <Vital
+        </MetricTile>
+        <MetricTile
           icon={ListChecks}
           iconClass="text-purple-600"
           label="Action items"
@@ -209,7 +170,7 @@ export default function DashboardPage() {
             <CardContent className="px-0">
               <ul className="divide-y">
                 {taxYears.map((y) => {
-                  const cta = yearCta(y);
+                  const step = yearNextStep(y);
                   return (
                     <li key={y.year} className="flex flex-col gap-3 px-6 py-4 first:pt-0 sm:flex-row sm:items-center">
                       <div className="flex min-w-0 flex-1 gap-3">
@@ -225,19 +186,23 @@ export default function DashboardPage() {
                       <div className="flex items-center justify-between gap-4 pl-5 sm:justify-end sm:pl-0">
                         <div className="text-right">
                           <div className="font-medium tabular-nums">
-                            {y.balance ? formatMoney(yearBalance(y)) : "—"}
+                            {y.balance
+                              ? formatMoney(yearBalance(y))
+                              : y.estimatedBalance !== undefined
+                                ? `≈ ${formatMoney(y.estimatedBalance)}`
+                                : "—"}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {y.balance ? "owed" : "no balance yet"}
+                            {y.balance ? "owed" : "estimated, once filed"}
                           </div>
                         </div>
                         <LinkButton
-                          href={cta.href}
-                          variant={cta.primary ? "default" : "outline"}
+                          href={step.href}
+                          variant={step.primary ? "default" : "outline"}
                           size="sm"
                           className="w-28"
                         >
-                          {cta.label}
+                          {step.label}
                         </LinkButton>
                       </div>
                     </li>
@@ -254,7 +219,7 @@ export default function DashboardPage() {
           {/* Notices */}
           <Card>
             <CardHeader className="border-b">
-              <CardTitle>Latest IRS notices</CardTitle>
+              <CardTitle>Open IRS notices</CardTitle>
               <CardDescription>Every letter, translated into plain English</CardDescription>
               <CardAction>
                 <LinkButton href="/notices" variant="ghost" size="sm">
@@ -265,7 +230,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="px-0">
               <ul className="divide-y">
-                {notices.map((n) => (
+                {openNotices.map((n) => (
                   <li key={n.id} className="space-y-2 px-6 py-4 first:pt-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="outline" className="font-mono">

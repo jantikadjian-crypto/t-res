@@ -1,13 +1,14 @@
-import { ComingNext, PageHeader } from "@/components/page-header";
+import { ActionQueue } from "@/components/action-items/action-queue";
+import { PageHeader } from "@/components/page-header";
 
 export default function ActionItemsPage() {
   return (
     <>
       <PageHeader
         title="Action Items"
-        description="Your case moves forward when these are done."
+        description="Things only you can do. Each one takes a few minutes."
       />
-      <ComingNext>Checklist of things to sign, upload, and approve.</ComingNext>
+      <ActionQueue />
     </>
   );
 }
