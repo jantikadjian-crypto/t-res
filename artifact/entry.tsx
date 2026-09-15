@@ -16,6 +16,9 @@ import { IntakeProvider } from "@/components/intake/intake-provider";
 import { screenBodies } from "@/components/intake/screen-bodies";
 import { LibraryEntryView, LibraryView } from "@/components/library/library-views";
 import { NoticeCenter } from "@/components/notices/notice-center";
+import { GovernanceInbox } from "@/components/plcy/governance-inbox";
+import { GovernanceItemView } from "@/components/plcy/governance-item";
+import { PlcyFrame } from "@/components/plcy/plcy-frame";
 import { BillingOverview } from "@/components/settings/billing-overview";
 import { CancelFlow } from "@/components/settings/cancel-flow";
 import { NotificationSettings } from "@/components/settings/notification-settings";
@@ -88,6 +91,14 @@ function route(pathname: string): ReactNode {
   }
 
   if (section === "sign") return <SignFlow key={pathname} docId={detail ?? ""} />;
+
+  if (section === "plcy") {
+    return (
+      <PlcyFrame>
+        <Fragment key={pathname}>{detail ? <GovernanceItemView id={detail} /> : <GovernanceInbox />}</Fragment>
+      </PlcyFrame>
+    );
+  }
 
   return (
     <AppShell>

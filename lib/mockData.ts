@@ -841,3 +841,211 @@ export function yearNextStep(y: TaxYear): { href: string; label: string; primary
   }
   return { href: `/tax-years/${y.year}`, label: "Details", primary: false };
 }
+
+// PLCY is T-Res's AI governance layer. Every AI action in the case is logged there, and a policy
+// Chris approved decides whether it's auto-approved or routed to him. Chris works in PLCY, not T-Res.
+export type GovernanceStatus = "pending" | "auto-approved" | "approved" | "changes-requested";
+
+export type GovernancePolicy = {
+  id: string;
+  name: string;
+  rule: string;
+  outcome: "Auto-approve" | "Route to EA" | "Same-day EA";
+  spotCheck?: string;
+};
+
+export type GovernanceCheck = {
+  label: string;
+  passed: boolean;
+  // Live check: passes once this document is signed and on file.
+  signedDocId?: string;
+};
+
+export type GovernanceItem = {
+  id: string;
+  title: string;
+  kind: string;
+  producedBy: string;
+  createdOn: string;
+  confidence: number; // 0–1
+  policyId: string;
+  status: GovernanceStatus;
+  decidedOn?: string;
+  note?: string;
+  // Chris's time on it, in minutes (review, or a spot check).
+  eaMinutes?: number;
+  summary: string;
+  output?: string;
+  checks: GovernanceCheck[];
+  evidence: { label: string; href: string }[];
+  // Where the result shows up for the taxpayer.
+  resultHref: string;
+  noticeId?: string;
+};
+
+export const governancePolicies: GovernancePolicy[] = [
+  {
+    id: "pol_submission",
+    name: "IRS submissions under Chris's name",
+    rule: "Anything sent to the IRS under Chris's name or CAF number, however confident the AI is.",
+    outcome: "Route to EA",
+  },
+  {
+    id: "pol_advice",
+    name: "Money recommendations",
+    rule: "Which resolution to pursue and how much to pay each month.",
+    outcome: "Route to EA",
+  },
+  {
+    id: "pol_explain",
+    name: "Plain-English explanations",
+    rule: "Notice and document explanations at 90% confidence or higher, with every fact matched to a source document.",
+    outcome: "Auto-approve",
+    spotCheck: "Chris spot-checks 1 in 20",
+  },
+  {
+    id: "pol_rules",
+    name: "Rules-engine results",
+    rule: "Deadlines, balances and eligibility worked out by rules Chris approved. No AI guesswork.",
+    outcome: "Auto-approve",
+    spotCheck: "Chris spot-checks 1 in 50",
+  },
+  {
+    id: "pol_emergency",
+    name: "Emergencies",
+    rule: "Money already taken from a paycheck or bank account.",
+    outcome: "Same-day EA",
+  },
+];
+
+export const governanceItems: GovernanceItem[] = [
+  {
+    id: "gov_letter",
+    title: "CP504 response letter",
+    kind: "IRS submission",
+    producedBy: "T-Res letter drafter",
+    createdOn: "2026-09-13",
+    confidence: 0.94,
+    policyId: "pol_submission",
+    status: "pending",
+    eaMinutes: 2,
+    summary:
+      "Drafted Jordan's response to the CP504. It asks for a 60-day hold on collection, says a payment plan is coming, and requests First-Time Penalty Abatement for 2021.",
+    output: actionItems.find((a) => a.id === "act_letter")?.letterPreview,
+    checks: [
+      { label: "Name and SSN match the Form 8821 on file", passed: true },
+      { label: "2021 balance matches the account transcript ($14,200)", passed: true },
+      { label: "Goes out before the CP504 deadline (Sep 26, 2026)", passed: true },
+      { label: "Penalty relief meets First-Time Abatement rules: no penalties 2018–2020", passed: true },
+      { label: "Form 2848 signed by Jordan, so Chris can send it", passed: false, signedDocId: "doc_2848" },
+    ],
+    evidence: [
+      { label: "CP504 notice", href: "/documents/doc_cp504" },
+      { label: "2021 account transcript", href: "/documents/doc_tr_21" },
+      { label: "Form 8821 (signed)", href: "/documents/doc_8821" },
+      { label: "The draft letter", href: "/documents/doc_letter" },
+    ],
+    resultHref: "/documents/doc_letter",
+    noticeId: "ntc_cp504",
+  },
+  {
+    id: "gov_assessment",
+    title: "Resolution recommendation",
+    kind: "Money recommendation",
+    producedBy: "T-Res case assessor",
+    createdOn: "2026-09-12",
+    confidence: 0.91,
+    policyId: "pol_advice",
+    status: "approved",
+    decidedOn: "2026-09-12",
+    eaMinutes: 3,
+    summary:
+      "Recommended a payment plan of about $440 a month covering 2021–2023, after ruling out an Offer in Compromise and a pause in collection.",
+    checks: [
+      { label: "Income and expenses match Jordan's uploaded pay stubs", passed: true },
+      { label: "Monthly amount fits the IRS's allowable living expenses", passed: true },
+      { label: "Every required return is filed or being prepared (2023)", passed: true },
+    ],
+    evidence: [
+      { label: "Jordan's assessment", href: "/intake/assessment" },
+      { label: "Jordan's uploads", href: "/documents/mine" },
+    ],
+    resultHref: "/intake/assessment",
+  },
+  {
+    id: "gov_fta",
+    title: "First-Time Abatement eligibility (2021)",
+    kind: "Eligibility check",
+    producedBy: "T-Res rules engine",
+    createdOn: "2026-09-12",
+    confidence: 1,
+    policyId: "pol_rules",
+    status: "auto-approved",
+    decidedOn: "2026-09-12",
+    eaMinutes: 1,
+    summary: "Found that Jordan's $2,310 in 2021 penalties qualify for First-Time Abatement. Chris spot-checked it on Sep 13.",
+    checks: [
+      { label: "No penalties in 2018, 2019 or 2020", passed: true },
+      { label: "Every required return is filed or being prepared", passed: true },
+      { label: "Balance is paid or a payment plan is being arranged", passed: true },
+    ],
+    evidence: [{ label: "2021 account transcript", href: "/documents/doc_tr_21" }],
+    resultHref: "/tax-years/2021",
+  },
+  {
+    id: "gov_cp504",
+    title: "CP504 explained in plain English",
+    kind: "Explanation",
+    producedBy: "T-Res notice reader",
+    createdOn: "2026-09-04",
+    confidence: 0.97,
+    policyId: "pol_explain",
+    status: "auto-approved",
+    decidedOn: "2026-09-04",
+    summary: "Read the CP504 Jordan uploaded and explained what it is, what it means, the deadline and what we're doing.",
+    checks: [
+      { label: "Notice code, amount and deadline match the letter and the transcript", passed: true },
+      { label: "Written at a 6th-grade reading level", passed: true },
+      { label: "Makes no promises about outcomes", passed: true },
+    ],
+    evidence: [{ label: "CP504 notice", href: "/documents/doc_cp504" }],
+    resultHref: "/notices/ntc_cp504",
+  },
+  {
+    id: "gov_cp14",
+    title: "CP14 explained in plain English",
+    kind: "Explanation",
+    producedBy: "T-Res notice reader",
+    createdOn: "2026-09-09",
+    confidence: 0.98,
+    policyId: "pol_explain",
+    status: "auto-approved",
+    decidedOn: "2026-09-09",
+    summary: "Read the CP14 Jordan uploaded and explained it as a routine first bill for 2022.",
+    checks: [
+      { label: "Notice code, amount and deadline match the letter and the transcript", passed: true },
+      { label: "Written at a 6th-grade reading level", passed: true },
+      { label: "Makes no promises about outcomes", passed: true },
+    ],
+    evidence: [{ label: "CP14 notice", href: "/documents/doc_cp14" }],
+    resultHref: "/notices/ntc_cp14",
+  },
+  {
+    id: "gov_2023",
+    title: "2023 balance estimate",
+    kind: "Estimate",
+    producedBy: "T-Res rules engine",
+    createdOn: "2026-09-12",
+    confidence: 0.88,
+    policyId: "pol_rules",
+    status: "auto-approved",
+    decidedOn: "2026-09-12",
+    summary: "Estimated about $4,900 owed for 2023 from the income the IRS has on record. Shown to Jordan as an estimate, not a bill.",
+    checks: [
+      { label: "Income taken from the 2023 wage & income transcript", passed: true },
+      { label: "Labelled as an estimate everywhere Jordan sees it", passed: true },
+    ],
+    evidence: [{ label: "2023 wage & income transcript", href: "/documents/doc_wi_23" }],
+    resultHref: "/tax-years/2023",
+  },
+];

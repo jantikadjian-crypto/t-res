@@ -5,12 +5,14 @@ import {
   actionItems as seedActions,
   documentNotes,
   documents as seedDocuments,
+  governanceItems as seedGovernance,
   MOCK_TODAY,
   notices as seedNotices,
   subscription,
   type ActionItem,
   type CaseDocument,
   type DocumentNote,
+  type GovernanceItem,
   type Notice,
   type PlanStatus,
 } from "@/lib/mockData";
@@ -41,6 +43,7 @@ export type PlanState = {
 };
 
 type Completion = { completedOn: string; uploadedFile?: string };
+type GovernanceDecision = { status: "approved" | "changes-requested"; decidedOn: string; note?: string };
 type UploadedFile = { name: string; sizeKb: number };
 
 type CaseContextValue = {
@@ -56,6 +59,10 @@ type CaseContextValue = {
   completeAction: (actionId: string, file?: UploadedFile) => void;
   notices: Notice[];
   openNotices: Notice[];
+  // PLCY governance: AI actions and Chris's decisions on them (demo: made in the PLCY view).
+  governance: GovernanceItem[];
+  decideGovernance: (id: string, status: GovernanceDecision["status"], note?: string) => void;
+  undoGovernance: (id: string) => void;
   signatures: Record<string, SignatureRecord>;
   recordSignature: (record: SignatureRecord) => void;
   plan: PlanState;
@@ -76,6 +83,7 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
   const [completions, setCompletions] = useState<Record<string, Completion>>({});
   const [signatures, setSignatures] = useState<Record<string, SignatureRecord>>({});
   const [plan, setPlan] = useState<PlanState>({ planId: subscription.planId, status: "active" });
+  const [decisions, setDecisions] = useState<Record<string, GovernanceDecision>>({});
 
   const markDone = useCallback((actionId: string | undefined, uploadedFile?: string) => {
     if (!actionId) return;
@@ -219,6 +227,29 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
     [notices]
   );
 
+  const decideGovernance = useCallback(
+    (id: string, status: GovernanceDecision["status"], note?: string) =>
+      setDecisions((prev) => ({ ...prev, [id]: { status, decidedOn: MOCK_TODAY, note } })),
+    []
+  );
+  const undoGovernance = useCallback(
+    (id: string) => setDecisions((prev) => Object.fromEntries(Object.entries(prev).filter(([key]) => key !== id))),
+    []
+  );
+
+  // Live checks (e.g. "Form 2848 signed") follow the documents in this session.
+  const governance = useMemo(
+    () =>
+      seedGovernance.map((g) => ({
+        ...g,
+        ...decisions[g.id],
+        checks: g.checks.map((c) =>
+          c.signedDocId ? { ...c, passed: docs.some((d) => d.id === c.signedDocId && d.status === "on-file") } : c
+        ),
+      })),
+    [decisions, docs]
+  );
+
   return (
     <CaseContext
       value={{
@@ -234,6 +265,9 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
         completeAction,
         notices,
         openNotices,
+        governance,
+        decideGovernance,
+        undoGovernance,
         signatures,
         recordSignature,
         plan,

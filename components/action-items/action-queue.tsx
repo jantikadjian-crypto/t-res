@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { LinkButton } from "@/components/link-button";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, deadlineTone, formatDate } from "@/lib/format";
@@ -49,8 +50,11 @@ function RelatedLink({ item }: { item: ActionItem }) {
 }
 
 export function ActionQueue() {
-  const { actions, docs, signatures, completeAction } = useCase();
+  const { actions, docs, signatures, completeAction, governance } = useCase();
   const [openLetter, setOpenLetter] = useState<string | null>(null);
+  // Letters going to the IRS are governed in PLCY: show where Chris's sign-off stands.
+  const governedBy = (item: ActionItem) =>
+    item.relatedNoticeId ? governance.find((g) => g.noticeId === item.relatedNoticeId) : undefined;
 
   const todo = actions.filter((i) => !i.done).sort((a, b) => a.dueBy.localeCompare(b.dueBy));
   const done = actions
@@ -119,7 +123,7 @@ export function ActionQueue() {
                         <div className="rounded-lg border bg-background p-4 font-serif text-sm leading-relaxed whitespace-pre-line">
                           {item.letterPreview}
                         </div>
-                        <EAReviewedBadge />
+                        {governedBy(item) ? <GovernanceBadge itemId={governedBy(item)!.id} /> : <EAReviewedBadge />}
                       </div>
                     )}
                   </div>

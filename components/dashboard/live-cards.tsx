@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, CheckCircle2, FileCheck, ListChecks, PenLine, Upload, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, Clock, FileCheck, ListChecks, PenLine, Upload, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
 import { LinkButton } from "@/components/link-button";
@@ -26,11 +26,36 @@ const actionVerb: Record<ActionItemType, string> = {
 
 // The most urgent notice, and the one thing that moves it forward right now.
 export function UrgencyBanner() {
-  const { actions, docs } = useCase();
+  const { actions, docs, governance } = useCase();
   const next = actions
     .filter((a) => a.relatedNoticeId === nextNotice.id && !a.done)
     .sort((a, b) => a.dueBy.localeCompare(b.dueBy))[0];
   const deadline = `${formatDate(nextNotice.respondBy)} · ${daysRemainingLabel(nextNotice.respondBy)}`;
+
+  // Jordan's part is done; the response still needs Chris's sign-off in PLCY before it goes out.
+  const submission = governance.find((g) => g.noticeId === nextNotice.id);
+  if (!next && submission && submission.status !== "approved") {
+    return (
+      <div role="status" className="flex flex-col gap-4 rounded-xl border border-blue-200 bg-blue-50 p-4 sm:flex-row sm:items-center">
+        <div className="flex flex-1 gap-3">
+          <Clock className="mt-0.5 size-5 shrink-0 text-blue-600" aria-hidden />
+          <div>
+            <p className="font-medium text-blue-900">
+              Your part is done. {enrolledAgent.name} is giving your {nextNotice.code} response a final check.
+            </p>
+            <p className="mt-1 text-sm text-blue-800">
+              {submission.status === "changes-requested"
+                ? `${enrolledAgent.name} asked for a small change. We're updating it, and it still goes out before ${deadline}.`
+                : `It goes to the IRS as soon as it's approved, well before ${deadline}.`}
+            </p>
+          </div>
+        </div>
+        <LinkButton href={submission.resultHref} variant="outline" className="ml-8 w-fit border-blue-300 bg-white sm:ml-0">
+          See the letter
+        </LinkButton>
+      </div>
+    );
+  }
 
   if (!next) {
     return (

@@ -27,6 +27,7 @@
 - Search everything: /lib/search.ts builds the index for the Ctrl+K palette (components/search). New pages or data kinds must be added to the index.
 - Sidebar and breadcrumbs both read /lib/navigation.ts. Settings and Billing & plan are reached from the account menu (name, top right) only: their group has `sidebar: false` so breadcrumbs still name them.
 - Notice status is live: read `notices` / `openNotices` from `useCase()`, not mockData. A notice needing action moves to "We're handling it" once every to-do tied to it (`relatedNoticeId`) is done.
+- PLCY is T-Res's AI governance layer. `app/(plcy)/plcy` is a demo mock of Chris's PLCY view (approvals inbox, item review), reached from the account menu. AI actions and routing policies live in `governanceItems` / `governancePolicies` in mockData; decisions live in CaseProvider (`governance`, `decideGovernance`). AI output governed there shows `<GovernanceBadge />` ("Checked by T-Res", then "Approved by Chris") instead of `<EAReviewedBadge />`. PLCY pages are Chris's, so keep them out of the taxpayer's search index.
 - Selection state that should survive the progress snapshot goes in the URL (e.g. /notices/[id], /tax-years/[year]), not React state.
 - Links that look like buttons use `<LinkButton />` from /components/link-button.tsx.
 - AI-generated content gets `<EAReviewedBadge />` from /components/ea-reviewed-badge.tsx.

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, BellRing, ChevronDown, Clock, CreditCard, PanelLeft, Search, Settings, type LucideIcon } from "lucide-react";
+import { Bell, BellRing, ChevronDown, Clock, CreditCard, PanelLeft, Search, Settings, ShieldCheck, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -10,7 +10,7 @@ import { useCase } from "@/components/case-provider";
 import { CommandPalette } from "@/components/search/command-palette";
 import { StatusDot } from "@/components/status";
 import { daysAgoLabel, formatDate } from "@/lib/format";
-import { account, caseNumber, notifications, resolutionPlans, taxpayer, transcriptsLastChecked } from "@/lib/mockData";
+import { account, caseNumber, enrolledAgent, notifications, resolutionPlans, taxpayer, transcriptsLastChecked } from "@/lib/mockData";
 
 function MenuLink({
   href,
@@ -237,6 +237,9 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               <MenuLink href="/settings" icon={Settings} label="Settings" onSelect={() => closeMenu()} />
               <MenuLink href="/settings/billing" icon={CreditCard} label="Billing & plan" hint={planHint} onSelect={() => closeMenu()} />
               <MenuLink href="/settings/notifications" icon={BellRing} label="Notification settings" onSelect={() => closeMenu()} />
+              <div className="my-1 h-px bg-border" />
+              {/* Demo only: jump to what Chris sees in PLCY, the AI governance layer. */}
+              <MenuLink href="/plcy" icon={ShieldCheck} label={`${enrolledAgent.name}'s view in PLCY`} hint="Demo" onSelect={() => closeMenu()} />
               <div className="my-1 h-px bg-border" />
               <Link
                 href="/"

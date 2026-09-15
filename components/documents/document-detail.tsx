@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { LinkButton } from "@/components/link-button";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status";
@@ -94,7 +95,7 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 }
 
 export function DocumentDetail({ id }: { id: string }) {
-  const { docs, attachFile, signatures } = useCase();
+  const { docs, attachFile, signatures, governance } = useCase();
   const fileRef = useRef<HTMLInputElement>(null);
   const doc = docs.find((d) => d.id === id);
 
@@ -119,6 +120,7 @@ export function DocumentDetail({ id }: { id: string }) {
   const meta = statusMeta[doc.status];
   const signature = signatures[doc.id];
   const canReplace = doc.source === "You" && doc.status !== "requested";
+  const governed = governance.find((g) => g.resultHref === `/documents/${doc.id}`);
   const openPicker = () => fileRef.current?.click();
 
   return (
@@ -202,8 +204,12 @@ export function DocumentDetail({ id }: { id: string }) {
             <CardContent className="space-y-5">
               <div className="space-y-2">
                 <p className="text-sm">{doc.summary}</p>
-                {/* Our plain-English summary; a fresh upload's gets reviewed first. */}
-                {doc.status !== "requested" && <EAReviewedBadge pending={doc.status === "in-review"} />}
+                {/* Governed in PLCY: tiered badge. Otherwise our plain-English summary; a fresh upload's gets reviewed first. */}
+                {governed ? (
+                  <GovernanceBadge itemId={governed.id} />
+                ) : (
+                  doc.status !== "requested" && <EAReviewedBadge pending={doc.status === "in-review"} />
+                )}
               </div>
               <dl className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] gap-x-6 gap-y-3 text-sm">
                 <DetailRow label="Status">
