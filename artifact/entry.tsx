@@ -1,7 +1,7 @@
 // Interactive progress artifact: the real app, rendered in the browser with a hash router.
 // scripts/build-artifact.mjs bundles this file and swaps next/link and next/navigation for the
 // shims next to it. Next.js itself never loads this file.
-import { useEffect, type ReactNode } from "react";
+import { Fragment, useEffect, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import ActionItemsPage from "@/app/(app)/action-items/page";
 import DashboardPage from "@/app/(app)/page";
@@ -29,27 +29,21 @@ import { usePathname } from "./next-navigation";
 
 const documentViews: Record<string, DocumentView> = { mine: "mine", "from-tres": "tres", "from-irs": "irs" };
 
-// Mirrors the app/ directory: same layouts, same page bodies.
-function route(pathname: string): ReactNode {
-  const [section, detail, extra] = pathname.split("/").filter(Boolean);
-  const shell = (page: ReactNode) => <AppShell>{page}</AppShell>;
-
+function page(pathname: string, section?: string, detail?: string, extra?: string): ReactNode {
   switch (section) {
     case "notices":
-      return shell(<NoticeCenter selectedId={notices.some((n) => n.id === detail) ? detail : nextNotice.id} />);
+      return <NoticeCenter selectedId={notices.some((n) => n.id === detail) ? (detail as string) : nextNotice.id} />;
     case "tax-years":
-      return shell(
-        <TaxYearDetail year={taxYears.some((y) => String(y.year) === detail) ? Number(detail) : taxYears[0].year} />
-      );
+      return <TaxYearDetail year={taxYears.some((y) => String(y.year) === detail) ? Number(detail) : taxYears[0].year} />;
     case "action-items":
-      return shell(<ActionItemsPage />);
+      return <ActionItemsPage />;
     case "documents":
-      if (!detail) return shell(<DocumentsView view="all" />);
-      if (detail === "waiting") return shell(<DocumentsView view="all" status="waiting" />);
-      if (documentViews[detail]) return shell(<DocumentsView view={documentViews[detail]} />);
-      return shell(<DocumentDetail id={detail} />);
+      if (!detail) return <DocumentsView view="all" />;
+      if (detail === "waiting") return <DocumentsView view="all" status="waiting" />;
+      if (documentViews[detail]) return <DocumentsView view={documentViews[detail]} />;
+      return <DocumentDetail id={detail} />;
     case "settings":
-      return shell(
+      return (
         <SettingsLayout>
           {detail === "notifications" ? (
             <NotificationSettings />
@@ -66,26 +60,41 @@ function route(pathname: string): ReactNode {
           )}
         </SettingsLayout>
       );
-    case "intake": {
-      const slug = detail ?? FIRST_SCREEN;
-      const Body = screenBodies[slug];
-      return (
-        <IntakeProvider>
-          <IntakeFrame>{Body ? <Body /> : <ScreenPlaceholder slug={slug} />}</IntakeFrame>
-        </IntakeProvider>
-      );
-    }
-    case "sign":
-      return <SignFlow docId={detail ?? ""} />;
     default:
-      return shell(<DashboardPage />);
+      return <DashboardPage />;
   }
+}
+
+// Mirrors the app/ directory. Like Next, layouts (app shell, wizard frame) persist across
+// navigation while each page starts fresh, so filters and drafts don't leak between pages.
+function route(pathname: string): ReactNode {
+  const [section, detail, extra] = pathname.split("/").filter(Boolean);
+
+  if (section === "intake") {
+    const slug = detail ?? FIRST_SCREEN;
+    const Body = screenBodies[slug];
+    return (
+      <IntakeProvider>
+        <IntakeFrame>
+          <Fragment key={slug}>{Body ? <Body /> : <ScreenPlaceholder slug={slug} />}</Fragment>
+        </IntakeFrame>
+      </IntakeProvider>
+    );
+  }
+
+  if (section === "sign") return <SignFlow key={pathname} docId={detail ?? ""} />;
+
+  return (
+    <AppShell>
+      <Fragment key={pathname}>{page(pathname, section, detail, extra)}</Fragment>
+    </AppShell>
+  );
 }
 
 function App() {
   const pathname = usePathname();
 
-  // Like Next: new page starts at the top, unless the link points at a section (#notes).
+  // Like Next: a new page starts at the top, unless the link points at a section (#notes).
   useEffect(() => {
     const anchor = window.location.hash.split("#")[2];
     if (anchor) document.getElementById(anchor)?.scrollIntoView();
