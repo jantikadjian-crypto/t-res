@@ -274,9 +274,9 @@ export function ProToday() {
         <MetricTile
           icon={ShieldCheck}
           iconClass="text-green-600"
-          label="Handled by policy this week"
+          label="Handled by policy"
           value={`${handledPct}%`}
-          caption={`${proWeek.handledByPolicy} of ${proWeek.aiActions} AI actions · your time ${minutesLabel(proWeek.eaMinutes)}`}
+          caption={`This week: ${proWeek.handledByPolicy} of ${proWeek.aiActions} AI actions · your time ${minutesLabel(proWeek.eaMinutes)}`}
           href="/plcy"
         />
       </div>
@@ -441,7 +441,7 @@ export function ProToday() {
                   {shownClients.map((c) => (
                       <tr key={c.id} data-client-row={c.id}>
                         <td className="px-6 py-3">
-                          <div className="flex items-start gap-2">
+                          <div className="flex min-w-56 items-start gap-2">
                             <StatusDot tone={c.tone} className="mt-1.5" />
                             <div className="min-w-0">
                               <p className="font-medium">{c.name}</p>

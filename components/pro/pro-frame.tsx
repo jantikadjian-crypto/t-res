@@ -81,9 +81,8 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
             <UserRound className="size-3" aria-hidden />
             {practitioner.name}
           </p>
-          <p className="mt-1 pl-5 text-xs text-muted-foreground">
-            {practitioner.credential} · CAF {practitioner.cafNumber}
-          </p>
+          <p className="mt-1 pl-5 text-xs text-muted-foreground">{practitioner.credential}</p>
+          <p className="pl-5 text-xs whitespace-nowrap text-muted-foreground">CAF {practitioner.cafNumber}</p>
         </div>
 
         <nav aria-label="T-Res Pro" className="space-y-1">
