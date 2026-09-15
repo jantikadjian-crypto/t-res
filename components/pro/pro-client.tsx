@@ -31,6 +31,7 @@ const outcomeTone: Record<ProAiOutcome, Tone> = {
   "Auto-approved": "neutral",
   "Approved by you": "good",
   "Resolved by you": "good",
+  "Changes requested": "warn",
   "Waiting for you": "warn",
   Flagged: "bad",
   "Routed to you": "bad",
@@ -40,7 +41,7 @@ const fromGovernance: Record<GovernanceStatus, ProAiOutcome> = {
   pending: "Waiting for you",
   "auto-approved": "Auto-approved",
   approved: "Approved by you",
-  "changes-requested": "Flagged",
+  "changes-requested": "Changes requested",
 };
 
 // One client's case from the professional's side: what needs you, the timeline, documents, authorizations,
@@ -48,7 +49,7 @@ const fromGovernance: Record<GovernanceStatus, ProAiOutcome> = {
 export function ProClientView({ id }: { id: string }) {
   const { clients, rows, done } = useProWorkspace();
   const { governance, docs, actions, notices, lane, escalatedOn, plan } = useCase();
-  const { doneIds, markDone } = useProSession();
+  const { doneIds, markDone, sentBack } = useProSession();
   const [openId, setOpenId] = useState<string | null>(null);
   const client = clients.find((c) => c.id === id);
 
@@ -99,7 +100,11 @@ export function ProClientView({ id }: { id: string }) {
   const timeline = [...(detail?.timeline ?? [])].sort((a, b) => b.date.localeCompare(a.date));
   const aiActions = (detail?.aiActions ?? []).map((a) => ({
     ...a,
-    outcome: a.queueId && doneIds.includes(a.queueId) && a.doneOutcome ? a.doneOutcome : a.outcome,
+    outcome: (a.queueId && a.queueId in sentBack
+      ? "Changes requested"
+      : a.queueId && doneIds.includes(a.queueId) && a.doneOutcome
+        ? a.doneOutcome
+        : a.outcome) as ProAiOutcome,
   }));
   const autoCount = aiActions.filter((a) => a.outcome === "Auto-approved").length;
   const stageIndex = caseStages.findIndex((s) => s.label === client.stage);
@@ -303,7 +308,7 @@ export function ProClientView({ id }: { id: string }) {
                     <li key={`${a.date}-${a.title}`} className="space-y-1 px-6 py-3 first:pt-0">
                       <p className="text-sm">
                         {governed ? (
-                          <Link href={`/plcy/${governed.id}`} className="hover:text-primary hover:underline">
+                          <Link href={`/pro/approvals/${governed.id}`} className="hover:text-primary hover:underline">
                             {a.title}
                           </Link>
                         ) : (

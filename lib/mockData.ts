@@ -1496,8 +1496,10 @@ export type ProQueueItem = {
   minutes: number;
   deadline?: string;
   cta: string;
-  // Opens in place on the dashboard: what the AI prepared, what to check, and the one action.
+  // What the AI prepared, what to check, and the one action (in place on Today, or on the full review).
   preview: { summary: string; points: { label: string; ok?: boolean }[]; doneLabel: string; doneNote: string };
+  // Approvals only: what the full review at /pro/approvals/[id] shows.
+  review?: { producedBy: string; confidence: number; draft?: string; evidence: string[] };
 };
 
 export type ProClient = {
@@ -1548,6 +1550,17 @@ export const proQueue: ProQueueItem[] = [
       ],
       doneLabel: "Approve and send",
       doneNote: "Hearing request approved · goes out today",
+    },
+    review: {
+      producedBy: "T-Res letter drafter",
+      confidence: 0.95,
+      draft: `Form 12153, Request for a Collection Due Process or Equivalent Hearing
+Taxpayer: Marcus Bell · Tax years: 2020, 2021 · Notice: LT11
+
+Reason for the hearing: I can't pay the full balance now. I propose an installment agreement of about $520 a month as an alternative to levy.
+
+Representative: Chris V., Enrolled Agent (Form 2848 on file)`,
+      evidence: ["LT11 – Final Notice of Intent to Levy", "Form 2848 (signed)", "Money snapshot"],
     },
   },
   {
@@ -1612,6 +1625,16 @@ export const proQueue: ProQueueItem[] = [
       doneLabel: "Approve and send",
       doneNote: "Letter approved · goes out today",
     },
+    review: {
+      producedBy: "T-Res letter drafter",
+      confidence: 0.93,
+      draft: `Re: CP2000 for tax year 2022 — Grace Liu
+
+We agree with the proposed change to dividend income ($1,120 of tax). We disagree with the change for stock sales: the IRS figures leave out the cost basis. The enclosed brokerage statement shows the basis for each sale, which removes the rest of the proposed amount.
+
+Chris V., Enrolled Agent`,
+      evidence: ["CP2000 notice", "Brokerage 1099-B, 2022", "2022 wage & income transcript"],
+    },
   },
   {
     id: "q_tom",
@@ -1630,6 +1653,14 @@ export const proQueue: ProQueueItem[] = [
       ],
       doneLabel: "Approve recommendation",
       doneNote: "Assessment approved · Tom picks a lane",
+    },
+    review: {
+      producedBy: "T-Res case assessor",
+      confidence: 0.91,
+      draft: `Recommendation: long-term payment plan, about $310 a month by direct debit.
+Lane: self-serve (balance under $50,000, both returns filed).
+Ruled out: Offer in Compromise (the balance can be paid in full over time).`,
+      evidence: ["Pay stubs", "2022 and 2023 wage & income transcripts"],
     },
   },
   {
@@ -1652,6 +1683,15 @@ export const proQueue: ProQueueItem[] = [
       ],
       doneLabel: "Approve the offer",
       doneNote: "Offer approved · filed by Sep 25",
+    },
+    review: {
+      producedBy: "T-Res offer preparer",
+      confidence: 0.9,
+      draft: `Form 656, Offer in Compromise — Aisha Thompson
+Offer: $4,200, as a lump-sum offer (20% with the application, the rest in 5 or fewer payments)
+Tax years: 2017–2021 · Balance: $61,300
+Basis: reasonable collection potential of $4,200 ($1,080 equity + 12 × $260)`,
+      evidence: ["Form 433-A", "Bank statements, Apr–Jun", "Account transcripts, 2017–2021"],
     },
   },
   {
@@ -1692,7 +1732,14 @@ export const proWeek = { aiActions: 214, handledByPolicy: 206, eaMinutes: 110 };
 
 // One fictional client's case from the professional's side (Jordan's is built live instead).
 export type ProAuthorization = { form: string; what: string; status: string; date?: string; tone: Tone };
-export type ProAiOutcome = "Auto-approved" | "Approved by you" | "Resolved by you" | "Waiting for you" | "Flagged" | "Routed to you";
+export type ProAiOutcome =
+  | "Auto-approved"
+  | "Approved by you"
+  | "Resolved by you"
+  | "Changes requested"
+  | "Waiting for you"
+  | "Flagged"
+  | "Routed to you";
 export type ProClientDetail = {
   since: string;
   plan: string;

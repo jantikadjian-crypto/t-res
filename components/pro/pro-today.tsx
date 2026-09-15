@@ -94,6 +94,7 @@ export function ProToday() {
           label="Approvals waiting"
           value={String(approvals.length)}
           caption={approvals.length ? `About ${minutesLabel(approvals.reduce((s, r) => s + r.minutes, 0))} in all` : "All caught up"}
+          href="/pro/approvals"
         />
         <MetricTile
           icon={Users}

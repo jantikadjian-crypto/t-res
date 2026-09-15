@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Inbox, LayoutDashboard, LogOut, ShieldCheck, UserRound, Users, type LucideIcon } from "lucide-react";
-import { useCase } from "@/components/case-provider";
 import { useProSession } from "@/components/pro/pro-session";
+import { useProWorkspace } from "@/components/pro/use-pro-workspace";
 import { practitioner, proClients, taxpayer } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,17 @@ const initials = practitioner.name
   .slice(0, 2);
 
 const pageTitle = (pathname: string) =>
-  pathname === "/pro" ? "Today" : pathname === "/pro/clients" ? "Clients" : pathname.startsWith("/pro/clients/") ? "Client" : "T-Res Pro";
+  pathname === "/pro"
+    ? "Today"
+    : pathname === "/pro/clients"
+      ? "Clients"
+      : pathname.startsWith("/pro/clients/")
+        ? "Client"
+        : pathname === "/pro/approvals"
+          ? "Approvals"
+          : pathname.startsWith("/pro/approvals/")
+            ? "Review"
+            : "T-Res Pro";
 
 // `alert`: the count means something is waiting (yellow); otherwise it's just a total.
 type NavItem = { href: string; label: string; icon: LucideIcon; count?: number; note?: string; alert?: boolean };
@@ -43,10 +53,9 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { session, signOut } = useProSession();
-  const { governance } = useCase();
+  const { approvals } = useProWorkspace();
   const [menuOpen, setMenuOpen] = useState(false);
   const isLogin = pathname === "/pro/login";
-  const pending = governance.filter((g) => g.status === "pending").length;
 
   // A mock session: without one, go to sign-in (v1 has no real accounts).
   useEffect(() => {
@@ -65,7 +74,8 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
   const nav: NavItem[] = [
     { href: "/pro", label: "Today", icon: LayoutDashboard },
     { href: "/pro/clients", label: "Clients", icon: Users, count: proClients.length },
-    { href: "/plcy", label: "Approvals", icon: Inbox, count: pending, note: "in PLCY", alert: true },
+    { href: "/pro/approvals", label: "Approvals", icon: Inbox, count: approvals.length, alert: true },
+    { href: "/plcy", label: "Governance", icon: ShieldCheck, note: "PLCY" },
   ];
 
   const signOutNow = () => {
@@ -194,7 +204,7 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
                       href="/plcy"
                       role="menuitem"
                       onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none hover:bg-accent focus-visible:bg-accent"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none hover:bg-accent focus-visible:bg-accent md:flex"
                     >
                       <ShieldCheck className="size-4 text-muted-foreground" aria-hidden />
                       PLCY governance console

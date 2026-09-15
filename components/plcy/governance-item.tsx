@@ -12,29 +12,29 @@ import { PageHeader } from "@/components/page-header";
 import { governanceStatus, outcomeTone, policyFor } from "@/components/plcy/governance-meta";
 import { StatusBadge } from "@/components/status";
 import { formatDate } from "@/lib/format";
-import { enrolledAgent, taxpayer } from "@/lib/mockData";
+import { enrolledAgent, type GovernanceItem } from "@/lib/mockData";
 
-// One AI action in PLCY: what the AI did, the checks, the evidence, and Chris's decision.
-export function GovernanceItemView({ id }: { id: string }) {
-  const { governance, decideGovernance, undoGovernance } = useCase();
+// One AI action to review: what the AI did, the checks, the evidence, the audit trail, and the decision.
+// Shared by PLCY (/plcy/[id], Jordan's items) and T-Res Pro (/pro/approvals/[id], every client).
+export function ReviewView({
+  item,
+  client,
+  back,
+  result,
+  onApprove,
+  onRequestChanges,
+  onUndo,
+}: {
+  item: GovernanceItem;
+  client?: { name: string; href: string };
+  back: { href: string; label: string };
+  result: { href: string; label: string };
+  onApprove: () => void;
+  onRequestChanges: (note: string) => void;
+  onUndo: () => void;
+}) {
   const [changing, setChanging] = useState(false);
   const [note, setNote] = useState("");
-  const item = governance.find((g) => g.id === id);
-
-  if (!item) {
-    return (
-      <PageHeader
-        title="Not in this workspace"
-        description="We couldn't find that AI action."
-        actions={
-          <LinkButton href="/plcy" variant="outline">
-            <ArrowLeft aria-hidden />
-            Approvals
-          </LinkButton>
-        }
-      />
-    );
-  }
 
   const policy = policyFor(item.policyId);
   const passed = item.checks.filter((c) => c.passed).length;
@@ -63,12 +63,19 @@ export function GovernanceItemView({ id }: { id: string }) {
     <div className="space-y-6">
       <PageHeader
         title={item.title}
-        description={`${item.kind} · produced by ${item.producedBy} · ${formatDate(item.createdOn)}`}
+        description={`${client ? `${client.name} · ` : ""}${item.kind} · produced by ${item.producedBy} · ${formatDate(item.createdOn)}`}
         actions={
-          <LinkButton href="/plcy" variant="outline">
-            <ArrowLeft aria-hidden />
-            Approvals
-          </LinkButton>
+          <>
+            <LinkButton href={back.href} variant="outline">
+              <ArrowLeft aria-hidden />
+              {back.label}
+            </LinkButton>
+            {client && (
+              <LinkButton href={client.href} variant="outline">
+                {client.name}
+              </LinkButton>
+            )}
+          </>
         }
       />
 
@@ -201,7 +208,7 @@ export function GovernanceItemView({ id }: { id: string }) {
                         />
                       </Field>
                       <div className="flex flex-wrap gap-2">
-                        <Button disabled={!note.trim()} onClick={() => decideGovernance(item.id, "changes-requested", note.trim())}>
+                        <Button disabled={!note.trim()} onClick={() => onRequestChanges(note.trim())}>
                           Send back to T-Res
                         </Button>
                         <Button variant="ghost" onClick={() => setChanging(false)}>
@@ -211,7 +218,7 @@ export function GovernanceItemView({ id }: { id: string }) {
                     </div>
                   ) : (
                     <div className="grid gap-2">
-                      <Button onClick={() => decideGovernance(item.id, "approved")}>
+                      <Button onClick={onApprove}>
                         <CheckCircle2 aria-hidden />
                         {item.approveLabel ?? "Approve"}
                       </Button>
@@ -234,8 +241,8 @@ export function GovernanceItemView({ id }: { id: string }) {
                     <p className="text-sm text-muted-foreground">No action needed. It&apos;s on the record if you want to check it.</p>
                   )}
                   <div className="flex flex-wrap gap-2">
-                    <LinkButton href={item.resultHref} variant="outline" size="sm">
-                      See it in T-Res
+                    <LinkButton href={result.href} variant="outline" size="sm">
+                      {result.label}
                       <ArrowRight aria-hidden />
                     </LinkButton>
                     {(item.status === "approved" || item.status === "changes-requested") && (
@@ -243,7 +250,7 @@ export function GovernanceItemView({ id }: { id: string }) {
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          undoGovernance(item.id);
+                          onUndo();
                           setChanging(false);
                           setNote("");
                         }}
@@ -261,12 +268,12 @@ export function GovernanceItemView({ id }: { id: string }) {
           <Card>
             <CardHeader className="border-b">
               <CardTitle>Evidence</CardTitle>
-              <CardDescription>What the AI worked from, in {taxpayer.firstName}&apos;s case file</CardDescription>
+              <CardDescription>What the AI worked from, in {client ? `${client.name.split(/\s+/)[0]}'s` : "the"} case file</CardDescription>
             </CardHeader>
             <CardContent className="px-0">
               <ul className="divide-y">
                 {item.evidence.map((e) => (
-                  <li key={e.href}>
+                  <li key={e.label}>
                     <Link
                       href={e.href}
                       className="flex items-center gap-2 px-6 py-2.5 text-sm outline-none first:pt-0 hover:text-primary focus-visible:bg-accent"
@@ -283,5 +290,37 @@ export function GovernanceItemView({ id }: { id: string }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// PLCY's review of one of Jordan's AI actions (the governance console).
+export function GovernanceItemView({ id }: { id: string }) {
+  const { governance, decideGovernance, undoGovernance } = useCase();
+  const item = governance.find((g) => g.id === id);
+
+  if (!item) {
+    return (
+      <PageHeader
+        title="Not in this workspace"
+        description="We couldn't find that AI action."
+        actions={
+          <LinkButton href="/plcy" variant="outline">
+            <ArrowLeft aria-hidden />
+            Approvals
+          </LinkButton>
+        }
+      />
+    );
+  }
+
+  return (
+    <ReviewView
+      item={item}
+      back={{ href: "/plcy", label: "Approvals" }}
+      result={{ href: item.resultHref, label: "See it in T-Res" }}
+      onApprove={() => decideGovernance(item.id, "approved")}
+      onRequestChanges={(note) => decideGovernance(item.id, "changes-requested", note)}
+      onUndo={() => undoGovernance(item.id)}
+    />
   );
 }

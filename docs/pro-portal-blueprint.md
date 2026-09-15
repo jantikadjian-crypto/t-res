@@ -215,3 +215,9 @@ with clients, calendar sync, practitioner billing and payouts, and more than one
   authorizations, AI actions on the PLCY record, and the lane (with the self-serve suggestion where it applies).
   Jordan's page is live; fictional clients have short case histories (`proClientDetails`). Today's caseload is now
   compact and links through. Shared logic lives in `useProWorkspace()`.
+- **Chunk 4 (Approvals across clients): built 2026-09-15.** `/pro/approvals` (everything waiting for sign-off across
+  clients, decided today, and the PLCY policies that route work to you) and `/pro/approvals/[id]`, the full review for
+  any client: what the AI did with its draft, automated checks, evidence, audit trail, and Approve / Request changes /
+  Undo. PLCY's review is now the shared `ReviewView`; Jordan's decisions made in T-Res Pro land on PLCY's record and
+  in Jordan's app. Approvals on Today and client pages open the review; calls, flagged checks and spot checks still
+  open in place. PLCY stays the governance console (Governance in the sidebar).

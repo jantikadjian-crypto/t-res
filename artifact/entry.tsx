@@ -20,6 +20,7 @@ import { NoticeCenter } from "@/components/notices/notice-center";
 import { GovernanceInbox } from "@/components/plcy/governance-inbox";
 import { GovernanceItemView } from "@/components/plcy/governance-item";
 import { PlcyFrame } from "@/components/plcy/plcy-frame";
+import { ProApprovals, ProApprovalView } from "@/components/pro/pro-approvals";
 import { ProClientView } from "@/components/pro/pro-client";
 import { ProClients } from "@/components/pro/pro-clients";
 import { ProFrame } from "@/components/pro/pro-frame";
@@ -116,6 +117,12 @@ function route(pathname: string): ReactNode {
               <ProClientView id={extra} />
             ) : (
               <ProClients />
+            )
+          ) : detail === "approvals" ? (
+            extra ? (
+              <ProApprovalView id={extra} />
+            ) : (
+              <ProApprovals />
             )
           ) : (
             <ProToday />

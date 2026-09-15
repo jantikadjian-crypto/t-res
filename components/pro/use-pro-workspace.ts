@@ -14,6 +14,8 @@ import {
   proQueue,
   taxpayer,
   totalOwed,
+  type GovernanceItem,
+  type GovernanceStatus,
   type ProClient,
   type ProQueueItem,
   type ProQueueKind,
@@ -63,9 +65,37 @@ export const tierTone = (t: number): Tone => (t === 0 ? "bad" : t <= 2 ? "warn" 
 
 export const clientName = (id?: string) => proClients.find((c) => c.id === id)?.name;
 
+// Items that need the professional's sign-off: these open the full review at /pro/approvals/[id].
+export const APPROVAL_KINDS: ProQueueKind[] = ["emergency", "approval", "recommendation"];
+export const isApproval = (kind: ProQueueKind) => APPROVAL_KINDS.includes(kind);
+
+/** A fictional client's approval as a reviewable AI action, in the same shape as a PLCY record. */
+export function reviewFromQueue(q: ProQueueItem, doneIds: string[], sentBack: Record<string, string>): GovernanceItem {
+  const status: GovernanceStatus = doneIds.includes(q.id) ? "approved" : q.id in sentBack ? "changes-requested" : "pending";
+  return {
+    id: q.id,
+    title: q.title,
+    kind: q.kind === "emergency" ? "Escalation" : q.kind === "recommendation" ? "Money recommendation" : "IRS submission",
+    producedBy: q.review?.producedBy ?? "T-Res",
+    createdOn: proClients.find((c) => c.id === q.clientId)?.lastActivity ?? MOCK_TODAY,
+    confidence: q.review?.confidence ?? 0.9,
+    policyId: q.kind === "emergency" ? "pol_emergency" : q.kind === "recommendation" ? "pol_advice" : "pol_submission",
+    status,
+    decidedOn: status === "pending" ? undefined : MOCK_TODAY,
+    note: sentBack[q.id],
+    eaMinutes: q.minutes,
+    summary: q.preview.summary,
+    output: q.review?.draft,
+    checks: q.preview.points.map((p) => ({ label: p.label, passed: p.ok !== false })),
+    evidence: (q.review?.evidence ?? []).map((label) => ({ label, href: `/pro/clients/${q.clientId}` })),
+    resultHref: `/pro/clients/${q.clientId}`,
+    approveLabel: q.preview.doneLabel,
+  };
+}
+
 export function useProWorkspace() {
   const { governance, lane, escalatedOn, openNotices, actions } = useCase();
-  const { doneIds } = useProSession();
+  const { doneIds, sentBack } = useProSession();
 
   // Jordan, live: anything PLCY routed to Chris becomes a queue item that opens its real review.
   const jordanRows: QueueRow[] = governance
@@ -88,14 +118,15 @@ export function useProWorkspace() {
           : `${g.kind}. Checked by T-Res: ${quality.filter((c) => c.passed).length} of ${quality.length} checks passed.`,
         minutes: g.eaMinutes ?? 2,
         deadline: openNotices.find((n) => n.id === g.noticeId)?.respondBy,
-        cta: g.approveLabel ?? "Review",
-        href: `/plcy/${g.id}`,
+        cta: "Review",
+        href: `/pro/approvals/${g.id}`,
       };
     });
 
+  // Approvals open the full review; calls, flagged checks and spot checks open in place.
   const staticRows: QueueRow[] = proQueue
-    .filter((q) => !doneIds.includes(q.id))
-    .map((q) => ({ ...q, client: clientName(q.clientId) }));
+    .filter((q) => !doneIds.includes(q.id) && !(q.id in sentBack))
+    .map((q) => ({ ...q, client: clientName(q.clientId), href: isApproval(q.kind) ? `/pro/approvals/${q.id}` : undefined }));
 
   const rows = [...staticRows, ...jordanRows].sort(
     (a, b) => tierOf(a) - tierOf(b) || (a.deadline ?? "9999").localeCompare(b.deadline ?? "9999") || a.minutes - b.minutes
@@ -103,12 +134,17 @@ export function useProWorkspace() {
   const today = rows.filter(needsToday);
   const todayMinutes = today.reduce((s, r) => s + r.minutes, 0);
   const emergencies = rows.filter((r) => r.kind === "emergency");
-  const approvals = rows.filter((r) => r.kind === "approval" || r.kind === "recommendation");
+  const approvals = rows.filter((r) => isApproval(r.kind));
 
   const done = [
     ...proQueue
-      .filter((q) => doneIds.includes(q.id))
-      .map((q) => ({ id: q.id, clientId: q.clientId, client: clientName(q.clientId), note: q.preview.doneNote })),
+      .filter((q) => doneIds.includes(q.id) || q.id in sentBack)
+      .map((q) => ({
+        id: q.id,
+        clientId: q.clientId,
+        client: clientName(q.clientId),
+        note: q.id in sentBack ? `${q.title} · sent back to T-Res: "${sentBack[q.id]}"` : q.preview.doneNote,
+      })),
     ...governance
       .filter((g) => g.status === "approved" && g.decidedOn === MOCK_TODAY)
       .map((g) => ({ id: g.id, clientId: JORDAN_ID, client: jordanName, note: `${g.title} · approved` })),
