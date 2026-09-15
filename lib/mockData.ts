@@ -86,7 +86,13 @@ export type Notice = {
     deadline: string;
     whatWeAreDoing: string;
   };
+  // "What we're doing" when the taxpayer is in the self-serve lane.
+  selfServeDoing?: string;
 };
+
+// Self-serve: the taxpayer deals with the IRS themselves, T-Res prepares everything (Guided plan).
+// Represented: Chris acts for them under Form 2848. To-dos and documents for one lane only carry `lane`.
+export type Lane = "self-serve" | "represented";
 
 export type ActionItemType = "sign" | "upload" | "approve-letter";
 
@@ -104,6 +110,7 @@ export type ActionItem = {
   letterPreview?: string;
   // Set when an upload finishes this item.
   uploadedFile?: string;
+  lane?: Lane;
 };
 
 export type DocumentCategory =
@@ -130,6 +137,7 @@ export type CaseDocument = {
   // The file actually uploaded, when it differs from the document's name.
   fileName?: string;
   relatedActionId?: string;
+  lane?: Lane;
 };
 
 export type DocumentNote = {
@@ -306,6 +314,8 @@ export const notices: Notice[] = [
     statusLabel: "Action needed",
     tone: "bad",
     documentId: "doc_cp504",
+    selfServeDoing:
+      "You're handling this yourself with our help. Set up your payment plan on IRS.gov with the answers we give you, and mail the one-page reply we prepare. While a payment plan is in place, the IRS can't levy.",
     decode: {
       whatItIs:
         "A notice saying the IRS intends to collect your unpaid 2021 balance by taking (levying) your state tax refund or other property.",
@@ -410,6 +420,7 @@ export const actionItems: ActionItem[] = [
   {
     id: "act_2848",
     type: "sign",
+    lane: "represented",
     title: "Sign Form 2848 (Power of Attorney)",
     why: "Lets Chris speak to the IRS on your behalf, so you don't have to.",
     dueBy: "2026-09-17",
@@ -419,6 +430,7 @@ export const actionItems: ActionItem[] = [
   {
     id: "act_letter",
     type: "approve-letter",
+    lane: "represented",
     title: "Approve our response to your CP504",
     why: "We've drafted the letter. Read it and approve so we can send it before the deadline.",
     dueBy: "2026-09-22",
@@ -432,6 +444,18 @@ We represent Jordan Reyes under the enclosed Form 2848. Jordan intends to resolv
 We request a 60-day hold on collection while we file the missing 2023 return and submit Form 9465, Installment Agreement Request. We also request First-Time Penalty Abatement of the 2021 failure-to-pay penalty.
 
 Chris G., Enrolled Agent`,
+  },
+  {
+    id: "act_opa",
+    lane: "self-serve",
+    type: "upload",
+    title: "Set up your payment plan on IRS.gov",
+    why: "It stops the levy the CP504 warns about. We give you every answer to enter.",
+    dueBy: "2026-09-24",
+    done: false,
+    relatedNoticeId: "ntc_cp504",
+    uploadHint:
+      "In your IRS online account, apply for a long-term payment plan: about $440 a month by direct debit. Then upload the confirmation page so we can check it.",
   },
   {
     id: "act_w2",
@@ -504,11 +528,11 @@ export const documents: CaseDocument[] = [
     summary: "Lets us see your IRS records. It's read-only: we can't change anything or make payments with it. Signed Sep 3, 2026.",
   },
   {
-    id: "doc_2848", name: "Form 2848 – Power of Attorney.pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-10", sizeKb: 118, status: "needs-signature", relatedActionId: "act_2848",
+    id: "doc_2848", name: "Form 2848 – Power of Attorney.pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-10", sizeKb: 118, status: "needs-signature", relatedActionId: "act_2848", lane: "represented",
     summary: "Power of attorney that lets Chris G. speak to the IRS for you, so you don't have to take their calls.",
   },
   {
-    id: "doc_letter", name: "CP504 Response Letter (draft).pdf", category: "Prepared by us", source: "T-Res", taxYear: 2021, addedOn: "2026-09-13", sizeKb: 36, status: "draft", relatedActionId: "act_letter",
+    id: "doc_letter", name: "CP504 Response Letter (draft).pdf", category: "Prepared by us", source: "T-Res", taxYear: 2021, addedOn: "2026-09-13", sizeKb: 36, status: "draft", relatedActionId: "act_letter", lane: "represented",
     summary: "Our draft reply to your CP504. It asks for a 60-day hold on collection and for the 2021 penalty to be removed.",
   },
   {
@@ -874,6 +898,8 @@ export type GovernanceItem = {
   // Where the result shows up for the taxpayer.
   resultHref: string;
   noticeId?: string;
+  // What Chris's approve button says, when "Approve" isn't specific enough.
+  approveLabel?: string;
 };
 
 export const governancePolicies: GovernancePolicy[] = [
@@ -905,8 +931,8 @@ export const governancePolicies: GovernancePolicy[] = [
   },
   {
     id: "pol_emergency",
-    name: "Emergencies",
-    rule: "Money already taken from a paycheck or bank account.",
+    name: "Emergencies and final levy notices",
+    rule: "Money already taken from a paycheck or bank account, or a final notice before levy (LT11 or Letter 1058). Moves a self-serve case to Chris.",
     outcome: "Same-day EA",
   },
 ];
@@ -1103,5 +1129,84 @@ export const governanceItems: GovernanceItem[] = [
     ],
     evidence: [{ label: "2023 wage & income transcript", href: "/documents/doc_wi_23" }],
     resultHref: "/tax-years/2023",
+  },
+];
+
+// What happens next in the demo: a final levy notice arrives while Jordan is in the self-serve lane.
+// None of this is part of the case until CaseProvider's escalate() adds it (account menu → Demo).
+export const escalationPlan = {
+  noticeId: "ntc_lt11",
+  signActionId: "act_2848",
+  signDocId: "doc_2848",
+  signWhy: `So ${enrolledAgent.name} can ask for a hearing and put collection on hold today.`,
+};
+
+export const laterNotices: Notice[] = [
+  {
+    id: "ntc_lt11",
+    code: "LT11",
+    title: "Final Notice of Intent to Levy and Notice of Your Right to a Hearing",
+    plainTitle: "Final notice before the IRS can take wages or bank accounts",
+    taxYear: 2021,
+    receivedOn: MOCK_TODAY,
+    respondBy: "2026-10-14",
+    amount: 14310,
+    status: "action-needed",
+    statusLabel: "Action needed",
+    tone: "bad",
+    documentId: "doc_lt11",
+    decode: {
+      whatItIs:
+        "The IRS's final notice before it can levy your wages, bank accounts or other property for 2021. It also gives you the right to a Collection Due Process hearing.",
+      whatItMeans:
+        "This is the most serious letter so far, and it's still fixable. Asking for a hearing within 30 days pauses most levies while it's decided.",
+      deadline: "Ask for a hearing by Oct 14, 2026, 30 days from the letter. After that, the IRS can levy wages and bank accounts.",
+      whatWeAreDoing: `${enrolledAgent.name} is taking over today. Once your Form 2848 is signed, ${enrolledAgent.name} will ask for a hearing and a hold on collection, then set up your payment plan through the hearing.`,
+    },
+  },
+];
+
+export const laterDocuments: CaseDocument[] = [
+  {
+    id: "doc_lt11",
+    name: "LT11 – Final Notice of Intent to Levy.pdf",
+    category: "IRS notice",
+    source: "You",
+    taxYear: 2021,
+    addedOn: MOCK_TODAY,
+    sizeKb: 388,
+    status: "on-file",
+    summary:
+      "The IRS's final notice before it can levy wages or bank accounts for 2021. It gives you 30 days, until Oct 14, 2026, to ask for a hearing.",
+  },
+];
+
+export const laterGovernanceItems: GovernanceItem[] = [
+  {
+    id: "gov_lt11",
+    title: "Final levy notice: case moved to you",
+    kind: "Escalation",
+    producedBy: "T-Res notice reader",
+    createdOn: MOCK_TODAY,
+    confidence: 0.96,
+    policyId: "pol_emergency",
+    status: "pending",
+    eaMinutes: 15,
+    approveLabel: "Approve and request the hearing",
+    summary:
+      "Read the LT11 Jordan uploaded. Jordan was in the self-serve lane, but a final levy notice needs an Enrolled Agent, so PLCY moved the case to you. Proposed plan: request a Collection Due Process hearing (Form 12153) today, ask for a hold on collection, and set up the payment plan through the hearing.",
+    checks: [
+      { label: "Notice code, amount and date match the letter and the 2021 transcript", passed: true },
+      { label: "Hearing deadline worked out: Oct 14, 2026, 30 days from the letter", passed: true },
+      { label: "Balance still qualifies for a payment plan (under $50,000)", passed: true },
+      { label: "Form 2848 signed by Jordan, so you can act for them", passed: false, signedDocId: "doc_2848" },
+    ],
+    evidence: [
+      { label: "LT11 notice", href: "/documents/doc_lt11" },
+      { label: "CP504 notice", href: "/documents/doc_cp504" },
+      { label: "2021 account transcript", href: "/documents/doc_tr_21" },
+    ],
+    resultHref: "/notices/ntc_lt11",
+    noticeId: "ntc_lt11",
   },
 ];

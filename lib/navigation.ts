@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { FIRST_SCREEN, getScreen, intakeSteps } from "@/lib/intakeScreens";
 import { libraryEntry } from "@/lib/library";
-import { documents, notices, openActionItems, openNotices } from "@/lib/mockData";
+import { documents, laterDocuments, laterNotices, notices, openActionItems, openNotices } from "@/lib/mockData";
 
 export type NavItem = {
   href: string;
@@ -94,8 +94,8 @@ const segmentLabels: Record<string, string> = {
 
 function segmentLabel(section: string, segment: string): string {
   if (segmentLabels[segment]) return segmentLabels[segment];
-  if (section === "notices") return notices.find((n) => n.id === segment)?.code ?? segment;
-  if (section === "documents") return documents.find((d) => d.id === segment)?.name ?? "Document";
+  if (section === "notices") return [...notices, ...laterNotices].find((n) => n.id === segment)?.code ?? segment;
+  if (section === "documents") return [...documents, ...laterDocuments].find((d) => d.id === segment)?.name ?? "Document";
   if (section === "library") return libraryEntry(segment)?.name ?? segment;
   return segment;
 }

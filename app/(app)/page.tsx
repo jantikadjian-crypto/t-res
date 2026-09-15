@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight, Clock, DollarSign, ListChecks, Scale, Upload } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardAction,
@@ -11,18 +10,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ActionItemsTile, NextStepsCard, UrgencyBanner } from "@/components/dashboard/live-cards";
-import { GovernanceBadge } from "@/components/governance-badge";
+import { ActionItemsTile, NextStepsCard, OpenNoticesCard, UrgencyBanner } from "@/components/dashboard/live-cards";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge, StatusDot } from "@/components/status";
-import { daysRemainingLabel, daysUntil, deadlineTone, formatDate, formatMoney } from "@/lib/format";
+import { daysUntil, formatDate, formatMoney } from "@/lib/format";
 import {
   caseStages,
   currentStageIndex,
   nextNotice,
-  openNotices,
   taxpayer,
   taxYears,
   totalOwed,
@@ -162,49 +159,8 @@ export default function DashboardPage() {
             </CardFooter>
           </Card>
 
-          {/* Notices */}
-          <Card>
-            <CardHeader className="border-b">
-              <CardTitle>Open IRS notices</CardTitle>
-              <CardDescription>Every letter, translated into plain English</CardDescription>
-              <CardAction>
-                <LinkButton href="/notices" variant="ghost" size="sm">
-                  All notices
-                  <ArrowRight aria-hidden />
-                </LinkButton>
-              </CardAction>
-            </CardHeader>
-            <CardContent className="px-0">
-              <ul className="divide-y">
-                {openNotices.map((n) => (
-                  <li key={n.id} className="space-y-2 px-6 py-4 first:pt-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className="font-mono">
-                        {n.code}
-                      </Badge>
-                      <Link href={`/notices/${n.id}`} className="text-sm font-medium hover:text-primary hover:underline">
-                        {n.plainTitle}
-                      </Link>
-                      <StatusBadge tone={deadlineTone(n.respondBy)} className="sm:ml-auto">
-                        Respond by {formatDate(n.respondBy)} · {daysRemainingLabel(n.respondBy)}
-                      </StatusBadge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{n.decode.whatItMeans}</p>
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <Link href={`/tax-years/${n.taxYear}`} className="hover:text-foreground hover:underline">
-                        {n.taxYear} tax year
-                      </Link>
-                      <span>· received {formatDate(n.receivedOn)}</span>
-                      <GovernanceBadge href={`/notices/${n.id}`} />
-                      <Link href={`/documents/${n.documentId}`} className="text-primary hover:underline sm:ml-auto">
-                        View the letter
-                      </Link>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          {/* Notices: live, so letters that arrive during the session show up */}
+          <OpenNoticesCard />
         </div>
 
         {/* Action queue: updates as things get signed, uploaded and approved */}

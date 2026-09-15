@@ -5,7 +5,11 @@ import {
   actionItems as seedActions,
   documentNotes,
   documents as seedDocuments,
+  escalationPlan,
   governanceItems as seedGovernance,
+  laterDocuments,
+  laterGovernanceItems,
+  laterNotices,
   MOCK_TODAY,
   notices as seedNotices,
   subscription,
@@ -13,6 +17,7 @@ import {
   type CaseDocument,
   type DocumentNote,
   type GovernanceItem,
+  type Lane,
   type Notice,
   type PlanStatus,
 } from "@/lib/mockData";
@@ -63,6 +68,10 @@ type CaseContextValue = {
   governance: GovernanceItem[];
   decideGovernance: (id: string, status: GovernanceDecision["status"], note?: string) => void;
   undoGovernance: (id: string) => void;
+  // Self-serve (Guided plan) or represented by Chris. A final levy notice escalates a self-serve case.
+  lane: Lane;
+  escalatedOn: string | null;
+  escalate: () => void;
   signatures: Record<string, SignatureRecord>;
   recordSignature: (record: SignatureRecord) => void;
   plan: PlanState;
@@ -84,6 +93,17 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
   const [signatures, setSignatures] = useState<Record<string, SignatureRecord>>({});
   const [plan, setPlan] = useState<PlanState>({ planId: subscription.planId, status: "active" });
   const [decisions, setDecisions] = useState<Record<string, GovernanceDecision>>({});
+  const [escalatedOn, setEscalatedOn] = useState<string | null>(null);
+
+  // The Guided plan is the self-serve lane, unless something only an EA can handle moved the case to Chris.
+  const lane: Lane = escalatedOn ? "represented" : plan.planId === "guided" ? "self-serve" : "represented";
+
+  // Demo trigger: an LT11 arrives while the taxpayer is self-serve. The letter joins the case, PLCY routes
+  // it to Chris for the same day, and the case switches to represented (Form 2848 is due today).
+  const escalate = useCallback(() => {
+    setEscalatedOn((on) => on ?? MOCK_TODAY);
+    setDocs((prev) => [...laterDocuments.filter((d) => !prev.some((p) => p.id === d.id)), ...prev]);
+  }, []);
 
   const markDone = useCallback((actionId: string | undefined, uploadedFile?: string) => {
     if (!actionId) return;
@@ -196,14 +216,24 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  // Only this lane's to-dos. After an escalation, signing Form 2848 is about the LT11 and due today.
   const actions = useMemo(
     () =>
-      seedActions.map((a) => {
-        const c = completions[a.id];
-        return c ? { ...a, done: true, completedOn: c.completedOn, uploadedFile: c.uploadedFile ?? a.uploadedFile } : a;
-      }),
-    [completions]
+      seedActions
+        .filter((a) => !a.lane || a.lane === lane)
+        .map((a) =>
+          escalatedOn && a.id === escalationPlan.signActionId
+            ? { ...a, dueBy: escalatedOn, why: escalationPlan.signWhy, relatedNoticeId: escalationPlan.noticeId }
+            : a
+        )
+        .map((a) => {
+          const c = completions[a.id];
+          return c ? { ...a, done: true, completedOn: c.completedOn, uploadedFile: c.uploadedFile ?? a.uploadedFile } : a;
+        }),
+    [completions, lane, escalatedOn]
   );
+
+  const visibleDocs = useMemo(() => docs.filter((d) => !d.lane || d.lane === lane), [docs, lane]);
 
   const openActions = useMemo(
     () => actions.filter((a) => !a.done).sort((a, b) => a.dueBy.localeCompare(b.dueBy)),
@@ -213,13 +243,13 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
   // A notice needs action until every to-do tied to it is done. Then it's ours to handle.
   const notices = useMemo(
     () =>
-      seedNotices.map((n) => {
+      [...seedNotices, ...(escalatedOn ? laterNotices : [])].map((n) => {
         const related = actions.filter((a) => a.relatedNoticeId === n.id);
         return n.status === "action-needed" && related.length > 0 && related.every((a) => a.done)
           ? { ...n, status: "in-progress" as const, statusLabel: "We're handling it", tone: "warn" as const }
           : n;
       }),
-    [actions]
+    [actions, escalatedOn]
   );
 
   const openNotices = useMemo(
@@ -240,20 +270,20 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
   // Live checks (e.g. "Form 2848 signed") follow the documents in this session.
   const governance = useMemo(
     () =>
-      seedGovernance.map((g) => ({
+      [...seedGovernance, ...(escalatedOn ? laterGovernanceItems : [])].map((g) => ({
         ...g,
         ...decisions[g.id],
         checks: g.checks.map((c) =>
           c.signedDocId ? { ...c, passed: docs.some((d) => d.id === c.signedDocId && d.status === "on-file") } : c
         ),
       })),
-    [decisions, docs]
+    [decisions, docs, escalatedOn]
   );
 
   return (
     <CaseContext
       value={{
-        docs,
+        docs: visibleDocs,
         notesFor,
         addDocuments,
         attachFile,
@@ -268,6 +298,9 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
         governance,
         decideGovernance,
         undoGovernance,
+        lane,
+        escalatedOn,
+        escalate,
         signatures,
         recordSignature,
         plan,

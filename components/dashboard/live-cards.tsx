@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, CheckCircle2, Clock, FileCheck, ListChecks, PenLine, Upload, type LucideIcon } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, deadlineTone, formatDate } from "@/lib/format";
-import { enrolledAgent, nextNotice, type ActionItemType } from "@/lib/mockData";
+import { enrolledAgent, escalationPlan, laterNotices, nextNotice, type ActionItemType } from "@/lib/mockData";
 
 // Dashboard pieces that change as the taxpayer signs, uploads and approves things.
 
@@ -26,7 +28,84 @@ const actionVerb: Record<ActionItemType, string> = {
 
 // The most urgent notice, and the one thing that moves it forward right now.
 export function UrgencyBanner() {
-  const { actions, docs, governance } = useCase();
+  const { actions, docs, governance, escalatedOn, lane } = useCase();
+
+  // A final levy notice moved the case to Chris: that comes first until it's handled.
+  if (escalatedOn) {
+    const lt11 = laterNotices.find((n) => n.id === escalationPlan.noticeId) ?? laterNotices[0];
+    const signed = docs.some((d) => d.id === escalationPlan.signDocId && d.status === "on-file");
+    const approved = governance.find((g) => g.noticeId === lt11.id)?.status === "approved";
+    const due = `${formatDate(lt11.respondBy)} · ${daysRemainingLabel(lt11.respondBy)}`;
+
+    if (!signed) {
+      return (
+        <div role="alert" className="flex flex-col gap-4 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center">
+          <div className="flex flex-1 gap-3">
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-red-600" aria-hidden />
+            <div>
+              <p className="font-medium text-red-900">
+                A final levy notice ({lt11.code}) arrived. {enrolledAgent.name} is taking over today.
+              </p>
+              <p className="mt-1 text-sm text-red-800">
+                {lt11.plainTitle}. Sign Form 2848 so {enrolledAgent.name} can ask for a hearing and put collection on hold.
+                You have until {due} to ask.
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2 pl-8 sm:pl-0">
+            <LinkButton
+              href={`/notices/${lt11.id}`}
+              variant="outline"
+              className="border-red-200 bg-white text-red-700 hover:bg-red-100 hover:text-red-800"
+            >
+              What this means
+            </LinkButton>
+            <LinkButton href={`/sign/${escalationPlan.signDocId}`} className="bg-red-600 text-white hover:bg-red-700">
+              Sign Form 2848
+              <ArrowRight aria-hidden />
+            </LinkButton>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        role="status"
+        className={
+          approved
+            ? "flex flex-col gap-4 rounded-xl border border-green-200 bg-green-50 p-4 sm:flex-row sm:items-center"
+            : "flex flex-col gap-4 rounded-xl border border-blue-200 bg-blue-50 p-4 sm:flex-row sm:items-center"
+        }
+      >
+        <div className="flex flex-1 gap-3">
+          {approved ? (
+            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-600" aria-hidden />
+          ) : (
+            <Clock className="mt-0.5 size-5 shrink-0 text-blue-600" aria-hidden />
+          )}
+          <div>
+            <p className={approved ? "font-medium text-green-900" : "font-medium text-blue-900"}>
+              {approved ? "Your hearing request is going out today." : `${enrolledAgent.name} has your case.`}
+            </p>
+            <p className={approved ? "mt-1 text-sm text-green-800" : "mt-1 text-sm text-blue-800"}>
+              {approved
+                ? `Most levies pause while the hearing is decided, and ${enrolledAgent.name} will set up your payment plan through it.`
+                : `Your Form 2848 is signed. ${enrolledAgent.name} is approving your hearing request now, well before ${due}.`}
+            </p>
+          </div>
+        </div>
+        <LinkButton
+          href={`/notices/${lt11.id}`}
+          variant="outline"
+          className={approved ? "ml-8 w-fit border-green-300 bg-white sm:ml-0" : "ml-8 w-fit border-blue-300 bg-white sm:ml-0"}
+        >
+          See the notice
+        </LinkButton>
+      </div>
+    );
+  }
+
   const next = actions
     .filter((a) => a.relatedNoticeId === nextNotice.id && !a.done)
     .sort((a, b) => a.dueBy.localeCompare(b.dueBy))[0];
@@ -34,7 +113,7 @@ export function UrgencyBanner() {
 
   // Jordan's part is done; the response still needs Chris's sign-off in PLCY before it goes out.
   const submission = governance.find((g) => g.noticeId === nextNotice.id);
-  if (!next && submission && submission.status !== "approved") {
+  if (!next && lane === "represented" && submission && submission.status !== "approved") {
     return (
       <div role="status" className="flex flex-col gap-4 rounded-xl border border-blue-200 bg-blue-50 p-4 sm:flex-row sm:items-center">
         <div className="flex flex-1 gap-3">
@@ -63,9 +142,13 @@ export function UrgencyBanner() {
         <div className="flex flex-1 gap-3">
           <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-600" aria-hidden />
           <div>
-            <p className="font-medium text-green-900">Your {nextNotice.code} response is ready to send</p>
+            <p className="font-medium text-green-900">
+              {lane === "self-serve" ? `You've done your part on the ${nextNotice.code}` : `Your ${nextNotice.code} response is ready to send`}
+            </p>
             <p className="mt-1 text-sm text-green-800">
-              Nothing else is needed from you on this notice. {enrolledAgent.name} will send it before {deadline}.
+              {lane === "self-serve"
+                ? "We're checking the IRS confirmation you uploaded. While your payment plan is in place, the IRS can't levy."
+                : `Nothing else is needed from you on this notice. ${enrolledAgent.name} will send it before ${deadline}.`}
             </p>
           </div>
         </div>
@@ -80,7 +163,9 @@ export function UrgencyBanner() {
   const cta =
     next.type === "sign"
       ? { href: signDoc ? `/sign/${signDoc.id}` : "/action-items", label: "Sign now" }
-      : { href: "/action-items", label: "Review the letter" };
+      : next.type === "upload"
+        ? { href: "/action-items", label: "Set up your plan" }
+        : { href: "/action-items", label: "Review the letter" };
 
   return (
     <div role="alert" className="flex flex-col gap-4 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center">
@@ -94,7 +179,9 @@ export function UrgencyBanner() {
             {nextNotice.plainTitle}. This is fixable:{" "}
             {next.type === "sign"
               ? "we've drafted your response and just need your signature to send it."
-              : `your Form 2848 is signed. Approve the response letter we drafted so ${enrolledAgent.name} can send it.`}
+              : next.type === "upload"
+                ? "you can fix this yourself. Set up your payment plan on IRS.gov with the answers we give you, then upload the confirmation."
+                : `your Form 2848 is signed. Approve the response letter we drafted so ${enrolledAgent.name} can send it.`}
           </p>
         </div>
       </div>
@@ -112,6 +199,55 @@ export function UrgencyBanner() {
         </LinkButton>
       </div>
     </div>
+  );
+}
+
+// Open notices, live: new letters (like an LT11) appear as they arrive, and statuses follow the case.
+export function OpenNoticesCard() {
+  const { openNotices } = useCase();
+  return (
+    <Card>
+      <CardHeader className="border-b">
+        <CardTitle>Open IRS notices</CardTitle>
+        <CardDescription>Every letter, translated into plain English</CardDescription>
+        <CardAction>
+          <LinkButton href="/notices" variant="ghost" size="sm">
+            All notices
+            <ArrowRight aria-hidden />
+          </LinkButton>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="px-0">
+        <ul className="divide-y">
+          {openNotices.map((n) => (
+            <li key={n.id} className="space-y-2 px-6 py-4 first:pt-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="font-mono">
+                  {n.code}
+                </Badge>
+                <Link href={`/notices/${n.id}`} className="text-sm font-medium hover:text-primary hover:underline">
+                  {n.plainTitle}
+                </Link>
+                <StatusBadge tone={deadlineTone(n.respondBy)} className="sm:ml-auto">
+                  Respond by {formatDate(n.respondBy)} · {daysRemainingLabel(n.respondBy)}
+                </StatusBadge>
+              </div>
+              <p className="text-sm text-muted-foreground">{n.decode.whatItMeans}</p>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <Link href={`/tax-years/${n.taxYear}`} className="hover:text-foreground hover:underline">
+                  {n.taxYear} tax year
+                </Link>
+                <span>· received {formatDate(n.receivedOn)}</span>
+                <GovernanceBadge href={`/notices/${n.id}`} />
+                <Link href={`/documents/${n.documentId}`} className="text-primary hover:underline sm:ml-auto">
+                  View the letter
+                </Link>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   );
 }
 

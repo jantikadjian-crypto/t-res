@@ -27,7 +27,7 @@ import { SecuritySettings } from "@/components/settings/security-settings";
 import { SignFlow } from "@/components/signing/sign-flow";
 import { TaxYearDetail } from "@/components/tax-years/tax-year-detail";
 import { FIRST_SCREEN } from "@/lib/intakeScreens";
-import { nextNotice, notices, taxYears } from "@/lib/mockData";
+import { laterNotices, nextNotice, notices, taxYears } from "@/lib/mockData";
 import { usePathname } from "./next-navigation";
 
 const documentViews: Record<string, DocumentView> = { mine: "mine", "from-tres": "tres", "from-irs": "irs" };
@@ -35,7 +35,11 @@ const documentViews: Record<string, DocumentView> = { mine: "mine", "from-tres":
 function page(pathname: string, section?: string, detail?: string, extra?: string): ReactNode {
   switch (section) {
     case "notices":
-      return <NoticeCenter selectedId={notices.some((n) => n.id === detail) ? (detail as string) : nextNotice.id} />;
+      return (
+        <NoticeCenter
+          selectedId={[...notices, ...laterNotices].some((n) => n.id === detail) ? (detail as string) : nextNotice.id}
+        />
+      );
     case "tax-years":
       return <TaxYearDetail year={taxYears.some((y) => String(y.year) === detail) ? Number(detail) : taxYears[0].year} />;
     case "action-items":

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, CheckCircle2, CreditCard, PauseCircle, Repeat } from "lucide-react";
+import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, CheckCircle2, CreditCard, PauseCircle, Repeat, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, formatDate, formatMoney } from "@/lib/format";
 import {
   enrolledAgent,
+  escalationPlan,
   nextNotice,
   paidInvoices,
   resolutionPlans,
@@ -84,7 +85,7 @@ function PlanChangeSummary({
 }
 
 export function BillingOverview() {
-  const { plan, resumePlan, switchPlan } = useCase();
+  const { plan, resumePlan, switchPlan, escalatedOn } = useCase();
   const { current, paid, remaining, amounts } = billingSummary(plan.planId);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const pct = Math.min(100, Math.round((paid / current.price) * 100));
@@ -116,6 +117,18 @@ export function BillingOverview() {
             {formatDate(nextNotice.respondBy)}.
           </p>
           <Button onClick={resumePlan}>Restart my plan</Button>
+        </div>
+      )}
+      {escalatedOn && current.id === "guided" && (
+        <div role="status" className="flex flex-col gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 sm:flex-row sm:items-center">
+          <ShieldCheck className="size-5 shrink-0 text-blue-600" aria-hidden />
+          <p className="flex-1 text-sm text-blue-800">
+            <span className="font-medium text-blue-900">{enrolledAgent.name} is representing you for your final levy notice.</span>{" "}
+            You&apos;re still on Guided. We won&apos;t change your plan or what you pay without asking you first.
+          </p>
+          <LinkButton href={`/notices/${escalationPlan.noticeId}`} variant="outline" className="border-blue-300 bg-white">
+            See the notice
+          </LinkButton>
         </div>
       )}
       {switchedFrom && plan.status === "active" && (

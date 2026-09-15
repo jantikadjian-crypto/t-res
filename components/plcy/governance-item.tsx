@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock, FileText, Route, Undo2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Clock, FileText, Route, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
@@ -41,6 +41,7 @@ export function GovernanceItemView({ id }: { id: string }) {
   const waitingOn = item.checks.filter((c) => !c.passed);
   const pct = Math.round(item.confidence * 100);
   const status = governanceStatus[item.status];
+  const sameDay = item.status === "pending" && policy?.outcome === "Same-day EA";
 
   const trail = [
     { date: item.createdOn, label: `Produced by ${item.producedBy} (confidence ${pct}%)` },
@@ -71,17 +72,31 @@ export function GovernanceItemView({ id }: { id: string }) {
         }
       />
 
-      {policy && (
-        <div className="flex gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
-          <Route className="mt-0.5 size-4 shrink-0 text-blue-600" aria-hidden />
-          <p>
-            <span className="font-medium text-blue-900">
-              {item.status === "auto-approved" ? "Auto-approved" : "Routed to you"} by your policy &ldquo;{policy.name}&rdquo;.
-            </span>{" "}
-            {policy.rule}
-          </p>
-        </div>
-      )}
+      {policy &&
+        (sameDay ? (
+          <div role="alert" className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 sm:flex-row sm:items-center">
+            <div className="flex flex-1 gap-3">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-600" aria-hidden />
+              <p>
+                <span className="font-medium text-red-900">Same day: routed to you by your policy &ldquo;{policy.name}&rdquo;.</span>{" "}
+                {policy.rule}
+              </p>
+            </div>
+            <Button size="sm" className="w-fit" onClick={() => document.getElementById("decision")?.scrollIntoView({ behavior: "smooth" })}>
+              Decide now
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+            <Route className="mt-0.5 size-4 shrink-0 text-blue-600" aria-hidden />
+            <p>
+              <span className="font-medium text-blue-900">
+                {item.status === "auto-approved" ? "Auto-approved" : "Routed to you"} by your policy &ldquo;{policy.name}&rdquo;.
+              </span>{" "}
+              {policy.rule}
+            </p>
+          </div>
+        ))}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -198,7 +213,7 @@ export function GovernanceItemView({ id }: { id: string }) {
                     <div className="grid gap-2">
                       <Button onClick={() => decideGovernance(item.id, "approved")}>
                         <CheckCircle2 aria-hidden />
-                        Approve
+                        {item.approveLabel ?? "Approve"}
                       </Button>
                       <Button variant="outline" onClick={() => setChanging(true)}>
                         Request changes

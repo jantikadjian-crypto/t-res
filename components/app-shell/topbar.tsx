@@ -2,7 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, BellRing, ChevronDown, Clock, CreditCard, PanelLeft, Search, Settings, ShieldCheck, type LucideIcon } from "lucide-react";
+import {
+  Bell,
+  BellRing,
+  ChevronDown,
+  Clock,
+  CreditCard,
+  FileWarning,
+  PanelLeft,
+  Route,
+  Search,
+  Settings,
+  ShieldCheck,
+  type LucideIcon,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -46,7 +59,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const [readIds, setReadIds] = useState<string[]>(() => notifications.filter((n) => n.read).map((n) => n.id));
   const menuButton = useRef<HTMLButtonElement>(null);
   const searchButton = useRef<HTMLButtonElement>(null);
-  const { plan } = useCase();
+  const { plan, lane, escalatedOn, switchPlan, escalate } = useCase();
   const unread = notifications.filter((n) => !readIds.includes(n.id)).length;
   const planName = resolutionPlans.find((p) => p.id === plan.planId)?.name;
   const planHint = plan.status === "active" ? planName : plan.status === "paused" ? "Paused" : "Canceled";
@@ -240,6 +253,30 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               <div className="my-1 h-px bg-border" />
               {/* Demo only: jump to what Chris sees in PLCY, the AI governance layer. */}
               <MenuLink href="/plcy" icon={ShieldCheck} label={`${enrolledAgent.name}'s view in PLCY`} hint="Demo" onSelect={() => closeMenu()} />
+              {lane === "represented" && !escalatedOn && (
+                <MenuLink
+                  href="/"
+                  icon={Route}
+                  label="Try the self-serve lane"
+                  hint="Demo"
+                  onSelect={() => {
+                    switchPlan("guided");
+                    closeMenu();
+                  }}
+                />
+              )}
+              {lane === "self-serve" && (
+                <MenuLink
+                  href="/"
+                  icon={FileWarning}
+                  label="Simulate: an LT11 arrives"
+                  hint="Demo"
+                  onSelect={() => {
+                    escalate();
+                    closeMenu();
+                  }}
+                />
+              )}
               <div className="my-1 h-px bg-border" />
               <Link
                 href="/"

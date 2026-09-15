@@ -16,7 +16,12 @@ import { governancePolicies, taxpayer } from "@/lib/mockData";
 // Chris's approvals inbox: only what policy routed to him. Everything else is on the record.
 export function GovernanceInbox() {
   const { governance } = useCase();
-  const pending = governance.filter((g) => g.status === "pending");
+  const sameDay = (policyId: string) => policyFor(policyId)?.outcome === "Same-day EA";
+  // Same-day items first, then oldest first.
+  const pending = governance
+    .filter((g) => g.status === "pending")
+    .sort((a, b) => Number(sameDay(b.policyId)) - Number(sameDay(a.policyId)) || a.createdOn.localeCompare(b.createdOn));
+  const urgent = pending.filter((g) => sameDay(g.policyId)).length;
   const decided = governance
     .filter((g) => g.status !== "pending")
     .sort((a, b) => (b.decidedOn ?? "").localeCompare(a.decidedOn ?? ""));
@@ -38,7 +43,7 @@ export function GovernanceInbox() {
           iconClass="text-yellow-600"
           label="Waiting for you"
           value={String(pending.length)}
-          caption={pending[0] ? `Oldest from ${formatDate(pending[0].createdOn)}` : "All caught up"}
+          caption={urgent ? `${urgent} same-day` : pending[0] ? `Oldest from ${formatDate(pending[0].createdOn)}` : "All caught up"}
           href={pending[0] ? `/plcy/${pending[0].id}` : undefined}
         />
         <MetricTile
@@ -87,6 +92,7 @@ export function GovernanceInbox() {
                             {g.title}
                           </Link>
                           <Badge variant="outline">{g.kind}</Badge>
+                          {sameDay(g.policyId) && <StatusBadge tone="bad">Same day</StatusBadge>}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {policyFor(g.policyId)?.name} · confidence {Math.round(g.confidence * 100)}% · produced{" "}

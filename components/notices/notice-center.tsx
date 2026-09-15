@@ -47,7 +47,7 @@ const firstReceived = [...allNotices].sort((a, b) => a.receivedOn.localeCompare(
 
 export function NoticeCenter({ selectedId }: { selectedId: string }) {
   // Live: a notice moves to "We're handling it" once its to-dos are signed and approved.
-  const { notices, openNotices } = useCase();
+  const { notices, openNotices, lane } = useCase();
   // Open notices first (soonest deadline on top), then closed ones, newest first.
   const orderedNotices = [
     ...openNotices,
@@ -170,7 +170,11 @@ export function NoticeCenter({ selectedId }: { selectedId: string }) {
                     <Icon className="size-4 text-primary" aria-hidden />
                     {label}
                   </div>
-                  <p className="text-sm text-muted-foreground">{selected.decode[key]}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {key === "whatWeAreDoing" && lane === "self-serve" && selected.selfServeDoing
+                      ? selected.selfServeDoing
+                      : selected.decode[key]}
+                  </p>
                 </div>
               ))}
             </div>

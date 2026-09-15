@@ -16,7 +16,7 @@ const stagePct = Math.round(((currentStageIndex + 1) / caseStages.length) * 100)
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const activeHref = activeNavHref(pathname);
-  const { openActions, openNotices } = useCase();
+  const { openActions, openNotices, lane, escalatedOn } = useCase();
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const nextAction = openActions[0];
 
@@ -145,7 +145,15 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             <BadgeCheck className="size-3 text-blue-600" aria-hidden />
             <span className="text-xs font-medium text-blue-800">Your {enrolledAgent.credential}</span>
           </div>
-          <p className="text-xs text-blue-700">{enrolledAgent.name} · licensed to represent you before the IRS</p>
+          {/* Shows the lane: on standby while self-serve, acting for them when represented. */}
+          <p className="text-xs text-blue-700">
+            {enrolledAgent.name} ·{" "}
+            {escalatedOn
+              ? "handling your final levy notice today"
+              : lane === "self-serve"
+                ? "on standby if anything changes"
+                : "licensed to represent you before the IRS"}
+          </p>
         </Link>
       </div>
     </div>

@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import { DocumentDetail } from "@/components/documents/document-detail";
-import { documents } from "@/lib/mockData";
+import { documents, laterDocuments } from "@/lib/mockData";
 
-// Case-file documents are prerendered. Ones uploaded during a session aren't known to the
-// server, so they render on demand and DocumentDetail reads them from the client provider.
+// Case-file documents (and ones that arrive during the demo) are prerendered. Ones uploaded during a
+// session aren't known to the server, so they render on demand and DocumentDetail reads them from the provider.
+const allDocuments = [...documents, ...laterDocuments];
+
 export function generateStaticParams() {
-  return documents.map((d) => ({ id: d.id }));
+  return allDocuments.map((d) => ({ id: d.id }));
 }
 
 export async function generateMetadata(props: PageProps<"/documents/[id]">): Promise<Metadata> {
   const { id } = await props.params;
-  const doc = documents.find((d) => d.id === id);
+  const doc = allDocuments.find((d) => d.id === id);
   return { title: `${doc ? `${doc.name.replace(/\.pdf$/i, "")} · ` : ""}Documents · T-Res` };
 }
 
