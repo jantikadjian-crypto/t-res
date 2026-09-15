@@ -20,6 +20,7 @@ import { NoticeUpload } from "@/components/notices/notice-upload";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, daysUntil, deadlineTone, formatDate, formatMoney } from "@/lib/format";
+import { libraryMatches } from "@/lib/library";
 import { notices, openNotices, type Notice } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
@@ -181,6 +182,13 @@ export function NoticeCenter({ selectedId }: { selectedId: string }) {
               <FileText aria-hidden />
               View the letter
             </LinkButton>
+            {libraryMatches(selected.code)
+              .slice(0, 1)
+              .map((entry) => (
+                <LinkButton key={entry.slug} href={`/library/${entry.slug}`} variant="ghost">
+                  What is a {selected.code}?
+                </LinkButton>
+              ))}
           </CardFooter>
         </Card>
       </div>

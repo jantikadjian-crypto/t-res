@@ -15,6 +15,7 @@ import { IntakeFrame } from "@/components/intake/intake-frame";
 import { IntakeProvider } from "@/components/intake/intake-provider";
 import { screenBodies } from "@/components/intake/screen-bodies";
 import { ScreenPlaceholder } from "@/components/intake/screen-placeholder";
+import { LibraryEntryView, LibraryView } from "@/components/library/library-views";
 import { NoticeCenter } from "@/components/notices/notice-center";
 import { BillingOverview } from "@/components/settings/billing-overview";
 import { CancelFlow } from "@/components/settings/cancel-flow";
@@ -60,6 +61,8 @@ function page(pathname: string, section?: string, detail?: string, extra?: strin
           )}
         </SettingsLayout>
       );
+    case "library":
+      return detail ? <LibraryEntryView slug={detail} /> : <LibraryView />;
     default:
       return <DashboardPage />;
   }

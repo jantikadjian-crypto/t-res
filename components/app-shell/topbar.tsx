@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, BellRing, ChevronDown, Clock, CreditCard, PanelLeft, Settings, type LucideIcon } from "lucide-react";
+import { Bell, BellRing, ChevronDown, Clock, CreditCard, PanelLeft, Search, Settings, type LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { useCase } from "@/components/case-provider";
+import { CommandPalette } from "@/components/search/command-palette";
 import { StatusDot } from "@/components/status";
 import { daysAgoLabel, formatDate } from "@/lib/format";
 import { account, caseNumber, notifications, resolutionPlans, taxpayer, transcriptsLastChecked } from "@/lib/mockData";
@@ -41,12 +42,31 @@ function MenuLink({
 export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [readIds, setReadIds] = useState<string[]>(() => notifications.filter((n) => n.read).map((n) => n.id));
   const menuButton = useRef<HTMLButtonElement>(null);
+  const searchButton = useRef<HTMLButtonElement>(null);
   const { plan } = useCase();
   const unread = notifications.filter((n) => !readIds.includes(n.id)).length;
   const planName = resolutionPlans.find((p) => p.id === plan.planId)?.name;
   const planHint = plan.status === "active" ? planName : plan.status === "paused" ? "Paused" : "Canceled";
+
+  // Ctrl+K / ⌘K toggles search anywhere; "/" opens it when you're not typing.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const typing = !!target && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
+      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((o) => !o);
+      } else if (e.key === "/" && !typing) {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const closeMenu = (refocus = false) => {
     setMenuOpen(false);
@@ -64,10 +84,23 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 md:gap-3">
+          <button
+            ref={searchButton}
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            aria-label="Search everything"
+            aria-keyshortcuts="Control+K Meta+K /"
+            className="flex h-9 items-center gap-2 rounded-md border bg-input-background px-2.5 text-sm text-muted-foreground transition-colors outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 md:w-52 xl:w-72"
+          >
+            <Search className="size-4 shrink-0" aria-hidden />
+            <span className="hidden truncate md:inline">Search everything…</span>
+            <kbd className="ml-auto hidden rounded border bg-background px-1.5 text-[10px] font-medium md:inline">Ctrl K</kbd>
+          </button>
+
           <Link
             href="/documents/from-irs"
             title={`IRS transcripts last checked ${formatDate(transcriptsLastChecked)}. Open your IRS records.`}
-            className="hidden rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:inline-flex"
+            className="hidden rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 2xl:inline-flex"
           >
             <Badge variant="outline" className="gap-1 border-border bg-background text-foreground hover:bg-accent">
               <Clock className="size-3" aria-hidden />
@@ -86,7 +119,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               aria-expanded={bellOpen}
             >
               <Bell />
-              <span className="hidden sm:inline">Notifications</span>
+              <span className="hidden lg:inline">Notifications</span>
             </Button>
             {unread > 0 && (
               <span className="pointer-events-none absolute -top-2 -right-2 grid size-5 place-items-center rounded-full bg-red-600 text-[10px] font-semibold text-white">
@@ -168,7 +201,7 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                 {taxpayer.firstName[0]}
                 {taxpayer.lastName[0]}
               </span>
-              <span className="hidden text-sm font-medium md:inline">{account.preferredName}</span>
+              <span className="hidden text-sm font-medium lg:inline">{account.preferredName}</span>
               <ChevronDown className="size-3.5 text-muted-foreground" aria-hidden />
             </button>
             {menuOpen && (
@@ -217,6 +250,15 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           </div>
         </div>
       </div>
+
+      {searchOpen && (
+        <CommandPalette
+          onClose={() => {
+            setSearchOpen(false);
+            searchButton.current?.focus();
+          }}
+        />
+      )}
     </header>
   );
 }

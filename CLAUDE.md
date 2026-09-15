@@ -22,6 +22,8 @@
 - Anything the taxpayer changes during a session (uploads, notes, finished to-dos, signatures) lives in `CaseProvider` (/components/case-provider.tsx, mounted in the root layout) and is read with `useCase()`. Don't keep separate per-page copies of that state.
 - Signing is our own proprietary flow at `app/(focus)/sign/[id]` (review → consent → verify → sign → certificate). Signable documents and their plain-English terms live in `signingTerms` in mockData. Every "Sign" button links there; don't integrate DocuSign or PandaDoc.
 - Progress artifact: `npm run build:artifact` (or `node scripts/build-artifact.mjs <out.html>` after `next build`) bundles the real app for the browser via /artifact/entry.tsx with hash routing, so every feature works in the shared link. When you add a route in app/, add the same route to `route()` in artifact/entry.tsx. Page files may only export what Next allows, so shared page bodies live in components/ (e.g. components/intake/screen-bodies.tsx).
+- Library (IRS forms, notices, terms + IRS.gov links) lives in /lib/library.ts, kept import-free. Link any page that mentions a form or notice to its entry (`libraryMatches(text)`). After changing IRS links, verify they load.
+- Search everything: /lib/search.ts builds the index for the Ctrl+K palette (components/search). New pages or data kinds must be added to the index.
 - Selection state that should survive the progress snapshot goes in the URL (e.g. /notices/[id], /tax-years/[year]), not React state.
 - Links that look like buttons use `<LinkButton />` from /components/link-button.tsx.
 - AI-generated content gets `<EAReviewedBadge />` from /components/ea-reviewed-badge.tsx.

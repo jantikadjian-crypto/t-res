@@ -13,6 +13,7 @@ import { documentAction, fileKind, sourceLabel, statusMeta, WAITING_STATUSES } f
 import { DocumentNotes } from "@/components/documents/document-notes";
 import { SignatureCertificate } from "@/components/signing/signature-certificate";
 import { formatDate, formatFileSize, formatMoney } from "@/lib/format";
+import { libraryMatches } from "@/lib/library";
 import { actionItems, notices, type CaseDocument, type Notice } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
@@ -229,6 +230,19 @@ export function DocumentDetail({ id }: { id: string }) {
                     <Link href="/action-items" className="text-primary hover:underline">
                       {actionItem.title}
                     </Link>
+                  </DetailRow>
+                )}
+                {libraryMatches(doc.name).length > 0 && (
+                  <DetailRow label="Learn more">
+                    <span className="flex flex-wrap gap-x-3 gap-y-1">
+                      {libraryMatches(doc.name)
+                        .slice(0, 3)
+                        .map((entry) => (
+                          <Link key={entry.slug} href={`/library/${entry.slug}`} className="text-primary hover:underline">
+                            {entry.name} in the Library
+                          </Link>
+                        ))}
+                    </span>
                   </DetailRow>
                 )}
               </dl>

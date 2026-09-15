@@ -1,5 +1,6 @@
 // One map of the app: the sidebar and the breadcrumbs both read from here.
 import {
+  BookOpen,
   CalendarRange,
   CreditCard,
   FileWarning,
@@ -11,6 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { FIRST_SCREEN, getScreen, intakeSteps } from "@/lib/intakeScreens";
+import { libraryEntry } from "@/lib/library";
 import { documents, notices, openActionItems, openNotices } from "@/lib/mockData";
 
 export type NavItem = {
@@ -43,6 +45,11 @@ export const navGroups: NavGroup[] = [
       { href: "/action-items", label: "Action Items", icon: ListChecks, count: openActionItems.length },
       { href: "/documents", label: "Documents", icon: FolderOpen },
     ],
+  },
+  {
+    id: "resources",
+    label: "Resources",
+    items: [{ href: "/library", label: "Library", icon: BookOpen }],
   },
   {
     id: "account",
@@ -86,6 +93,7 @@ function segmentLabel(section: string, segment: string): string {
   if (segmentLabels[segment]) return segmentLabels[segment];
   if (section === "notices") return notices.find((n) => n.id === segment)?.code ?? segment;
   if (section === "documents") return documents.find((d) => d.id === segment)?.name ?? "Document";
+  if (section === "library") return libraryEntry(segment)?.name ?? segment;
   return segment;
 }
 
