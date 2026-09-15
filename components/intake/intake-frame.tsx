@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Circle, CircleDot, Info, LogOut, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { LinkButton } from "@/components/link-button";
 import { useIntake } from "@/components/intake/intake-provider";
 import { formatDate } from "@/lib/format";
@@ -41,9 +42,13 @@ export function IntakeFrame({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-canvas">
       <header className="sticky top-0 z-20 border-b bg-background">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 md:px-6">
-          <Link href="/" className="text-xl leading-none font-extrabold tracking-tight text-primary">
-            T-Res
-          </Link>
+          <div className="flex min-w-0 items-center gap-4">
+            <Link href="/" className="text-xl leading-none font-extrabold tracking-tight text-primary">
+              T-Res
+            </Link>
+            <span className="hidden h-5 w-px bg-border sm:block" aria-hidden />
+            <Breadcrumbs className="hidden sm:block" />
+          </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground tabular-nums">
               {isDone ? "All done" : `Step ${stepIndex + 1} of ${intakeSteps.length}`}

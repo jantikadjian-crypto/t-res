@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Bell, Clock, PanelLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { StatusDot } from "@/components/status";
 import { daysAgoLabel, formatDate } from "@/lib/format";
 import { notifications, taxpayer, transcriptsLastChecked } from "@/lib/mockData";
@@ -19,18 +20,13 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
           <Button variant="ghost" size="icon" onClick={onToggleSidebar} aria-label="Toggle sidebar">
             <PanelLeft />
           </Button>
-          <div className="min-w-0">
-            <div className="truncate font-medium">T-Res</div>
-            <p className="hidden truncate text-sm text-muted-foreground sm:block">
-              Understand • Respond • Resolve your IRS case
-            </p>
-          </div>
+          <Breadcrumbs />
         </div>
 
         <div className="flex shrink-0 items-center gap-2 md:gap-3">
           <Badge
             variant="outline"
-            className="hidden gap-1 border-border bg-background text-foreground sm:inline-flex"
+            className="hidden gap-1 border-border bg-background text-foreground lg:inline-flex"
             title={`IRS transcripts last checked ${formatDate(transcriptsLastChecked)}`}
           >
             <Clock className="size-3" aria-hidden />

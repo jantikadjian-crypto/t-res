@@ -3,20 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  BadgeCheck,
-  CalendarRange,
-  CheckCircle,
-  ChevronDown,
-  FileWarning,
-  FolderOpen,
-  Home,
-  ListChecks,
-  Rocket,
-  Scale,
-  UserRound,
-  type LucideIcon,
-} from "lucide-react";
+import { BadgeCheck, CheckCircle, ChevronDown, Scale, UserRound } from "lucide-react";
 import { daysRemainingLabel } from "@/lib/format";
 import {
   caseNumber,
@@ -24,44 +11,10 @@ import {
   currentStageIndex,
   enrolledAgent,
   nextActionItem,
-  openActionItems,
-  openNotices,
   taxpayer,
 } from "@/lib/mockData";
+import { navGroups } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-
-type NavItem = {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  count?: number;
-  urgent?: boolean;
-};
-
-type NavGroup = { id: string; label: string; items: NavItem[] };
-
-const noticesNeedingAction = openNotices.filter((n) => n.status === "action-needed").length;
-
-const navGroups: NavGroup[] = [
-  {
-    id: "home",
-    label: "Home",
-    items: [
-      { href: "/", label: "Dashboard", icon: Home },
-      { href: "/intake/notice", label: "Get Started", icon: Rocket },
-    ],
-  },
-  {
-    id: "case",
-    label: "Your Case",
-    items: [
-      { href: "/notices", label: "Notices", icon: FileWarning, count: openNotices.length, urgent: noticesNeedingAction > 0 },
-      { href: "/tax-years", label: "Tax Years", icon: CalendarRange },
-      { href: "/action-items", label: "Action Items", icon: ListChecks, count: openActionItems.length },
-      { href: "/documents", label: "Documents", icon: FolderOpen },
-    ],
-  },
-];
 
 const stage = caseStages[currentStageIndex];
 const stagePct = Math.round(((currentStageIndex + 1) / caseStages.length) * 100);
