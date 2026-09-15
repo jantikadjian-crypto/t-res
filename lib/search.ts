@@ -23,9 +23,10 @@ export type SearchKind = "Page" | "Notice" | "To-do" | "Document" | "Note" | "Ta
 // Tie-break order when two results score the same.
 const KIND_ORDER: SearchKind[] = ["Page", "Notice", "To-do", "Document", "Note", "Tax year", "Library", "Q&A", "Settings", "Get Started"];
 
+// `kind` is a plain string so T-Res Pro can index its own kinds (see lib/proSearch.ts) through the same engine.
 export type SearchItem = {
   id: string;
-  kind: SearchKind;
+  kind: string;
   title: string;
   subtitle?: string;
   href: string;
@@ -198,7 +199,7 @@ export function tokenize(query: string): string[] {
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** Every word must appear somewhere; matches in the title count most. */
-export function searchItems(items: SearchItem[], query: string, limit = 40): SearchItem[] {
+export function searchItems(items: SearchItem[], query: string, limit = 40, kindOrder: readonly string[] = KIND_ORDER): SearchItem[] {
   const tokens = tokenize(query);
   if (tokens.length === 0) return [];
   const exact = query.trim().toLowerCase();
@@ -226,7 +227,7 @@ export function searchItems(items: SearchItem[], query: string, limit = 40): Sea
   }
 
   return scored
-    .sort((a, b) => b.score - a.score || KIND_ORDER.indexOf(a.item.kind) - KIND_ORDER.indexOf(b.item.kind))
+    .sort((a, b) => b.score - a.score || kindOrder.indexOf(a.item.kind) - kindOrder.indexOf(b.item.kind))
     .slice(0, limit)
     .map((s) => s.item);
 }

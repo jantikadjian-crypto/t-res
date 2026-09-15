@@ -1,9 +1,12 @@
 "use client";
 
 import { createContext, use, useCallback, useState } from "react";
-import { MOCK_TODAY } from "@/lib/mockData";
+import { MOCK_TODAY, proSubscription, proTeam, type ProTeamMember } from "@/lib/mockData";
 
 type ProSession = { email: string; signedInOn: string };
+
+// The firm's subscription this visit. Display-only, like the taxpayer's plan: no payments, no card entry.
+export type ProPlanState = { planId: string; status: "active" | "canceled"; changedOn?: string; switchedFrom?: string };
 
 type ProSessionValue = {
   session: ProSession | null;
@@ -18,6 +21,14 @@ type ProSessionValue = {
   sentBack: Record<string, string>;
   sendBack: (id: string, note: string) => void;
   undoItem: (id: string) => void;
+  // Settings: the firm plan and who's on the team, so billing and Firm & team agree on seats.
+  proPlan: ProPlanState;
+  switchProPlan: (planId: string) => void;
+  cancelProPlan: () => void;
+  resumeProPlan: () => void;
+  team: ProTeamMember[];
+  inviteMember: (member: { name: string; email: string; role: ProTeamMember["role"] }) => void;
+  removeMember: (id: string) => void;
 };
 
 const ProSessionContext = createContext<ProSessionValue | null>(null);
@@ -29,6 +40,8 @@ export function ProSessionProvider({ children }: { children: React.ReactNode }) 
   const [justSignedOut, setJustSignedOut] = useState(false);
   const [doneIds, setDoneIds] = useState<string[]>([]);
   const [sentBack, setSentBack] = useState<Record<string, string>>({});
+  const [proPlan, setProPlan] = useState<ProPlanState>({ planId: proSubscription.planId, status: "active" });
+  const [team, setTeam] = useState<ProTeamMember[]>(proTeam);
 
   const signIn = useCallback((email: string) => {
     setSession({ email, signedInOn: MOCK_TODAY });
@@ -47,8 +60,43 @@ export function ProSessionProvider({ children }: { children: React.ReactNode }) 
     setSentBack((prev) => Object.fromEntries(Object.entries(prev).filter(([key]) => key !== id)));
   }, []);
 
+  const switchProPlan = useCallback((planId: string) => {
+    setProPlan((prev) => ({
+      planId,
+      status: "active",
+      changedOn: MOCK_TODAY,
+      switchedFrom: prev.planId === planId ? prev.switchedFrom : prev.planId,
+    }));
+  }, []);
+  const cancelProPlan = useCallback(() => setProPlan((prev) => ({ ...prev, status: "canceled", changedOn: MOCK_TODAY })), []);
+  const resumeProPlan = useCallback(() => setProPlan((prev) => ({ ...prev, status: "active", changedOn: MOCK_TODAY })), []);
+
+  const inviteMember = useCallback((member: { name: string; email: string; role: ProTeamMember["role"] }) => {
+    setTeam((prev) => [...prev, { id: `invite-${prev.length + 1}`, ...member, status: "Invited" }]);
+  }, []);
+  const removeMember = useCallback((id: string) => setTeam((prev) => prev.filter((m) => m.id !== id)), []);
+
   return (
-    <ProSessionContext value={{ session, justSignedOut, signIn, signOut, doneIds, markDone, sentBack, sendBack, undoItem }}>
+    <ProSessionContext
+      value={{
+        session,
+        justSignedOut,
+        signIn,
+        signOut,
+        doneIds,
+        markDone,
+        sentBack,
+        sendBack,
+        undoItem,
+        proPlan,
+        switchProPlan,
+        cancelProPlan,
+        resumeProPlan,
+        team,
+        inviteMember,
+        removeMember,
+      }}
+    >
       {children}
     </ProSessionContext>
   );

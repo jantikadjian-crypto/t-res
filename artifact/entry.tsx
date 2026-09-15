@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import ActionItemsPage from "@/app/(app)/action-items/page";
 import DashboardPage from "@/app/(app)/page";
 import SettingsLayout from "@/app/(app)/settings/layout";
+import ProSettingsLayout from "@/app/(pro)/pro/settings/layout";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { CaseProvider } from "@/components/case-provider";
 import type { DocumentView } from "@/components/documents/document-library";
@@ -27,6 +28,11 @@ import { ProFrame } from "@/components/pro/pro-frame";
 import { ProLogin } from "@/components/pro/pro-login";
 import { ProSessionProvider } from "@/components/pro/pro-session";
 import { ProToday } from "@/components/pro/pro-today";
+import { ProBilling } from "@/components/pro/settings/pro-billing";
+import { ProFirmSettings } from "@/components/pro/settings/pro-firm-settings";
+import { ProNotificationSettings } from "@/components/pro/settings/pro-notification-settings";
+import { ProProfileSettings } from "@/components/pro/settings/pro-profile-settings";
+import { ProSecuritySettings } from "@/components/pro/settings/pro-security-settings";
 import { BillingOverview } from "@/components/settings/billing-overview";
 import { CancelFlow } from "@/components/settings/cancel-flow";
 import { NotificationSettings } from "@/components/settings/notification-settings";
@@ -124,6 +130,20 @@ function route(pathname: string): ReactNode {
             ) : (
               <ProApprovals />
             )
+          ) : detail === "settings" ? (
+            <ProSettingsLayout>
+              {extra === "firm" ? (
+                <ProFirmSettings />
+              ) : extra === "notifications" ? (
+                <ProNotificationSettings />
+              ) : extra === "security" ? (
+                <ProSecuritySettings />
+              ) : extra === "billing" ? (
+                <ProBilling />
+              ) : (
+                <ProProfileSettings />
+              )}
+            </ProSettingsLayout>
           ) : (
             <ProToday />
           )}

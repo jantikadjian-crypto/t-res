@@ -920,6 +920,20 @@ export const notificationTopics: NotificationTopic[] = [
 
 export const reminderLeadDays = [14, 7, 3, 1];
 
+// T-Res Pro. The professional's version: same shape, different stakes — a same-day escalation
+// can't be switched off, and the digest replaces "case updates".
+export const proNotificationTopics: NotificationTopic[] = [
+  { id: "emergency", label: "Same-day escalations", description: "A levy, a seizure or a final notice that needs you today. Always on.", email: true, text: true, emailLocked: true },
+  { id: "approvals", label: "Approvals waiting", description: "AI work under your name that needs your sign-off.", email: true, text: false },
+  { id: "deadlines", label: "IRS deadlines", description: "Before any client deadline. Email reminders can't be turned off.", email: true, text: true, emailLocked: true },
+  { id: "flagged", label: "Flagged checks", description: "When T-Res isn't confident enough to act on its own.", email: true, text: false },
+  { id: "client", label: "Client activity", description: "Uploads, signatures and replies from your clients.", email: false, text: false },
+  { id: "digest", label: "Weekly practice digest", description: "A short Monday email: what moved, what's due, what's waiting.", email: true, text: false },
+];
+
+// How long before a client deadline the professional wants to know.
+export const proReminderLeadDays = [14, 7, 3, 1];
+
 export type PlanStatus = "active" | "paused" | "canceled";
 
 export const subscription = {
@@ -1481,7 +1495,107 @@ export const practitioner = {
   email: "chris@tres-demo.example",
   phoneMasked: "(512) •••-••47",
   demoCode: "135790",
+  // Settings: what the IRS and we hold about him.
+  legalName: "Christopher R. Vance",
+  ptin: "P01234567",
+  enrollmentNumber: representativeDetails.enrollment.replace("Enrollment card no. ", ""),
+  // Enrolled agents renew on a three-year cycle.
+  enrolledThrough: "2029-03-31",
+  phone: representativeDetails.phone,
+  timezone: "Central Time · Austin, TX",
+  memberSince: "2025-04-18",
 };
+
+// The practice behind T-Res Pro. Display-only mock data, like the taxpayer's billing: no payments, no card entry.
+export const proFirm = {
+  name: "Vance Tax Resolution",
+  ein: "87-•••••21",
+  address: "600 Congress Ave, Suite 1400, Austin, TX 78701",
+  website: "vancetax.example",
+  supportEmail: "help@vancetax.example",
+};
+
+export type ProTeamMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: "Owner" | "Preparer" | "Assistant";
+  status: "Active" | "Invited";
+  lastActive?: string;
+};
+
+// What a role may do, in plain English — shown beside it so nobody has to guess.
+export const proRoles: { role: ProTeamMember["role"]; can: string }[] = [
+  { role: "Owner", can: "Everything, including billing and who's on the team" },
+  { role: "Preparer", can: "Work every client and approve AI work under their own name" },
+  { role: "Assistant", can: "Gather documents and chase clients; can't approve anything" },
+];
+
+export const proTeam: ProTeamMember[] = [
+  { id: "chris", name: enrolledAgent.name, email: "chris@tres-demo.example", role: "Owner", status: "Active", lastActive: MOCK_TODAY },
+  { id: "renee", name: "Renée Adeyemi", email: "renee@vancetax.example", role: "Preparer", status: "Active", lastActive: "2026-09-12" },
+  { id: "sam", name: "Sam Okafor", email: "sam@vancetax.example", role: "Assistant", status: "Active", lastActive: MOCK_TODAY },
+  { id: "dana-seat", name: "Dana Whitfield", email: "dana@vancetax.example", role: "Preparer", status: "Invited" },
+];
+
+// Placeholder pricing, like the taxpayer plans: the tiers are the point, the numbers aren't final.
+export const proPlans = [
+  {
+    id: "solo",
+    name: "Solo",
+    price: 89,
+    clients: 25,
+    seats: 1,
+    blurb: "One practitioner, a steady caseload.",
+    features: ["Up to 25 active clients", "1 seat", "AI drafting and checks", "PLCY governance log", "Email support"],
+  },
+  {
+    id: "practice",
+    name: "Practice",
+    price: 249,
+    clients: 100,
+    seats: 5,
+    blurb: "A small practice with staff who prepare and chase.",
+    features: [
+      "Up to 100 active clients",
+      "5 seats",
+      "Everything in Solo",
+      "Your own approval policies in PLCY",
+      "Shared document requests",
+      "Priority support",
+    ],
+  },
+  {
+    id: "firm",
+    name: "Firm",
+    price: 599,
+    clients: 400,
+    seats: 20,
+    blurb: "Several practitioners, one supervision record.",
+    features: [
+      "Up to 400 active clients",
+      "20 seats",
+      "Everything in Practice",
+      "Firm-wide audit evidence export",
+      "Break-glass escalation cover",
+      "Named onboarding contact",
+    ],
+  },
+];
+
+export const proSubscription = {
+  planId: "practice",
+  startedOn: "2025-04-18",
+  renewsOn: "2026-10-18",
+  paymentMethod: { brand: "Visa", last4: "8821", expires: "04/29" },
+  billingEmail: "billing@vancetax.example",
+};
+
+export const proInvoices = [
+  { id: "TRP-2026-09", date: "2026-09-18", description: "Practice · September 2026", amount: 249 },
+  { id: "TRP-2026-08", date: "2026-08-18", description: "Practice · August 2026", amount: 249 },
+  { id: "TRP-2026-07", date: "2026-07-18", description: "Practice · July 2026", amount: 249 },
+];
 
 // T-Res Pro caseload and queue. Every client except Jordan is fictional and static; Jordan's row, queue items
 // and deadlines come live from CaseProvider (PLCY items waiting for Chris, lane, open notices).

@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { BellRing, ChevronDown, CreditCard, LogOut, Search, Settings, ShieldCheck, UserRound, Users, type LucideIcon } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { useProSession } from "@/components/pro/pro-session";
 import { useProWorkspace } from "@/components/pro/use-pro-workspace";
-import { practitioner, proClients, taxpayer } from "@/lib/mockData";
-import { isProActive, proBreadcrumbsFor, proNav } from "@/lib/proNavigation";
+import { ProCommandPalette } from "@/components/search/pro-command-palette";
+import { practitioner, proClients, proPlans, taxpayer } from "@/lib/mockData";
+import { isProActive, proBreadcrumbsFor, proSidebarNav } from "@/lib/proNavigation";
 import { cn } from "@/lib/utils";
 
 export function ProWordmark({ className }: { className?: string }) {
@@ -22,6 +23,34 @@ export function ProWordmark({ className }: { className?: string }) {
   );
 }
 
+// One row of the account menu (name, top right): icon, label and an optional hint on the right.
+function MenuLink({
+  href,
+  icon: Icon,
+  label,
+  hint,
+  onSelect,
+}: {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  hint?: string;
+  onSelect: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      role="menuitem"
+      onClick={onSelect}
+      className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none hover:bg-accent focus-visible:bg-accent"
+    >
+      <Icon className="size-4 text-muted-foreground" aria-hidden />
+      <span className="flex-1">{label}</span>
+      {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+    </Link>
+  );
+}
+
 const initials = practitioner.name
   .split(/\s+/)
   .map((w) => w[0])
@@ -30,7 +59,7 @@ const initials = practitioner.name
 
 // The labels, hrefs and icons come from lib/proNavigation.ts; only the live counts are added here.
 // `alert`: the count means something is waiting (yellow); otherwise it's just a total.
-type NavItem = (typeof proNav)[number] & { count?: number; alert?: boolean };
+type NavItem = (typeof proSidebarNav)[number] & { count?: number; alert?: boolean };
 
 const itemClass =
   "flex h-9 items-center gap-2 rounded-md pr-2 pl-4 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -39,10 +68,29 @@ const itemClass =
 export function ProFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { session, signOut } = useProSession();
+  const { session, signOut, proPlan } = useProSession();
   const { approvals } = useProWorkspace();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const isLogin = pathname === "/pro/login";
+
+  // Ctrl+K / Cmd+K toggles search anywhere in Pro; "/" opens it when you're not typing.
+  useEffect(() => {
+    if (isLogin) return;
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const typing = !!target && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
+      if (e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setSearchOpen((o) => !o);
+      } else if (e.key === "/" && !typing) {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isLogin]);
 
   // A mock session: without one, go to sign-in (v1 has no real accounts).
   useEffect(() => {
@@ -62,7 +110,10 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
     "/pro/clients": { count: proClients.length },
     "/pro/approvals": { count: approvals.length, alert: true },
   };
-  const nav: NavItem[] = proNav.map((item) => ({ ...item, ...counts[item.href] }));
+  const nav: NavItem[] = proSidebarNav.map((item) => ({ ...item, ...counts[item.href] }));
+
+  const planName = proPlans.find((p) => p.id === proPlan.planId)?.name;
+  const planHint = proPlan.status === "active" ? planName : "Canceled";
 
   const signOutNow = () => {
     setMenuOpen(false);
@@ -136,7 +187,20 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
               <Breadcrumbs crumbs={proBreadcrumbsFor(pathname)} homeHref="/pro" homeLabel="T-Res Pro home" />
             </div>
 
-            <div className="relative">
+            <div className="flex shrink-0 items-center gap-2 md:gap-3">
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                aria-label="Search your practice"
+                aria-keyshortcuts="Control+K Meta+K /"
+                className="flex h-9 items-center gap-2 rounded-md border bg-input-background px-2.5 text-sm text-muted-foreground transition-colors outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50 md:w-52 xl:w-72"
+              >
+                <Search className="size-4 shrink-0" aria-hidden />
+                <span className="hidden truncate md:inline">Search clients, approvals…</span>
+                <kbd className="ml-auto hidden rounded border bg-background px-1.5 text-[10px] font-medium md:inline">Ctrl K</kbd>
+              </button>
+
+              <div className="relative">
               <button
                 type="button"
                 aria-label="Account menu"
@@ -168,10 +232,15 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
                     }}
                     className="absolute right-0 z-20 mt-2 w-64 rounded-xl border bg-card p-1.5 shadow-lg"
                   >
-                    <div className="px-3 py-2">
+                    <Link
+                      href="/pro/settings"
+                      role="menuitem"
+                      onClick={() => setMenuOpen(false)}
+                      className="block rounded-lg px-3 py-2 outline-none hover:bg-accent focus-visible:bg-accent"
+                    >
                       <p className="text-sm font-medium">{practitioner.name}</p>
                       <p className="truncate text-xs text-muted-foreground">{session.email}</p>
-                    </div>
+                    </Link>
                     <div className="my-1 h-px bg-border" />
                     {/* On phones the sidebar is hidden, so its links live here too. */}
                     {nav.map(({ href, label, icon: Icon }) => (
@@ -186,15 +255,24 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
                         {label}
                       </Link>
                     ))}
-                    <Link
-                      href="/plcy"
-                      role="menuitem"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none hover:bg-accent focus-visible:bg-accent md:flex"
-                    >
-                      <ShieldCheck className="size-4 text-muted-foreground" aria-hidden />
-                      PLCY governance console
-                    </Link>
+                    {/* Settings, billing and the team live behind the name, as people expect. */}
+                    <MenuLink href="/pro/settings" icon={Settings} label="Settings" onSelect={() => setMenuOpen(false)} />
+                    <MenuLink
+                      href="/pro/settings/billing"
+                      icon={CreditCard}
+                      label="Billing & plan"
+                      hint={planHint}
+                      onSelect={() => setMenuOpen(false)}
+                    />
+                    <MenuLink href="/pro/settings/firm" icon={Users} label="Firm & team" onSelect={() => setMenuOpen(false)} />
+                    <MenuLink
+                      href="/pro/settings/notifications"
+                      icon={BellRing}
+                      label="Notification settings"
+                      onSelect={() => setMenuOpen(false)}
+                    />
+                    <div className="my-1 h-px bg-border" />
+                    <MenuLink href="/plcy" icon={ShieldCheck} label="PLCY governance console" onSelect={() => setMenuOpen(false)} />
                     <Link
                       href="/"
                       role="menuitem"
@@ -218,11 +296,14 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
                   </div>
                 </>
               )}
+              </div>
             </div>
           </div>
         </header>
         <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6">{children}</main>
       </div>
+
+      {searchOpen && <ProCommandPalette onClose={() => setSearchOpen(false)} />}
     </div>
   );
 }
