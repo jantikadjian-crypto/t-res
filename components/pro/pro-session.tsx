@@ -11,6 +11,9 @@ type ProSessionValue = {
   justSignedOut: boolean;
   signIn: (email: string) => void;
   signOut: () => void;
+  // Queue items and suggestions the professional finished this visit (fictional clients; Jordan's live in PLCY).
+  doneIds: string[];
+  markDone: (id: string) => void;
 };
 
 const ProSessionContext = createContext<ProSessionValue | null>(null);
@@ -20,6 +23,7 @@ const ProSessionContext = createContext<ProSessionValue | null>(null);
 export function ProSessionProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<ProSession | null>(null);
   const [justSignedOut, setJustSignedOut] = useState(false);
+  const [doneIds, setDoneIds] = useState<string[]>([]);
 
   const signIn = useCallback((email: string) => {
     setSession({ email, signedInOn: MOCK_TODAY });
@@ -31,7 +35,11 @@ export function ProSessionProvider({ children }: { children: React.ReactNode }) 
     setJustSignedOut(true);
   }, []);
 
-  return <ProSessionContext value={{ session, justSignedOut, signIn, signOut }}>{children}</ProSessionContext>;
+  const markDone = useCallback((id: string) => setDoneIds((prev) => (prev.includes(id) ? prev : [...prev, id])), []);
+
+  return (
+    <ProSessionContext value={{ session, justSignedOut, signIn, signOut, doneIds, markDone }}>{children}</ProSessionContext>
+  );
 }
 
 export function useProSession(): ProSessionValue {

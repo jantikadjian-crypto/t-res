@@ -206,3 +206,7 @@ with clients, calendar sync, practitioner billing and payouts, and more than one
 - **Chunk 1 (sign-in + pro shell): built 2026-09-15.** `/pro/login` (email, password, two-step code, wrong-code,
   locked, signed-in and signed-out states), the T-Res Pro frame with its sign-in guard, a first Today page with live
   PLCY numbers, and the demo switches.
+- **Chunk 2 (Today): built 2026-09-15.** Headline with minutes, same-day banner, four tiles, the queue (most urgent
+  first; fictional clients' items open in place with one action, Jordan's open their real PLCY review), Done today,
+  deadlines for the next 30 days (widened from 14 so hearing deadlines show), lane changes, governance health and the
+  caseload table with filters. Jordan's row, queue items and deadlines are live.

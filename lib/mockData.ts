@@ -1482,3 +1482,210 @@ export const practitioner = {
   phoneMasked: "(512) •••-••47",
   demoCode: "135790",
 };
+
+// T-Res Pro caseload and queue. Every client except Jordan is fictional and static; Jordan's row, queue items
+// and deadlines come live from CaseProvider (PLCY items waiting for Chris, lane, open notices).
+export type ProQueueKind = "emergency" | "call" | "approval" | "flagged" | "recommendation" | "spot-check";
+
+export type ProQueueItem = {
+  id: string;
+  clientId?: string;
+  kind: ProQueueKind;
+  title: string;
+  why: string;
+  minutes: number;
+  deadline?: string;
+  cta: string;
+  // Opens in place on the dashboard: what the AI prepared, what to check, and the one action.
+  preview: { summary: string; points: { label: string; ok?: boolean }[]; doneLabel: string; doneNote: string };
+};
+
+export type ProClient = {
+  id: string;
+  name: string;
+  lane: Lane | "new";
+  stage: string;
+  balance: number;
+  situation: string;
+  deadline?: { label: string; date: string; waitingOn?: string };
+  tone: Tone;
+  lastActivity: string;
+};
+
+export const proClients: ProClient[] = [
+  { id: "jordan", name: `${taxpayer.firstName} ${taxpayer.lastName}`, lane: "represented", stage: "Document Collection", balance: 21000, situation: "CP504 for 2021; 2023 not filed", tone: "bad", lastActivity: MOCK_TODAY },
+  { id: "marcus", name: "Marcus Bell", lane: "represented", stage: "Resolution Strategy", balance: 31600, situation: "LT11 received; hearing request drafted", deadline: { label: "LT11 hearing request", date: "2026-10-13" }, tone: "bad", lastActivity: "2026-09-13" },
+  { id: "priya", name: "Priya Nair", lane: "represented", stage: "Resolution Strategy", balance: 38900, situation: "Wage levy in place since Sep 12", deadline: { label: "Levy release call", date: MOCK_TODAY }, tone: "bad", lastActivity: "2026-09-12" },
+  { id: "daniel", name: "Daniel Ortiz", lane: "self-serve", stage: "Submitted to IRS", balance: 14700, situation: "Payment plan set up online; amount doesn't match", deadline: { label: "First plan payment", date: "2026-10-01" }, tone: "warn", lastActivity: MOCK_TODAY },
+  { id: "grace", name: "Grace Liu", lane: "represented", stage: "Resolution Strategy", balance: 2480, situation: "CP2000 for 2022: stock sales without cost basis", deadline: { label: "CP2000 response", date: "2026-09-28" }, tone: "warn", lastActivity: "2026-09-11" },
+  { id: "tom", name: "Tom Walsh", lane: "new", stage: "Intake", balance: 16400, situation: "Intake done; assessment ready", tone: "neutral", lastActivity: MOCK_TODAY },
+  { id: "aisha", name: "Aisha Thompson", lane: "represented", stage: "Resolution Strategy", balance: 61300, situation: "Offer in Compromise package drafted", deadline: { label: "Offer in Compromise filing (target)", date: "2026-09-25" }, tone: "warn", lastActivity: "2026-09-10" },
+  { id: "robert", name: "Robert Kim", lane: "represented", stage: "Submitted to IRS", balance: 18200, situation: "Payment plan active; could do it themselves", deadline: { label: "Plan payment", date: "2026-10-05" }, tone: "good", lastActivity: "2026-09-08" },
+  { id: "maya", name: "Maya Chen", lane: "self-serve", stage: "Submitted to IRS", balance: 12400, situation: "Payment plan active", deadline: { label: "Plan payment", date: "2026-10-02" }, tone: "good", lastActivity: "2026-09-09" },
+  { id: "samuel", name: "Samuel Okafor", lane: "self-serve", stage: "Submitted to IRS", balance: 3100, situation: "2022 return e-filed; plan requested", tone: "good", lastActivity: "2026-09-06" },
+  { id: "elena", name: "Elena Garcia", lane: "represented", stage: "Submitted to IRS", balance: 9800, situation: "Collection pause requested; waiting on the IRS", tone: "neutral", lastActivity: "2026-08-30" },
+  { id: "nina", name: "Nina Patel", lane: "represented", stage: "Resolved", balance: 0, situation: "Paid in full; lien withdrawn; monitoring", tone: "good", lastActivity: "2026-09-01" },
+];
+
+export const proQueue: ProQueueItem[] = [
+  {
+    id: "q_marcus",
+    clientId: "marcus",
+    kind: "emergency",
+    title: "LT11: approve the hearing request",
+    why: "Final levy notice arrived Sep 13. The Collection Due Process hearing request (Form 12153) is drafted and checked.",
+    minutes: 15,
+    deadline: "2026-10-13",
+    cta: "Review hearing request",
+    preview: {
+      summary:
+        "Asks for a Collection Due Process hearing for 2020–2021 and proposes a payment plan of about $520 a month instead of a levy. Filing within the 30 days pauses most levies while the hearing is pending.",
+      points: [
+        { label: "Filed within the 30-day window (deadline Oct 13, 2026)", ok: true },
+        { label: "Form 2848 on file for 2020–2021", ok: true },
+        { label: "Proposed payment fits Marcus's budget", ok: true },
+        { label: "Goes out under your name" },
+      ],
+      doneLabel: "Approve and send",
+      doneNote: "Hearing request approved · goes out today",
+    },
+  },
+  {
+    id: "q_priya",
+    clientId: "priya",
+    kind: "call",
+    title: "Wage levy: call the IRS for a release",
+    why: "Priya's employer started withholding on Sep 12. The hardship case is ready: after the levy, rent and childcare aren't covered.",
+    minutes: 20,
+    deadline: MOCK_TODAY,
+    cta: "Open call sheet",
+    preview: {
+      summary: "Call the Practitioner Priority Service and ask for the wage levy to be released for economic hardship, with a payment plan to follow.",
+      points: [
+        { label: "Ask for: a levy release for economic hardship, then a payment plan of about $300 a month" },
+        { label: "Have ready: Form 2848 (on file), Priya's pay stubs and money snapshot (in the case)" },
+        { label: "Balance: $38,900 for 2019–2021" },
+        { label: "If it's refused: ask for a manager, or request a Collection Appeals Program hearing" },
+      ],
+      doneLabel: "Log the call",
+      doneNote: "Call logged · levy release requested",
+    },
+  },
+  {
+    id: "q_daniel",
+    clientId: "daniel",
+    kind: "flagged",
+    title: "Payment plan confirmation doesn't match",
+    why: "Daniel set up the plan online. The confirmation says $350 a month; the answers we gave were $410.",
+    minutes: 5,
+    cta: "Compare",
+    preview: {
+      summary:
+        "At $350 a month the plan runs about a year longer and costs more in interest. Daniel can change the amount in the IRS online account in a few minutes.",
+      points: [
+        { label: "Monthly amount: $350 (we gave $410)", ok: false },
+        { label: "Tax years: 2020–2022", ok: true },
+        { label: "Paid by direct debit", ok: true },
+      ],
+      doneLabel: "Send Daniel the fix",
+      doneNote: "Fix sent · Daniel updates the amount online",
+    },
+  },
+  {
+    id: "q_grace",
+    clientId: "grace",
+    kind: "approval",
+    title: "CP2000 response letter",
+    why: "Agrees with $1,120 of the proposed $2,480 and disputes the rest with the cost basis from the 1099-B.",
+    minutes: 6,
+    deadline: "2026-09-28",
+    cta: "Review letter",
+    preview: {
+      summary:
+        "The IRS matched stock sales without their cost basis. The letter accepts the dividend change and shows the basis for the stock sales, with the brokerage statement attached.",
+      points: [
+        { label: "Amounts match the 2022 wage & income transcript", ok: true },
+        { label: "Cost basis matches the brokerage statement", ok: true },
+        { label: "Goes out before Sep 28, 2026", ok: true },
+        { label: "Goes out under your name" },
+      ],
+      doneLabel: "Approve and send",
+      doneNote: "Letter approved · goes out today",
+    },
+  },
+  {
+    id: "q_tom",
+    clientId: "tom",
+    kind: "recommendation",
+    title: "New assessment: payment plan about $310 a month",
+    why: "Intake done today. Owes about $16,400 for 2022–2023, both returns filed, so doing it without representation is an option.",
+    minutes: 3,
+    cta: "Review assessment",
+    preview: {
+      summary: "Recommends a long-term payment plan of about $310 a month, and the self-serve lane, since the balance is under $50,000.",
+      points: [
+        { label: "Income and expenses match the uploaded pay stubs", ok: true },
+        { label: "Monthly amount fits the IRS's allowable living expenses", ok: true },
+        { label: "Both returns filed", ok: true },
+      ],
+      doneLabel: "Approve recommendation",
+      doneNote: "Assessment approved · Tom picks a lane",
+    },
+  },
+  {
+    id: "q_aisha",
+    clientId: "aisha",
+    kind: "approval",
+    title: "Offer in Compromise package",
+    why: "Form 656 and Form 433-A drafted: offers $4,200 against $61,300 owed.",
+    minutes: 25,
+    deadline: "2026-09-25",
+    cta: "Review package",
+    preview: {
+      summary:
+        "The offer equals Aisha's reasonable collection potential: little equity in assets and about $260 a month left over, counted over 12 months.",
+      points: [
+        { label: "Offer matches reasonable collection potential: $1,080 equity + 12 × $260", ok: true },
+        { label: "All returns filed and this year's estimated payments made", ok: true },
+        { label: "Application fee and 20% payment included (or a low-income waiver)" },
+        { label: "Goes out under your name" },
+      ],
+      doneLabel: "Approve the offer",
+      doneNote: "Offer approved · filed by Sep 25",
+    },
+  },
+  {
+    id: "q_spot",
+    kind: "spot-check",
+    title: "Spot checks: 4 auto-approved explanations",
+    why: "1 in 20 of this week's auto-approved notice explanations, picked at random.",
+    minutes: 8,
+    cta: "Start spot checks",
+    preview: {
+      summary: "Read each explanation against its letter. Anything wrong goes back to T-Res and tightens the policy.",
+      points: [
+        { label: "Maya Chen · CP521 explained" },
+        { label: "Samuel Okafor · CP71C explained" },
+        { label: "Elena Garcia · CP503 explained" },
+        { label: "Robert Kim · CP523 explained" },
+      ],
+      doneLabel: "Mark all as checked",
+      doneNote: "4 spot checks done · all correct",
+    },
+  },
+];
+
+// Lane changes across the practice (Jordan's escalation is added live).
+export const proEscalations = [{ clientId: "marcus", date: "2026-09-13", text: "Moved to you: an LT11 arrived while doing it themselves" }];
+export const proLaneSuggestions = [
+  {
+    id: "lane_robert",
+    clientId: "robert",
+    text: "Owes $18,200, and the payment plan fits the budget. Could do it themselves and save on fees.",
+    cta: "Suggest it to Robert",
+    doneNote: "Suggested today · Robert decides",
+  },
+];
+
+// This week across the practice, from PLCY.
+export const proWeek = { aiActions: 214, handledByPolicy: 206, eaMinutes: 110 };

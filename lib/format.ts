@@ -26,6 +26,14 @@ export function formatDate(iso: string): string {
 }
 
 /** Whole days from mock today until `iso`. Negative when in the past. */
+/** Time on a task: 35 → "35 min", 110 → "1h 50m". */
+export function minutesLabel(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
 export function daysUntil(iso: string, today: string = MOCK_TODAY): number {
   return Math.round((toUtc(iso) - toUtc(today)) / DAY_MS);
 }
