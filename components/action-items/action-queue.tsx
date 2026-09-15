@@ -187,12 +187,12 @@ export function ActionQueue() {
                       (letterOpen ? (
                         <Button onClick={() => completeAction(item.id)}>
                           <CheckCircle2 aria-hidden />
-                          Approve letter
+                          {item.approveLabel ?? "Approve letter"}
                         </Button>
                       ) : (
                         <Button variant="outline" onClick={() => setOpenLetter(item.id)}>
                           <FileCheck aria-hidden />
-                          Read the letter
+                          {item.openLabel ?? "Read the letter"}
                         </Button>
                       ))}
                   </div>
@@ -209,6 +209,8 @@ export function ActionQueue() {
           <ul className="divide-y">
             {done.map((item) => {
               const signedDoc = docs.find((d) => d.relatedActionId === item.id && signatures[d.id]);
+              // An upload T-Res has already checked (e.g. the payment plan confirmation) shows its PLCY record.
+              const checked = item.uploadedFile ? governedBy(item) : undefined;
               return (
                 <li key={item.id} className="flex items-start gap-3 px-6 py-4">
                   <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
@@ -219,7 +221,7 @@ export function ActionQueue() {
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Completed {formatDate(item.completedOn ?? MOCK_TODAY)}
-                      {item.uploadedFile && ` · ${item.uploadedFile} · we're reviewing it`}
+                      {item.uploadedFile && ` · ${item.uploadedFile}${checked ? "" : " · we're reviewing it"}`}
                       {signedDoc && (
                         <>
                           {" · signed electronically · "}
@@ -229,6 +231,7 @@ export function ActionQueue() {
                         </>
                       )}
                     </p>
+                    {checked && <GovernanceBadge itemId={checked.id} className="mt-1.5" />}
                   </div>
                 </li>
               );

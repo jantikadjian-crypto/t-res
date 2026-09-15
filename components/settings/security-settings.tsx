@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/status";
 import { account, enrolledAgent, signInActivity } from "@/lib/mockData";
 
 export function SecuritySettings() {
-  const { docs, signatures } = useCase();
+  const { docs, signatures, lane } = useCase();
   const form2848 = docs.find((d) => d.id === "doc_2848");
   const signed2848 = signatures["doc_2848"];
   const needs2848 = form2848?.status === "needs-signature";
@@ -89,9 +89,15 @@ export function SecuritySettings() {
               <MessageSquareText className="size-5 shrink-0 text-muted-foreground" aria-hidden />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">Form 2848 · {enrolledAgent.name} can speak to the IRS for you</p>
-                <p className="text-xs text-muted-foreground">Power of attorney for income tax, 2021–2023.</p>
+                <p className="text-xs text-muted-foreground">
+                  {lane === "self-serve"
+                    ? `You're dealing with the IRS yourself, so nobody speaks for you. If something changes, like a final levy notice, ${enrolledAgent.name} steps in and you'd sign it then.`
+                    : "Power of attorney for income tax, 2021–2023."}
+                </p>
               </div>
-              {needs2848 ? (
+              {lane === "self-serve" ? (
+                <StatusBadge tone="neutral">Not needed while you&apos;re doing it yourself</StatusBadge>
+              ) : needs2848 ? (
                 <>
                   <StatusBadge tone="bad">Needs your signature</StatusBadge>
                   <LinkButton href="/sign/doc_2848" size="sm">

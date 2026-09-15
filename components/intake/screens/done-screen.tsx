@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, CheckCircle2, ListChecks, UserCheck, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, ListChecks, ShieldCheck, UserCheck, type LucideIcon } from "lucide-react";
 import { useCase } from "@/components/case-provider";
 import { useIntake } from "@/components/intake/intake-provider";
 import { LinkButton } from "@/components/link-button";
 import { sumAmounts } from "@/components/intake/money-fields";
 import { daysRemainingLabel, formatDate, formatMoney } from "@/lib/format";
-import { FIRST_SCREEN, isUrgent } from "@/lib/intakeScreens";
+import { FIRST_SCREEN, isUrgent, selfServeCheck } from "@/lib/intakeScreens";
 import { enrolledAgent, nextNotice, resolutionPlans } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
@@ -19,16 +19,27 @@ export function DoneScreen() {
   const chosen = resolutionPlans.find((p) => p.id === state.chosenPlanId);
   const urgent = isUrgent(state);
   const leftOver = sumAmounts(state.monthlyIncome) - sumAmounts(state.monthlyExpenses);
+  // The lane picked on the assessment: doing it yourself (Guided), or Chris representing you.
+  const selfServe = selfServeCheck(state).eligible && state.chosenPlanId === "guided";
 
   const nextSteps: NextStep[] = [
-    {
-      icon: UserCheck,
-      tone: "bg-blue-50 text-blue-600",
-      title: `${enrolledAgent.name} reviews your case`,
-      detail: urgent ? "Today, because the IRS has already taken money." : "Within one business day.",
-      href: "/settings/security",
-      cta: "Who can act for you",
-    },
+    selfServe
+      ? {
+          icon: ShieldCheck,
+          tone: "bg-blue-50 text-blue-600",
+          title: "T-Res prepares everything for you",
+          detail: `Your 2023 return, your payment plan answers and the letters to mail. ${enrolledAgent.name} spot-checks the rules and steps in if anything changes.`,
+          href: "/action-items",
+          cta: "See your steps",
+        }
+      : {
+          icon: UserCheck,
+          tone: "bg-blue-50 text-blue-600",
+          title: `${enrolledAgent.name} reviews your case`,
+          detail: urgent ? "Today, because the IRS has already taken money." : "Within one business day.",
+          href: "/settings/security",
+          cta: "Who can act for you",
+        },
     {
       icon: ListChecks,
       tone: "bg-purple-50 text-purple-600",
@@ -62,7 +73,11 @@ export function DoneScreen() {
     { label: "Left over each month", value: formatMoney(leftOver), href: "/intake/money-out" },
     {
       label: "Form 2848",
-      value: state.authorization.form2848 === "signed" ? "Signed" : "On your to-do list",
+      value: selfServe
+        ? "Not needed: you're dealing with the IRS yourself"
+        : state.authorization.form2848 === "signed"
+          ? "Signed"
+          : "On your to-do list",
       href: "/intake/authorization",
     },
     {

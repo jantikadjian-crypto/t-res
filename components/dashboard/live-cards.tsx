@@ -147,9 +147,12 @@ export function UrgencyBanner() {
             </p>
             <p className="mt-1 text-sm text-green-800">
               {lane === "self-serve"
-                ? "We're checking the IRS confirmation you uploaded. While your payment plan is in place, the IRS can't levy."
+                ? "Your payment plan confirmation checks out and your reply is ready to mail. While your payment plan is in place, the IRS can't levy."
                 : `Nothing else is needed from you on this notice. ${enrolledAgent.name} will send it before ${deadline}.`}
             </p>
+            {lane === "self-serve" && governance.some((g) => g.id === "gov_opa") && (
+              <GovernanceBadge itemId="gov_opa" className="mt-2" />
+            )}
           </div>
         </div>
         <LinkButton href={`/notices/${nextNotice.id}`} variant="outline" className="ml-8 w-fit border-green-300 bg-white sm:ml-0">

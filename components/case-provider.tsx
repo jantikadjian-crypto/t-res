@@ -216,11 +216,17 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  // To-dos finished so far (in the data, or this session). Some items only appear after another is done.
+  const doneIds = useMemo(
+    () => new Set([...seedActions.filter((a) => a.done).map((a) => a.id), ...Object.keys(completions)]),
+    [completions]
+  );
+
   // Only this lane's to-dos. After an escalation, signing Form 2848 is about the LT11 and due today.
   const actions = useMemo(
     () =>
       seedActions
-        .filter((a) => !a.lane || a.lane === lane)
+        .filter((a) => (!a.lane || a.lane === lane) && (!a.after || doneIds.has(a.after)))
         .map((a) =>
           escalatedOn && a.id === escalationPlan.signActionId
             ? { ...a, dueBy: escalatedOn, why: escalationPlan.signWhy, relatedNoticeId: escalationPlan.noticeId }
@@ -230,10 +236,13 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
           const c = completions[a.id];
           return c ? { ...a, done: true, completedOn: c.completedOn, uploadedFile: c.uploadedFile ?? a.uploadedFile } : a;
         }),
-    [completions, lane, escalatedOn]
+    [completions, lane, escalatedOn, doneIds]
   );
 
-  const visibleDocs = useMemo(() => docs.filter((d) => !d.lane || d.lane === lane), [docs, lane]);
+  const visibleDocs = useMemo(
+    () => docs.filter((d) => (!d.lane || d.lane === lane) && (!d.after || doneIds.has(d.after))),
+    [docs, lane, doneIds]
+  );
 
   const openActions = useMemo(
     () => actions.filter((a) => !a.done).sort((a, b) => a.dueBy.localeCompare(b.dueBy)),
@@ -273,7 +282,7 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
   const governance = useMemo(
     () =>
       [...seedGovernance, ...(escalatedOn ? laterGovernanceItems : [])]
-        .filter((g) => !g.lane || g.lane === lane)
+        .filter((g) => (!g.lane || g.lane === lane) && (!g.showsAfter || doneIds.has(g.showsAfter)))
         .map((g) => ({
         ...g,
         ...decisions[g.id],
@@ -281,7 +290,7 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
           c.signedDocId ? { ...c, passed: docs.some((d) => d.id === c.signedDocId && d.status === "on-file") } : c
         ),
       })),
-    [decisions, docs, escalatedOn, lane]
+    [decisions, docs, escalatedOn, lane, doneIds]
   );
 
   return (

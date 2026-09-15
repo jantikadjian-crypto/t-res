@@ -113,6 +113,11 @@ export type ActionItem = {
   // Set when an upload finishes this item.
   uploadedFile?: string;
   lane?: Lane;
+  // Appears only once this other to-do is done (e.g. the return, after the W-2s are in).
+  after?: string;
+  // Button labels for items you review and approve, when "Read the letter" / "Approve letter" don't fit.
+  openLabel?: string;
+  approveLabel?: string;
 };
 
 export type DocumentCategory =
@@ -140,6 +145,8 @@ export type CaseDocument = {
   fileName?: string;
   relatedActionId?: string;
   lane?: Lane;
+  // Appears only once this to-do is done.
+  after?: string;
 };
 
 export type DocumentNote = {
@@ -215,7 +222,7 @@ export const transcriptsLastChecked = "2026-09-12";
 
 export const caseStages: CaseStage[] = [
   { key: "intake", label: "Intake", description: "We learned about your situation." },
-  { key: "authorization", label: "Authorization", description: "You gave us permission to speak with the IRS." },
+  { key: "authorization", label: "Authorization", description: "You let us see your IRS records, so we can prepare everything for you." },
   { key: "documents", label: "Document Collection", description: "We gather the paperwork the IRS will ask for." },
   { key: "strategy", label: "Resolution Strategy", description: "We choose the best option for you." },
   { key: "submitted", label: "Submitted to IRS", description: "Your resolution is with the IRS." },
@@ -412,6 +419,16 @@ export const notices: Notice[] = [
   },
 ];
 
+// The 2023 return T-Res prepares once the W-2s and 1099s are in (from the IRS wage & income record).
+const return2023Preview = `2023 Form 1040, prepared by T-Res — Jordan A. Reyes, single
+
+Wages from Lone Star Logistics (W-2): $58,400
+Delivery income from DoorDash (1099-NEC), less car costs: see Schedule C
+Interest from Ally Bank (1099-INT): $42
+Self-employment tax on the delivery income: included
+
+Estimated balance due: about $4,900. It joins your payment plan once the return is filed.`;
+
 export const actionItems: ActionItem[] = [
   {
     id: "act_engage",
@@ -465,7 +482,7 @@ Chris G., Enrolled Agent`,
     lane: "self-serve",
     type: "upload",
     title: "Set up your payment plan on IRS.gov",
-    why: "It stops the levy the CP504 warns about. We give you every answer to enter.",
+    why: "Once your 2023 return is filed, apply online. It stops the levy the CP504 warns about, and we give you every answer to enter.",
     dueBy: "2026-09-24",
     done: false,
     relatedNoticeId: "ntc_cp504",
@@ -484,7 +501,7 @@ Chris G., Enrolled Agent`,
     letterPreview: `To: Internal Revenue Service
 Re: CP504, tax year 2021 — Jordan A. Reyes, SSN •••-••-4417
 
-I received your CP504 notice dated September 2, 2026. I have applied for a long-term payment plan through my IRS online account to pay my 2021 and 2022 balances by direct debit, and I am preparing my 2023 return.
+I received your CP504 notice dated September 2, 2026. I am filing my missing 2023 return and applying for a long-term payment plan through my IRS online account, to pay my balances by direct debit.
 
 Please hold collection while my payment plan request is processed.
 
@@ -505,6 +522,34 @@ Re: Request for First-Time Penalty Abatement, tax year 2021 — Jordan A. Reyes,
 I am asking you to remove the penalties on my 2021 account under the First-Time Abatement policy. I had no penalties for 2018, 2019 or 2020, all of my required returns are filed, and I have a payment plan in place for the balance.
 
 Jordan A. Reyes`,
+  },
+  {
+    id: "act_file23s",
+    lane: "self-serve",
+    after: "act_w2",
+    type: "approve-letter",
+    title: "Review and e-file your 2023 return",
+    why: "We prepared it from your W-2s and 1099s. Check it, then e-file it. It has to be filed before your payment plan can be approved.",
+    dueBy: "2026-09-23",
+    done: false,
+    relatedTaxYear: 2023,
+    letterPreview: return2023Preview,
+    openLabel: "Review your return",
+    approveLabel: "E-file my return",
+  },
+  {
+    id: "act_file23r",
+    lane: "represented",
+    after: "act_w2",
+    type: "approve-letter",
+    title: "Approve your 2023 return",
+    why: "Chris prepared it from your W-2s and 1099s. Approve it and Chris e-files it, so your payment plan can go ahead.",
+    dueBy: "2026-09-23",
+    done: false,
+    relatedTaxYear: 2023,
+    letterPreview: `${return2023Preview}\n\nPreparer: Chris G., Enrolled Agent`,
+    openLabel: "Review your return",
+    approveLabel: "Approve for e-filing",
   },
   {
     id: "act_w2",
@@ -575,6 +620,14 @@ export const documents: CaseDocument[] = [
   {
     id: "doc_ftaletter", name: "First-Time Abatement Request (draft).pdf", category: "Prepared by us", source: "T-Res", taxYear: 2021, addedOn: "2026-09-13", sizeKb: 19, status: "draft", relatedActionId: "act_fta", lane: "self-serve",
     summary: "Your request to remove $2,310 in 2021 penalties. Send it once your 2023 return is filed.",
+  },
+  {
+    id: "doc_1040_23s", name: "2023 Form 1040 (draft).pdf", category: "Tax return", source: "T-Res", taxYear: 2023, addedOn: MOCK_TODAY, sizeKb: 212, status: "draft", relatedActionId: "act_file23s", lane: "self-serve", after: "act_w2",
+    summary: "Your 2023 return, prepared from your W-2s and 1099s, for you to e-file. Estimated balance due: about $4,900.",
+  },
+  {
+    id: "doc_1040_23r", name: "2023 Form 1040 (draft).pdf", category: "Tax return", source: "T-Res", taxYear: 2023, addedOn: MOCK_TODAY, sizeKb: 214, status: "draft", relatedActionId: "act_file23r", lane: "represented", after: "act_w2",
+    summary: "Your 2023 return, prepared by Chris G. from your W-2s and 1099s. Chris e-files it once you approve. Estimated balance due: about $4,900.",
   },
   {
     id: "doc_engage", name: "Engagement Letter (signed).pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-03", sizeKb: 142, status: "on-file",
@@ -961,6 +1014,8 @@ export type GovernanceItem = {
   lane?: Lane;
   // The to-do this output belongs to, so its badge shows there too.
   actionId?: string;
+  // Logged only once this to-do is done (e.g. checking a confirmation after it's uploaded).
+  showsAfter?: string;
 };
 
 export const governancePolicies: GovernancePolicy[] = [
@@ -992,8 +1047,15 @@ export const governancePolicies: GovernancePolicy[] = [
   },
   {
     id: "pol_selfletters",
-    name: "Letters you send yourself",
-    rule: "Letters the taxpayer signs and sends themselves, from templates Chris approved, at 90% confidence or higher. Nothing goes out under Chris's name.",
+    name: "Letters and returns you send yourself",
+    rule: "Letters and returns the taxpayer signs and sends themselves, from templates and rules Chris approved, at 90% confidence or higher. Nothing goes out under Chris's name.",
+    outcome: "Auto-approve",
+    spotCheck: "Chris spot-checks 1 in 20",
+  },
+  {
+    id: "pol_selfcheck",
+    name: "Checks on what you did yourself",
+    rule: "Confirmations the taxpayer uploads after doing something themselves, matched against the answers we gave. Anything that doesn't match goes to Chris.",
     outcome: "Auto-approve",
     spotCheck: "Chris spot-checks 1 in 20",
   },
@@ -1212,7 +1274,8 @@ export const governanceItems: GovernanceItem[] = [
     policyId: "pol_selfletters",
     status: "auto-approved",
     decidedOn: "2026-09-13",
-    summary: "Drafted a one-page reply Jordan signs and mails: it says a payment plan has been requested online and asks the IRS to hold collection.",
+    summary:
+      "Drafted a one-page reply Jordan signs and mails: it says the 2023 return is being filed and a payment plan requested online, and asks the IRS to hold collection.",
     output: actionItems.find((a) => a.id === "act_reply")?.letterPreview,
     checks: [
       { label: "Name and SSN match the Form 8821 on file", passed: true },
@@ -1251,6 +1314,83 @@ export const governanceItems: GovernanceItem[] = [
       { label: "The draft request", href: "/documents/doc_ftaletter" },
     ],
     resultHref: "/documents/doc_ftaletter",
+  },
+  {
+    id: "gov_return_self",
+    lane: "self-serve",
+    actionId: "act_file23s",
+    showsAfter: "act_w2",
+    title: "2023 return for Jordan to e-file",
+    kind: "Tax return",
+    producedBy: "T-Res return preparer",
+    createdOn: MOCK_TODAY,
+    confidence: 0.94,
+    policyId: "pol_selfletters",
+    status: "auto-approved",
+    decidedOn: MOCK_TODAY,
+    summary: "Prepared Jordan's 2023 Form 1040 from the uploaded W-2s and 1099s, for Jordan to e-file. Estimated balance due about $4,900.",
+    output: return2023Preview,
+    checks: [
+      { label: "Every W-2 and 1099 on the IRS wage & income record is included", passed: true },
+      { label: "Math checked by the rules engine", passed: true },
+      { label: "Balance due matches our estimate (about $4,900)", passed: true },
+      { label: "Filed by Jordan, not under Chris's name", passed: true },
+    ],
+    evidence: [
+      { label: "2023 wage & income transcript", href: "/documents/doc_wi_23" },
+      { label: "The draft return", href: "/documents/doc_1040_23s" },
+    ],
+    resultHref: "/documents/doc_1040_23s",
+  },
+  {
+    id: "gov_return_rep",
+    lane: "represented",
+    actionId: "act_file23r",
+    showsAfter: "act_w2",
+    title: "2023 return to e-file under your name",
+    kind: "Tax return",
+    producedBy: "T-Res return preparer",
+    createdOn: MOCK_TODAY,
+    confidence: 0.94,
+    policyId: "pol_submission",
+    status: "pending",
+    eaMinutes: 6,
+    approveLabel: "Approve for e-filing",
+    summary: "Prepared Jordan's 2023 Form 1040 from the uploaded W-2s and 1099s. You're the preparer, so it's yours to approve before it's e-filed.",
+    output: `${return2023Preview}\n\nPreparer: Chris G., Enrolled Agent`,
+    checks: [
+      { label: "Every W-2 and 1099 on the IRS wage & income record is included", passed: true },
+      { label: "Math checked by the rules engine", passed: true },
+      { label: "Balance due matches our estimate (about $4,900)", passed: true },
+    ],
+    evidence: [
+      { label: "2023 wage & income transcript", href: "/documents/doc_wi_23" },
+      { label: "The draft return", href: "/documents/doc_1040_23r" },
+    ],
+    resultHref: "/documents/doc_1040_23r",
+  },
+  {
+    id: "gov_opa",
+    lane: "self-serve",
+    actionId: "act_opa",
+    showsAfter: "act_opa",
+    title: "IRS payment plan confirmation checked",
+    kind: "Document check",
+    producedBy: "T-Res document reader",
+    createdOn: MOCK_TODAY,
+    confidence: 0.97,
+    policyId: "pol_selfcheck",
+    status: "auto-approved",
+    decidedOn: MOCK_TODAY,
+    summary: "Read the payment plan confirmation Jordan uploaded and matched it against the answers we gave. It checks out.",
+    checks: [
+      { label: "It's an IRS payment plan confirmation for Jordan", passed: true },
+      { label: "Monthly amount matches the answers we gave (about $440)", passed: true },
+      { label: "Covers the 2021 and 2022 balances", passed: true },
+      { label: "Paid by direct debit, which the lien withdrawal needs", passed: true },
+    ],
+    evidence: [{ label: "Jordan's to-dos", href: "/action-items" }],
+    resultHref: "/action-items",
   },
 ];
 
