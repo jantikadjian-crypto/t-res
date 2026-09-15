@@ -21,12 +21,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useCase } from "@/components/case-provider";
 import { inputClass, selectClass } from "@/components/form";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { StatusBadge } from "@/components/status";
 import { documentAction, sourceLabel, statusMeta, WAITING_STATUSES } from "@/components/documents/document-meta";
-import { useCase } from "@/components/case-provider";
 import { formatDate, formatFileSize } from "@/lib/format";
 import { enrolledAgent, MOCK_TODAY, taxYears, type CaseDocument, type DocumentCategory } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
@@ -42,40 +42,51 @@ const CATEGORIES: DocumentCategory[] = [
 
 const YEARS = taxYears.map((y) => String(y.year));
 
-type Ownership = "all" | "mine" | "tres" | "irs";
+export type DocumentView = "all" | "mine" | "tres" | "irs";
+export type StatusFilter = "any" | "waiting" | "on-file" | "in-review";
 
 // "My documents" means files the taxpayer actually uploaded, not ones we're still waiting for.
 const isMyUpload = (d: CaseDocument) => d.source === "You" && d.status !== "requested";
 
-// Split by who added the document, so the tabs never overlap.
-const ownershipTabs: { key: Ownership; label: string; hint: string; match: (d: CaseDocument) => boolean }[] = [
+// Tabs are real pages (not React state) so they also work in the progress snapshot.
+// Split by who added a document, so the tabs never overlap.
+export const documentViews: {
+  key: DocumentView;
+  href: string;
+  label: string;
+  hint: string;
+  match: (d: CaseDocument) => boolean;
+}[] = [
   {
     key: "all",
+    href: "/documents",
     label: "All documents",
     hint: "Everything in your case file, including documents we've asked you for.",
     match: () => true,
   },
   {
     key: "mine",
+    href: "/documents/mine",
     label: "My documents",
     hint: "Files you've uploaded. Documents we've asked for appear here once you upload them.",
     match: isMyUpload,
   },
   {
     key: "tres",
+    href: "/documents/from-tres",
     label: "From T-Res",
     hint: "Forms, letters and summaries we've prepared for you.",
     match: (d) => d.source === "T-Res",
   },
   {
     key: "irs",
+    href: "/documents/from-irs",
     label: "From the IRS",
     hint: "Records we pulled directly from the IRS for you.",
     match: (d) => d.source === "IRS",
   },
 ];
 
-type StatusFilter = "any" | "waiting" | "on-file" | "in-review";
 type SortKey = "addedOn" | "name" | "sizeKb";
 type Sort = { key: SortKey; dir: 1 | -1 };
 
@@ -145,19 +156,30 @@ function RowUpload({ doc, onFile }: { doc: CaseDocument; onFile: (file: File) =>
   );
 }
 
-export function DocumentLibrary() {
+// A metric tile that opens a view of the library.
+function TileLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="rounded-xl transition-shadow outline-none hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50 [&>[data-slot=card]]:h-full"
+    >
+      {children}
+    </Link>
+  );
+}
+
+export function DocumentLibrary({ view, initialStatus = "any" }: { view: DocumentView; initialStatus?: StatusFilter }) {
   const { docs, notesFor, addDocuments, attachFile } = useCase();
-  const [ownership, setOwnership] = useState<Ownership>("all");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"all" | DocumentCategory>("all");
   const [year, setYear] = useState("all");
-  const [status, setStatus] = useState<StatusFilter>("any");
+  const [status, setStatus] = useState<StatusFilter>(initialStatus);
   const [sort, setSort] = useState<Sort>({ key: "addedOn", dir: -1 });
   const [pending, setPending] = useState<PendingUpload[]>([]);
-  const [confirmation, setConfirmation] = useState<string | null>(null);
+  const [addedCount, setAddedCount] = useState(0);
   const uploadRef = useRef<HTMLInputElement>(null);
 
-  const tab = ownershipTabs.find((t) => t.key === ownership) ?? ownershipTabs[0];
+  const tab = documentViews.find((t) => t.key === view) ?? documentViews[0];
   const waiting = docs.filter((d) => WAITING_STATUSES.includes(d.status));
   const q = query.trim().toLowerCase();
 
@@ -219,14 +241,9 @@ export function DocumentLibrary() {
     }));
     addDocuments(added);
     setPending([]);
-    setOwnership("mine");
     clearFilters();
     setSort({ key: "addedOn", dir: -1 });
-    setConfirmation(
-      `Added ${added.length} ${added.length === 1 ? "document" : "documents"} to My documents. ${enrolledAgent.name} will review ${
-        added.length === 1 ? "it" : "them"
-      } within one business day.`
-    );
+    setAddedCount(added.length);
   };
 
   const counts = {
@@ -238,34 +255,42 @@ export function DocumentLibrary() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricTile
-          icon={UserRound}
-          iconClass="text-blue-600"
-          label="My documents"
-          value={String(docs.filter(isMyUpload).length)}
-          caption="Files you've uploaded"
-        />
-        <MetricTile
-          icon={FileClock}
-          iconClass="text-red-600"
-          label="Waiting on you"
-          value={String(waiting.length)}
-          caption="To sign, approve, or upload"
-        />
-        <MetricTile
-          icon={Landmark}
-          iconClass="text-orange-600"
-          label="From the IRS"
-          value={String(docs.filter((d) => d.source === "IRS").length)}
-          caption="Transcripts and records we pulled"
-        />
-        <MetricTile
-          icon={ShieldCheck}
-          iconClass="text-green-600"
-          label="From T-Res"
-          value={String(docs.filter((d) => d.source === "T-Res").length)}
-          caption="Forms, letters and summaries"
-        />
+        <TileLink href="/documents/mine">
+          <MetricTile
+            icon={UserRound}
+            iconClass="text-blue-600"
+            label="My documents"
+            value={String(docs.filter(isMyUpload).length)}
+            caption="Files you've uploaded"
+          />
+        </TileLink>
+        <TileLink href="/documents/waiting">
+          <MetricTile
+            icon={FileClock}
+            iconClass="text-red-600"
+            label="Waiting on you"
+            value={String(waiting.length)}
+            caption="To sign, approve, or upload"
+          />
+        </TileLink>
+        <TileLink href="/documents/from-irs">
+          <MetricTile
+            icon={Landmark}
+            iconClass="text-orange-600"
+            label="From the IRS"
+            value={String(docs.filter((d) => d.source === "IRS").length)}
+            caption="Transcripts and records we pulled"
+          />
+        </TileLink>
+        <TileLink href="/documents/from-tres">
+          <MetricTile
+            icon={ShieldCheck}
+            iconClass="text-green-600"
+            label="From T-Res"
+            value={String(docs.filter((d) => d.source === "T-Res").length)}
+            caption="Forms, letters and summaries"
+          />
+        </TileLink>
       </div>
 
       {waiting.length > 0 && status !== "waiting" && (
@@ -285,41 +310,43 @@ export function DocumentLibrary() {
                 .join(" · ")}
             </p>
           </div>
-          <Button
-            variant="outline"
-            className="border-yellow-300 bg-white"
-            onClick={() => {
-              setOwnership("all");
-              clearFilters();
-              setStatus("waiting");
-            }}
-          >
+          <LinkButton href="/documents/waiting" variant="outline" className="border-yellow-300 bg-white">
             Show them
-          </Button>
+          </LinkButton>
         </div>
       )}
 
-      {confirmation && (
+      {addedCount > 0 && (
         <div role="status" className="flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
           <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
-          <p className="flex-1">{confirmation}</p>
-          <button type="button" onClick={() => setConfirmation(null)} aria-label="Dismiss" className="rounded-md p-0.5 hover:bg-green-100">
+          <p className="flex-1">
+            Added {addedCount} {addedCount === 1 ? "document" : "documents"}. {enrolledAgent.name} will review{" "}
+            {addedCount === 1 ? "it" : "them"} within one business day.
+            {view !== "all" && view !== "mine" && (
+              <>
+                {" "}
+                <Link href="/documents/mine" className="font-medium underline">
+                  See them in My documents
+                </Link>
+              </>
+            )}
+          </p>
+          <button type="button" onClick={() => setAddedCount(0)} aria-label="Dismiss" className="rounded-md p-0.5 hover:bg-green-100">
             <X className="size-4" aria-hidden />
           </button>
         </div>
       )}
 
-      {/* Who added it */}
+      {/* Who added it: each tab is its own page */}
       <div className="space-y-2">
-        <div role="group" aria-label="Show documents from" className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1 sm:grid-cols-4">
-          {ownershipTabs.map((t) => {
-            const active = t.key === ownership;
+        <nav aria-label="Show documents from" className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1 sm:grid-cols-4">
+          {documentViews.map((t) => {
+            const active = t.key === view;
             return (
-              <button
+              <Link
                 key={t.key}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setOwnership(t.key)}
+                href={t.href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   active ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
@@ -327,10 +354,10 @@ export function DocumentLibrary() {
               >
                 {t.label}
                 <span className="text-xs tabular-nums opacity-70">{docs.filter(t.match).length}</span>
-              </button>
+              </Link>
             );
           })}
-        </div>
+        </nav>
         <p className="text-xs text-muted-foreground">{tab.hint}</p>
       </div>
 
@@ -419,7 +446,7 @@ export function DocumentLibrary() {
             <p className="font-medium">
               Add {pending.length} {pending.length === 1 ? "file" : "files"} to My documents
             </p>
-            <p className="text-sm text-muted-foreground">Tell us what each one is so Chris can find it fast.</p>
+            <p className="text-sm text-muted-foreground">Tell us what each one is so {enrolledAgent.name} can find it fast.</p>
           </div>
           <ul className="divide-y border-y">
             {pending.map((p) => (
@@ -489,6 +516,7 @@ export function DocumentLibrary() {
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground" aria-live="polite">
         <span>
           Showing {visible.length} of {inTab.length} in {tab.label}
+          {status === "waiting" && " · waiting on you"}
         </span>
         {filtersActive && (
           <Button variant="link" size="sm" className="px-0" onClick={clearFilters}>
@@ -576,7 +604,7 @@ export function DocumentLibrary() {
               {visible.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center">
-                    {ownership === "mine" && !filtersActive ? (
+                    {view === "mine" && !filtersActive ? (
                       <div className="space-y-3">
                         <p className="text-sm text-muted-foreground">You haven&apos;t uploaded anything yet.</p>
                         <Button onClick={() => uploadRef.current?.click()}>
@@ -584,6 +612,8 @@ export function DocumentLibrary() {
                           Upload your first document
                         </Button>
                       </div>
+                    ) : status === "waiting" && !q && category === "all" && year === "all" ? (
+                      <p className="text-sm text-green-700">Nothing is waiting on you. You&apos;re all caught up.</p>
                     ) : (
                       <div className="space-y-3">
                         <p className="text-sm text-muted-foreground">

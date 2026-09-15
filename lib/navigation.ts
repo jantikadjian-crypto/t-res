@@ -46,6 +46,14 @@ export const navGroups: NavGroup[] = [
 
 export type Crumb = { label: string; href?: string };
 
+// Documents tabs are pages under /documents; name them in the breadcrumbs.
+const documentViewLabels: Record<string, string> = {
+  mine: "My documents",
+  "from-tres": "From T-Res",
+  "from-irs": "From the IRS",
+  waiting: "Waiting on you",
+};
+
 /** Trail after the home icon, e.g. Your Case › Notices › CP504. The last crumb is the current page. */
 export function breadcrumbsFor(pathname: string): Crumb[] {
   const [section, detail] = pathname.split("/").filter(Boolean);
@@ -77,7 +85,7 @@ export function breadcrumbsFor(pathname: string): Crumb[] {
         section === "notices"
           ? (notices.find((n) => n.id === detail)?.code ?? detail)
           : section === "documents"
-            ? (documents.find((d) => d.id === detail)?.name ?? "Document")
+            ? (documentViewLabels[detail] ?? documents.find((d) => d.id === detail)?.name ?? "Document")
             : detail;
       crumbs.push({ label });
     }
