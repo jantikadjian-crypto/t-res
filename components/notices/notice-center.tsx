@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
-import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { NoticeUpload } from "@/components/notices/notice-upload";
@@ -28,7 +28,7 @@ import { libraryMatches } from "@/lib/library";
 import { notices as allNotices, type Notice } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
-type DecodeKey = Exclude<keyof Notice["decode"], "eaReviewed">;
+type DecodeKey = keyof Notice["decode"];
 
 const decodeSections: { key: DecodeKey; label: string; icon: LucideIcon }[] = [
   { key: "whatItIs", label: "What it is", icon: FileText },
@@ -174,7 +174,7 @@ export function NoticeCenter({ selectedId }: { selectedId: string }) {
                 </div>
               ))}
             </div>
-            {selected.decode.eaReviewed && <EAReviewedBadge />}
+            <GovernanceBadge href={`/notices/${selected.id}`} />
           </CardContent>
           <CardFooter className="flex-wrap gap-2">
             {selected.status === "action-needed" && (

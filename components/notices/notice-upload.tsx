@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { CheckCircle2, FileUp, Loader2, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, deadlineTone, formatDate, formatMoney } from "@/lib/format";
 
@@ -53,7 +53,8 @@ export function NoticeUpload() {
           <p className="text-sm text-muted-foreground">{decodedSample.whatWeAreDoing}</p>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 pl-6">
-          <EAReviewedBadge pending />
+          {/* A plain-English explanation: auto-approved by policy once its checks pass. */}
+          <GovernanceBadge />
           <Button variant="outline" size="sm" className="bg-white" onClick={() => setState("idle")}>
             Upload another
           </Button>

@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ActionItemsTile, NextStepsCard, UrgencyBanner } from "@/components/dashboard/live-cards";
-import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { PageHeader } from "@/components/page-header";
@@ -195,7 +195,7 @@ export default function DashboardPage() {
                         {n.taxYear} tax year
                       </Link>
                       <span>· received {formatDate(n.receivedOn)}</span>
-                      {n.decode.eaReviewed && <EAReviewedBadge />}
+                      <GovernanceBadge href={`/notices/${n.id}`} />
                       <Link href={`/documents/${n.documentId}`} className="text-primary hover:underline sm:ml-auto">
                         View the letter
                       </Link>

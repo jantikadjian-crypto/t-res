@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, ArrowRight, CheckCircle2, Sparkles, XCircle } from "lucide-react";
-import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { useIntake } from "@/components/intake/intake-provider";
 import { sumAmounts } from "@/components/intake/money-fields";
 import { StatusDot } from "@/components/status";
@@ -22,7 +22,8 @@ export function AssessmentScreen() {
 
   return (
     <div className="space-y-6">
-      <EAReviewedBadge />
+      {/* A money recommendation: PLCY routes it to Chris, so it carries his approval. */}
+      <GovernanceBadge href="/intake/assessment" />
 
       <section className="space-y-3 rounded-xl border bg-card p-5" aria-labelledby="assess-stand">
         <h2 id="assess-stand" className="font-semibold">

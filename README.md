@@ -48,6 +48,6 @@ It downloads anything missing into `public/forms`, renders previews (needs Pytho
 - `lib/mockData.ts`: the taxpayer, notices, tax years, documents, plans. The demo date is fixed (`MOCK_TODAY`).
 - `components/case-provider.tsx`: everything the taxpayer changes in a session (uploads, notes, signatures, plan).
 - `lib/navigation.ts`: the sidebar and breadcrumbs.
-- `CLAUDE.md`: product rules and conventions (tone, EA-Reviewed badges, formatting).
+- `CLAUDE.md`: product rules and conventions (tone, tiered review badges, formatting).
 
 Stack: Next.js (App Router), Tailwind CSS, shadcn/ui, lucide-react.

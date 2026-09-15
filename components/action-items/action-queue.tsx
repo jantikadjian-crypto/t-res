@@ -6,7 +6,6 @@ import { Camera, CheckCircle2, FileCheck, FileUp, PenLine, Upload, type LucideIc
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
-import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
 import { GovernanceBadge } from "@/components/governance-badge";
 import { LinkButton } from "@/components/link-button";
 import { StatusBadge } from "@/components/status";
@@ -123,7 +122,7 @@ export function ActionQueue() {
                         <div className="rounded-lg border bg-background p-4 font-serif text-sm leading-relaxed whitespace-pre-line">
                           {item.letterPreview}
                         </div>
-                        {governedBy(item) ? <GovernanceBadge itemId={governedBy(item)!.id} /> : <EAReviewedBadge />}
+                        <GovernanceBadge itemId={governedBy(item)?.id} />
                       </div>
                     )}
                   </div>

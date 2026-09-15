@@ -4,7 +4,7 @@
 - Consumer-facing IRS tax resolution app. Users are anxious — tone: calm, plain English, every warning paired with an action button.
 - Design system: mirror a governance console aesthetic — light bg, card-based metrics, status dots (green/yellow/red), badge pills, alert banners with CTA buttons, left sidebar nav.
 - Stack: Next.js App Router, Tailwind, shadcn/ui, lucide-react icons. Mock data only in /lib/mockData.ts — no APIs.
-- Every AI-generated output in the UI shows an "EA-Reviewed" badge (trust is the product).
+- Every AI-generated output in the UI shows a tiered review badge (trust is the product): "Checked by T-Res" (automated checks under rules the EA approved, governed by PLCY) or "Approved by Chris" (he signed off himself: anything sent under his name, money recommendations). Goal: AI does ~99% of the work; the EA approves by exception.
 - Money always formatted, deadlines always show days remaining, IRS jargon always translated.
 
 ## Scope (v1)
@@ -27,10 +27,10 @@
 - Search everything: /lib/search.ts builds the index for the Ctrl+K palette (components/search). New pages or data kinds must be added to the index.
 - Sidebar and breadcrumbs both read /lib/navigation.ts. Settings and Billing & plan are reached from the account menu (name, top right) only: their group has `sidebar: false` so breadcrumbs still name them.
 - Notice status is live: read `notices` / `openNotices` from `useCase()`, not mockData. A notice needing action moves to "We're handling it" once every to-do tied to it (`relatedNoticeId`) is done.
-- PLCY is T-Res's AI governance layer. `app/(plcy)/plcy` is a demo mock of Chris's PLCY view (approvals inbox, item review), reached from the account menu. AI actions and routing policies live in `governanceItems` / `governancePolicies` in mockData; decisions live in CaseProvider (`governance`, `decideGovernance`). AI output governed there shows `<GovernanceBadge />` ("Checked by T-Res", then "Approved by Chris") instead of `<EAReviewedBadge />`. PLCY pages are Chris's, so keep them out of the taxpayer's search index.
+- PLCY is T-Res's AI governance layer. `app/(plcy)/plcy` is a demo mock of Chris's PLCY view (approvals inbox, item review), reached from the account menu. AI actions and routing policies live in `governanceItems` / `governancePolicies` in mockData; decisions live in CaseProvider (`governance`, `decideGovernance`). Log every AI output there so its badge follows its PLCY record live. PLCY pages are Chris's, so keep them out of the taxpayer's search index.
 - Selection state that should survive the progress snapshot goes in the URL (e.g. /notices/[id], /tax-years/[year]), not React state.
 - Links that look like buttons use `<LinkButton />` from /components/link-button.tsx.
-- AI-generated content gets `<EAReviewedBadge />` from /components/ea-reviewed-badge.tsx.
+- AI-generated content gets `<GovernanceBadge />` from /components/governance-badge.tsx: pass `itemId`, or the `href` of the page the output appears on, to follow its PLCY record; `tier="approved"` only for content Chris approved himself (e.g. Library entries).
 - Mock "today" is fixed in mockData (`MOCK_TODAY`) so day counts stay stable in demos.
 
 ## Working rules

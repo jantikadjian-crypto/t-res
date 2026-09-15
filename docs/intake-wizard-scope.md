@@ -22,8 +22,8 @@ Status: **built 2026-09-14, all 13 screens** (pricing still placeholder). Jordan
 - **Calm, never alarming.** Every warning is paired with what happens next.
 - **Translate IRS jargon** the first time it appears: "payment plan (installment agreement)", then just "payment plan".
 - **No real PII in v1.** Identity fields show masked fake values (`•••-••-4417`); nothing sensitive is collected.
-- **Trust.** AI output (the notice decode on screen 1, the assessment on screen 11) carries the EA-Reviewed badge,
-  or "Awaiting review by Chris G." when it was generated moments ago.
+- **Trust.** AI output carries a tiered review badge, governed by PLCY: the notice decode on screen 1 shows
+  "Checked by T-Res"; the assessment on screen 11 is a money recommendation, so it shows "Approved by Chris G.".
 - **State.** React state only (CLAUDE.md). A refresh resets to Jordan's answers. Real save/resume is v2 (needs accounts).
 
 ## Frame (every screen)
@@ -138,7 +138,7 @@ A plain-English version of the IRS's Collection Information Statement (Form 433-
 ### Step 6 · Assessment
 
 **11. `/intake/assessment` — "Here's what we think you should do."**
-- AI-generated, **EA-Reviewed** badge at the top. Four blocks:
+- AI-generated, **Approved by Chris G.** badge at the top (PLCY routes money recommendations to him). Four blocks:
   1. **Where you stand:** about $21,000 owed for 2021–2022, plus about $4,900 estimated for 2023.
   2. **Our recommendation:** a payment plan (installment agreement) of **about $440 a month**. It stops collection and
      doesn't need a full financial review because the balance is under $50,000.

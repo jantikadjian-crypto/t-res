@@ -6,7 +6,6 @@ import { AlertTriangle, ArrowLeft, FileCheck, FileText, FileUp, PenLine, Upload 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
-import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
 import { GovernanceBadge } from "@/components/governance-badge";
 import { LinkButton } from "@/components/link-button";
 import { PageHeader } from "@/components/page-header";
@@ -204,11 +203,12 @@ export function DocumentDetail({ id }: { id: string }) {
             <CardContent className="space-y-5">
               <div className="space-y-2">
                 <p className="text-sm">{doc.summary}</p>
-                {/* Governed in PLCY: tiered badge. Otherwise our plain-English summary; a fresh upload's gets reviewed first. */}
+                {/* Live from PLCY when governed there. Otherwise our plain-English summary, checked by T-Res.
+                    Requested files and fresh uploads have no AI summary yet, so no badge. */}
                 {governed ? (
                   <GovernanceBadge itemId={governed.id} />
                 ) : (
-                  doc.status !== "requested" && <EAReviewedBadge pending={doc.status === "in-review"} />
+                  doc.status !== "requested" && doc.status !== "in-review" && <GovernanceBadge />
                 )}
               </div>
               <dl className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] gap-x-6 gap-y-3 text-sm">

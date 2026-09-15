@@ -4,14 +4,14 @@ import { useRef, useState } from "react";
 import { AlertTriangle, Camera, FileQuestion, FileUp, Loader2, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { useIntake } from "@/components/intake/intake-provider";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, deadlineTone, formatDate, formatMoney } from "@/lib/format";
 import { LEVY_NOTICE_CODES, SAMPLE_UPLOAD_DOCUMENT_ID } from "@/lib/intakeScreens";
 import { notices, type Notice } from "@/lib/mockData";
 
-function DecodeCard({ notice, fresh }: { notice: Notice; fresh: boolean }) {
+function DecodeCard({ notice }: { notice: Notice }) {
   return (
     <div className="space-y-4 rounded-xl border bg-card p-5">
       <div className="flex flex-wrap items-center gap-2">
@@ -39,7 +39,8 @@ function DecodeCard({ notice, fresh }: { notice: Notice; fresh: boolean }) {
         <p className="text-sm font-medium">What it means</p>
         <p className="text-sm text-muted-foreground">{notice.decode.whatItMeans}</p>
       </div>
-      <EAReviewedBadge pending={fresh} />
+      {/* Follows the decode's PLCY record: auto-approved once its checks pass. */}
+      <GovernanceBadge href={`/notices/${notice.id}`} />
     </div>
   );
 }
@@ -83,7 +84,7 @@ export function NoticeScreen() {
   if (notice && !replacing) {
     return (
       <div className="space-y-4">
-        <DecodeCard notice={notice} fresh={state.noticeFreshUpload} />
+        <DecodeCard notice={notice} />
         <Button variant="outline" onClick={() => setReplacing(true)}>
           Use a different letter
         </Button>

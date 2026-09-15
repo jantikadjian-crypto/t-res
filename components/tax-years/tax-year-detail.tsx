@@ -9,7 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { PageHeader } from "@/components/page-header";
@@ -62,7 +62,7 @@ function BalanceCard({ y }: { y: TaxYear }) {
             has no tax taken out, which is why a balance is likely. Filing also stops the failure-to-file penalty
             from growing.
           </p>
-          <EAReviewedBadge />
+          <GovernanceBadge href={`/tax-years/${y.year}`} />
         </CardContent>
         <CardFooter>
           <LinkButton href="/action-items">
@@ -130,7 +130,7 @@ function BalanceCard({ y }: { y: TaxYear }) {
                 <Link href="/intake/assessment" className="text-sm font-medium text-green-900 underline">
                   See our full assessment
                 </Link>
-                <EAReviewedBadge />
+                <GovernanceBadge href={`/tax-years/${y.year}`} />
               </div>
             </div>
           </div>

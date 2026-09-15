@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ExternalLink, Info } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { FormFiles } from "@/components/library/form-files";
 import { kindStyle, LibraryBrowser } from "@/components/library/library-browser";
 import { LinkButton } from "@/components/link-button";
@@ -86,7 +86,8 @@ export function LibraryEntryView({ slug }: { slug: string }) {
                   </div>
                 </div>
               )}
-              <EAReviewedBadge />
+              {/* Reference content: Chris approves each entry once. */}
+              <GovernanceBadge tier="approved" />
             </CardContent>
           </Card>
 

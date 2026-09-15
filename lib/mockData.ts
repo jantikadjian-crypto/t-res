@@ -79,13 +79,12 @@ export type Notice = {
   statusLabel: string;
   tone: Tone;
   documentId: string;
-  // AI-generated decode; always shown with the EA-Reviewed badge.
+  // AI-generated decode; always shown with its review badge (logged in PLCY as governanceItems).
   decode: {
     whatItIs: string;
     whatItMeans: string;
     deadline: string;
     whatWeAreDoing: string;
-    eaReviewed: boolean;
   };
 };
 
@@ -316,7 +315,6 @@ export const notices: Notice[] = [
         "Respond by Sep 26, 2026. After that the IRS can take your state refund and send a final notice (LT11) before it can touch wages or bank accounts.",
       whatWeAreDoing:
         "We are drafting a response and requesting a hold on collection while we set up a resolution. We need your signature on Form 2848 to send it.",
-      eaReviewed: true,
     },
   },
   {
@@ -340,7 +338,6 @@ export const notices: Notice[] = [
         "The IRS asks for payment by Sep 29, 2026. Because 2022 is part of your case, we'll respond for you before then.",
       whatWeAreDoing:
         "We are rolling 2022 into the same resolution as 2021 so you only deal with one plan. No action needed from you on this one.",
-      eaReviewed: true,
     },
   },
   {
@@ -365,7 +362,6 @@ export const notices: Notice[] = [
         "The formal hearing deadline was Dec 17, 2025 and has passed. A similar 'equivalent hearing' is still available until Nov 10, 2026.",
       whatWeAreDoing:
         "Once your payment plan is in place we'll ask for the lien to be withdrawn. That's possible when the balance is under $25,000 and paid by direct debit.",
-      eaReviewed: true,
     },
   },
   {
@@ -387,7 +383,6 @@ export const notices: Notice[] = [
         "Nothing to do on this one any more. The IRS has since sent the CP504, which is the notice that matters now.",
       deadline: "Its deadline (Sep 2, 2025) has passed and it has been replaced by your CP504.",
       whatWeAreDoing: "Kept on file for your case history. Everything is handled through the CP504 response.",
-      eaReviewed: true,
     },
   },
 ];
@@ -651,7 +646,6 @@ export type IntakeAnswers = {
     summary: string;
     alsoDoing: { text: string; href: string }[];
     ruledOut: { option: string; why: string }[];
-    eaReviewed: boolean;
   };
   chosenPlanId: string | null;
 };
@@ -703,7 +697,6 @@ export const intakeAnswers: IntakeAnswers = {
         why: "This is for people with nothing left over each month. You have about $910, so the IRS would say no.",
       },
     ],
-    eaReviewed: true,
   },
   chosenPlanId: "full",
 };
@@ -1029,6 +1022,44 @@ export const governanceItems: GovernanceItem[] = [
     ],
     evidence: [{ label: "CP14 notice", href: "/documents/doc_cp14" }],
     resultHref: "/notices/ntc_cp14",
+  },
+  {
+    id: "gov_l3172",
+    title: "Letter 3172 explained in plain English",
+    kind: "Explanation",
+    producedBy: "T-Res notice reader",
+    createdOn: "2026-09-04",
+    confidence: 0.95,
+    policyId: "pol_explain",
+    status: "auto-approved",
+    decidedOn: "2026-09-04",
+    summary: "Read the lien letter Jordan uploaded and explained the lien, the hearing window that has passed, and the path to a withdrawal.",
+    checks: [
+      { label: "Notice code, amount and deadline match the letter and the transcript", passed: true },
+      { label: "Written at a 6th-grade reading level", passed: true },
+      { label: "Makes no promises about outcomes", passed: true },
+    ],
+    evidence: [{ label: "Letter 3172", href: "/documents/doc_l3172" }],
+    resultHref: "/notices/ntc_l3172",
+  },
+  {
+    id: "gov_cp503",
+    title: "CP503 explained in plain English",
+    kind: "Explanation",
+    producedBy: "T-Res notice reader",
+    createdOn: "2026-09-04",
+    confidence: 0.97,
+    policyId: "pol_explain",
+    status: "auto-approved",
+    decidedOn: "2026-09-04",
+    summary: "Read the CP503 Jordan uploaded and explained that the CP504 has replaced it, so there's nothing to do.",
+    checks: [
+      { label: "Notice code, amount and deadline match the letter and the transcript", passed: true },
+      { label: "Written at a 6th-grade reading level", passed: true },
+      { label: "Makes no promises about outcomes", passed: true },
+    ],
+    evidence: [{ label: "CP503 notice", href: "/documents/doc_cp503" }],
+    resultHref: "/notices/ntc_cp503",
   },
   {
     id: "gov_2023",
