@@ -5,12 +5,13 @@ import Link from "next/link";
 import { AlertTriangle, ArrowLeft, FileCheck, FileText, FileUp, PenLine, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCase } from "@/components/case-provider";
 import { LinkButton } from "@/components/link-button";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status";
 import { documentAction, fileKind, sourceLabel, statusMeta, WAITING_STATUSES } from "@/components/documents/document-meta";
 import { DocumentNotes } from "@/components/documents/document-notes";
-import { useDocuments } from "@/components/documents/documents-provider";
+import { SignatureCertificate } from "@/components/signing/signature-certificate";
 import { formatDate, formatFileSize, formatMoney } from "@/lib/format";
 import { actionItems, notices, type CaseDocument, type Notice } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
@@ -91,7 +92,7 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 }
 
 export function DocumentDetail({ id }: { id: string }) {
-  const { docs, attachFile } = useDocuments();
+  const { docs, attachFile, signatures } = useCase();
   const fileRef = useRef<HTMLInputElement>(null);
   const doc = docs.find((d) => d.id === id);
 
@@ -114,6 +115,7 @@ export function DocumentDetail({ id }: { id: string }) {
   const action = documentAction(doc);
   const actionItem = doc.relatedActionId ? actionItems.find((a) => a.id === doc.relatedActionId) : undefined;
   const meta = statusMeta[doc.status];
+  const signature = signatures[doc.id];
   const canReplace = doc.source === "You" && doc.status !== "requested";
   const openPicker = () => fileRef.current?.click();
 
@@ -199,7 +201,7 @@ export function DocumentDetail({ id }: { id: string }) {
               <p className="text-sm">{doc.summary}</p>
               <dl className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] gap-x-6 gap-y-3 text-sm">
                 <DetailRow label="Status">
-                  <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
+                  <StatusBadge tone={meta.tone}>{signature ? "Signed · on file" : meta.label}</StatusBadge>
                 </DetailRow>
                 <DetailRow label="Category">{doc.category}</DetailRow>
                 <DetailRow label="From">{sourceLabel[doc.source]}</DetailRow>
@@ -232,6 +234,8 @@ export function DocumentDetail({ id }: { id: string }) {
               </dl>
             </CardContent>
           </Card>
+
+          {signature && <SignatureCertificate record={signature} />}
         </div>
 
         <div className="lg:col-span-2">

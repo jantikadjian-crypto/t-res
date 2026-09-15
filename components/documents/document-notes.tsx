@@ -5,7 +5,7 @@ import { MessageSquare, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { textareaClass } from "@/components/form";
-import { useDocuments } from "@/components/documents/documents-provider";
+import { useCase } from "@/components/case-provider";
 import { formatDate } from "@/lib/format";
 import { enrolledAgent, taxpayer, type DocumentNote } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,7 @@ const authors: Record<DocumentNote["author"], { name: string; role: string; init
 };
 
 function NoteItem({ docId, note }: { docId: string; note: DocumentNote }) {
-  const { editNote, deleteNote } = useDocuments();
+  const { editNote, deleteNote } = useCase();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(note.text);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -142,7 +142,7 @@ function NoteItem({ docId, note }: { docId: string; note: DocumentNote }) {
 }
 
 export function DocumentNotes({ docId }: { docId: string }) {
-  const { notesFor, addNote } = useDocuments();
+  const { notesFor, addNote } = useCase();
   const notes = [...notesFor(docId)].sort((a, b) => a.date.localeCompare(b.date));
   const [draft, setDraft] = useState("");
 

@@ -26,7 +26,7 @@ import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { StatusBadge } from "@/components/status";
 import { documentAction, sourceLabel, statusMeta, WAITING_STATUSES } from "@/components/documents/document-meta";
-import { useDocuments } from "@/components/documents/documents-provider";
+import { useCase } from "@/components/case-provider";
 import { formatDate, formatFileSize } from "@/lib/format";
 import { enrolledAgent, MOCK_TODAY, taxYears, type CaseDocument, type DocumentCategory } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
@@ -146,7 +146,7 @@ function RowUpload({ doc, onFile }: { doc: CaseDocument; onFile: (file: File) =>
 }
 
 export function DocumentLibrary() {
-  const { docs, notesFor, addDocuments, attachFile } = useDocuments();
+  const { docs, notesFor, addDocuments, attachFile } = useCase();
   const [ownership, setOwnership] = useState<Ownership>("all");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"all" | DocumentCategory>("all");

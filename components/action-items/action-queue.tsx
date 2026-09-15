@@ -5,11 +5,12 @@ import Link from "next/link";
 import { Camera, CheckCircle2, FileCheck, FileUp, PenLine, Upload, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useCase } from "@/components/case-provider";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { LinkButton } from "@/components/link-button";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, deadlineTone, formatDate } from "@/lib/format";
 import {
-  actionItems,
   caseStages,
   currentStageIndex,
   MOCK_TODAY,
@@ -18,8 +19,6 @@ import {
   type ActionItemType,
 } from "@/lib/mockData";
 
-type ItemState = ActionItem & { uploadedFile?: string };
-
 const typeMeta: Record<ActionItemType, { icon: LucideIcon; label: string }> = {
   sign: { icon: PenLine, label: "Signature" },
   upload: { icon: Upload, label: "Upload" },
@@ -27,6 +26,8 @@ const typeMeta: Record<ActionItemType, { icon: LucideIcon; label: string }> = {
 };
 
 const nextStage = caseStages[currentStageIndex + 1];
+
+const sizeKb = (file: File) => Math.max(1, Math.round(file.size / 1024));
 
 function RelatedLink({ item }: { item: ActionItem }) {
   const notice = item.relatedNoticeId ? notices.find((n) => n.id === item.relatedNoticeId) : undefined;
@@ -48,19 +49,14 @@ function RelatedLink({ item }: { item: ActionItem }) {
 }
 
 export function ActionQueue() {
-  const [items, setItems] = useState<ItemState[]>(actionItems);
+  const { actions, docs, signatures, completeAction } = useCase();
   const [openLetter, setOpenLetter] = useState<string | null>(null);
 
-  const complete = (id: string, uploadedFile?: string) =>
-    setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, done: true, completedOn: MOCK_TODAY, uploadedFile } : i))
-    );
-
-  const todo = items.filter((i) => !i.done).sort((a, b) => a.dueBy.localeCompare(b.dueBy));
-  const done = items
+  const todo = actions.filter((i) => !i.done).sort((a, b) => a.dueBy.localeCompare(b.dueBy));
+  const done = actions
     .filter((i) => i.done)
     .sort((a, b) => (b.completedOn ?? "").localeCompare(a.completedOn ?? ""));
-  const pct = Math.round((done.length / items.length) * 100);
+  const pct = Math.round((done.length / actions.length) * 100);
 
   return (
     <div className="space-y-6">
@@ -76,7 +72,7 @@ export function ActionQueue() {
               </p>
             </div>
             <div className="text-2xl font-bold tabular-nums">
-              {done.length} <span className="text-base font-normal text-muted-foreground">of {items.length} done</span>
+              {done.length} <span className="text-base font-normal text-muted-foreground">of {actions.length} done</span>
             </div>
           </div>
           <div className="h-2 w-full rounded-full bg-secondary">
@@ -96,6 +92,8 @@ export function ActionQueue() {
           {todo.map((item) => {
             const { icon: Icon, label } = typeMeta[item.type];
             const letterOpen = openLetter === item.id;
+            // Signing goes through the secure Sign flow when there's a document to sign.
+            const signDoc = docs.find((d) => d.relatedActionId === item.id && d.status === "needs-signature");
             return (
               <li key={item.id} className="rounded-xl border bg-card p-4">
                 <div className="flex flex-col gap-4 sm:flex-row">
@@ -127,12 +125,18 @@ export function ActionQueue() {
                   </div>
 
                   <div className="flex shrink-0 flex-wrap items-start gap-2 sm:flex-col sm:items-stretch">
-                    {item.type === "sign" && (
-                      <Button onClick={() => complete(item.id)}>
-                        <PenLine aria-hidden />
-                        Sign now
-                      </Button>
-                    )}
+                    {item.type === "sign" &&
+                      (signDoc ? (
+                        <LinkButton href={`/sign/${signDoc.id}`}>
+                          <PenLine aria-hidden />
+                          Sign now
+                        </LinkButton>
+                      ) : (
+                        <Button onClick={() => completeAction(item.id)}>
+                          <PenLine aria-hidden />
+                          Sign now
+                        </Button>
+                      ))}
                     {item.type === "upload" && (
                       <>
                         <input
@@ -143,7 +147,13 @@ export function ActionQueue() {
                           className="sr-only"
                           onChange={(e) => {
                             const files = e.target.files;
-                            if (files?.length) complete(item.id, files.length > 1 ? `${files.length} files` : files[0].name);
+                            if (files?.length) {
+                              const total = Array.from(files).reduce((s, f) => s + sizeKb(f), 0);
+                              completeAction(item.id, {
+                                name: files.length > 1 ? `${files.length} files` : files[0].name,
+                                sizeKb: total,
+                              });
+                            }
                           }}
                         />
                         <input
@@ -154,7 +164,7 @@ export function ActionQueue() {
                           className="sr-only"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) complete(item.id, file.name);
+                            if (file) completeAction(item.id, { name: file.name, sizeKb: sizeKb(file) });
                           }}
                         />
                         <Button onClick={() => document.getElementById(`upload-${item.id}`)?.click()}>
@@ -169,12 +179,12 @@ export function ActionQueue() {
                     )}
                     {item.type === "approve-letter" &&
                       (letterOpen ? (
-                        <Button onClick={() => complete(item.id)}>
+                        <Button onClick={() => completeAction(item.id)}>
                           <CheckCircle2 aria-hidden />
                           Approve letter
                         </Button>
                       ) : (
-                        <Button variant="outline" onClick={() => setOpenLetter(item.id)} aria-expanded={false}>
+                        <Button variant="outline" onClick={() => setOpenLetter(item.id)}>
                           <FileCheck aria-hidden />
                           Read the letter
                         </Button>
@@ -191,18 +201,29 @@ export function ActionQueue() {
         <h2 className="text-sm font-medium text-muted-foreground">Done · {done.length}</h2>
         <Card className="py-0">
           <ul className="divide-y">
-            {done.map((item) => (
-              <li key={item.id} className="flex items-start gap-3 px-6 py-4">
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{item.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Completed {formatDate(item.completedOn ?? MOCK_TODAY)}
-                    {item.uploadedFile && ` · ${item.uploadedFile} · we're reviewing it`}
-                  </p>
-                </div>
-              </li>
-            ))}
+            {done.map((item) => {
+              const signedDoc = docs.find((d) => d.relatedActionId === item.id && signatures[d.id]);
+              return (
+                <li key={item.id} className="flex items-start gap-3 px-6 py-4">
+                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Completed {formatDate(item.completedOn ?? MOCK_TODAY)}
+                      {item.uploadedFile && ` · ${item.uploadedFile} · we're reviewing it`}
+                      {signedDoc && (
+                        <>
+                          {" · signed electronically · "}
+                          <Link href={`/documents/${signedDoc.id}`} className="text-primary hover:underline">
+                            View certificate
+                          </Link>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </Card>
       </section>

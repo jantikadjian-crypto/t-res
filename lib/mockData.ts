@@ -101,6 +101,8 @@ export type ActionItem = {
   relatedTaxYear?: number;
   uploadHint?: string;
   letterPreview?: string;
+  // Set when an upload finishes this item.
+  uploadedFile?: string;
 };
 
 export type DocumentCategory =
@@ -157,7 +159,37 @@ export const taxpayer: Taxpayer = {
 export const taxpayerIdentity = {
   legalName: "Jordan A. Reyes",
   ssnMasked: "•••-••-4417",
+  ssnLast4: "4417",
   address: "1418 Cedar Bend Dr, Austin, TX 78758",
+  phoneMasked: "(512) •••-••82",
+  // Shown on screen in the demo in place of a real text message.
+  demoVerificationCode: "246810",
+};
+
+// Fake representative details printed on the Form 2848 preview.
+export const representativeDetails = {
+  cafNumber: "0312-45678R",
+  phone: "(512) 555-0147",
+  designation: "c — Enrolled Agent",
+  enrollment: "Enrollment card no. 00112233",
+  signedOn: "2026-09-10",
+};
+
+// Documents that can be signed in the Sign flow, with what signing them allows, in plain English.
+export const signingTerms: Record<
+  string,
+  { formLabel: string; agreeing: string[]; taxMatters: { matter: string; form: string; years: string }[] }
+> = {
+  doc_2848: {
+    formLabel: "Form 2848",
+    agreeing: [
+      "Chris G. can speak with the IRS about your income tax (Form 1040) for 2021, 2022 and 2023.",
+      "He gets copies of your IRS notices and can see your records for those years.",
+      "He can't cash or deposit your refund checks, and he can't sign tax returns for you.",
+      "You can cancel it at any time by telling us or the IRS.",
+    ],
+    taxMatters: [{ matter: "Income", form: "1040", years: "2021, 2022, 2023" }],
+  },
 };
 
 export const enrolledAgent: EnrolledAgent = {

@@ -4,15 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BadgeCheck, CheckCircle, ChevronDown, Scale, UserRound } from "lucide-react";
+import { useCase } from "@/components/case-provider";
 import { daysRemainingLabel } from "@/lib/format";
-import {
-  caseNumber,
-  caseStages,
-  currentStageIndex,
-  enrolledAgent,
-  nextActionItem,
-  taxpayer,
-} from "@/lib/mockData";
+import { caseNumber, caseStages, currentStageIndex, enrolledAgent, taxpayer } from "@/lib/mockData";
 import { navGroups } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +19,9 @@ function isActive(pathname: string, href: string) {
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { openActions } = useCase();
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
+  const nextAction = openActions[0];
 
   const toggleGroup = (id: string) =>
     setCollapsedGroups((prev) => (prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]));
@@ -70,6 +66,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <div id={`nav-${group.id}`} hidden={!open} className="mt-1 space-y-1">
                 {group.items.map(({ href, label, icon: Icon, count, urgent }) => {
                   const active = isActive(pathname, href);
+                  // Action items change as things get done this session.
+                  const shown = href === "/action-items" ? openActions.length : count;
                   return (
                     <Link
                       key={href}
@@ -83,14 +81,14 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                     >
                       <Icon className="size-4" aria-hidden />
                       <span className="flex-1">{label}</span>
-                      {count !== undefined && (
+                      {shown !== undefined && (
                         <span
                           className={cn(
                             "min-w-5 rounded-md border px-1.5 text-center text-xs font-semibold tabular-nums",
                             urgent ? "border-red-200 bg-red-50 text-red-600" : "border-transparent bg-muted text-muted-foreground"
                           )}
                         >
-                          {count}
+                          {shown}
                         </span>
                       )}
                     </Link>
@@ -120,7 +118,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         </Link>
 
-        {nextActionItem && (
+        {nextAction && (
           <Link
             href="/action-items"
             onClick={onNavigate}
@@ -131,7 +129,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <span className="text-xs font-medium text-green-800">Next milestone</span>
             </div>
             <p className="text-xs text-green-700">
-              {nextActionItem.title} · {daysRemainingLabel(nextActionItem.dueBy)}
+              {nextAction.title} · {daysRemainingLabel(nextAction.dueBy)}
             </p>
           </Link>
         )}

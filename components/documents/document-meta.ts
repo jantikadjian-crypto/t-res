@@ -31,7 +31,7 @@ export type DocumentAction = { kind: "upload" } | { kind: "link"; href: string; 
 /** What the taxpayer can do next with this document, if anything. */
 export function documentAction(doc: CaseDocument): DocumentAction | null {
   if (doc.status === "requested") return { kind: "upload" };
-  if (doc.status === "needs-signature") return { kind: "link", href: "/action-items", label: "Sign" };
+  if (doc.status === "needs-signature") return { kind: "link", href: `/sign/${doc.id}`, label: "Sign" };
   if (doc.status === "draft") return { kind: "link", href: "/action-items", label: "Review" };
   return null;
 }

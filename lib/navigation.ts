@@ -50,6 +50,15 @@ export type Crumb = { label: string; href?: string };
 export function breadcrumbsFor(pathname: string): Crumb[] {
   const [section, detail] = pathname.split("/").filter(Boolean);
 
+  if (section === "sign") {
+    const doc = documents.find((d) => d.id === detail);
+    return [
+      { label: "Documents", href: "/documents" },
+      { label: doc?.name ?? "Document", href: `/documents/${detail}` },
+      { label: "Sign" },
+    ];
+  }
+
   if (section === "intake") {
     const screen = getScreen(detail ?? FIRST_SCREEN);
     const step = intakeSteps.find((s) => s.key === screen?.step);

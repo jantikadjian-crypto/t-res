@@ -18,6 +18,8 @@
 - Visual language is the PLCY Governance Console (`Desktop\PLCY\Claude Code_Anthropic\plcy_customer_admin_portal`, e.g. `HITLGuardrails.tsx`): tokens in app/globals.css `:root` are copied from its theme.css. When unsure how something should look, copy the PLCY pattern.
 - Metric tiles: Card → CardTitle `text-sm` with a coloured lucide icon, value `text-2xl font-bold`, caption `text-xs text-muted-foreground`. Alerts: `border-{red|yellow}-200 bg-{red|yellow}-50` with a CTA button beside the text.
 - Routing: app pages with the sidebar live in `app/(app)/`; the full-screen Get Started wizard lives in `app/(onboarding)/intake/[screen]`. Wizard steps, screens, copy and Back/Continue rules come only from /lib/intakeScreens.ts; answers are held by `IntakeProvider` (React state). Spec: /docs/intake-wizard-scope.md.
+- Anything the taxpayer changes during a session (uploads, notes, finished to-dos, signatures) lives in `CaseProvider` (/components/case-provider.tsx, mounted in the root layout) and is read with `useCase()`. Don't keep separate per-page copies of that state.
+- Signing is our own proprietary flow at `app/(focus)/sign/[id]` (review → consent → verify → sign → certificate). Signable documents and their plain-English terms live in `signingTerms` in mockData. Every "Sign" button links there; don't integrate DocuSign or PandaDoc.
 - Selection state that should survive the progress snapshot goes in the URL (e.g. /notices/[id], /tax-years/[year]), not React state.
 - Links that look like buttons use `<LinkButton />` from /components/link-button.tsx.
 - AI-generated content gets `<EAReviewedBadge />` from /components/ea-reviewed-badge.tsx.

@@ -1,15 +1,4 @@
-import {
-  AlertTriangle,
-  ArrowRight,
-  Clock,
-  DollarSign,
-  FileCheck,
-  ListChecks,
-  PenLine,
-  Scale,
-  Upload,
-  type LucideIcon,
-} from "lucide-react";
+import { AlertTriangle, ArrowRight, Clock, DollarSign, ListChecks, Scale, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -20,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ActionItemsTile, NextStepsCard } from "@/components/dashboard/live-cards";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
@@ -27,40 +17,22 @@ import { PageHeader } from "@/components/page-header";
 import { StatusBadge, StatusDot } from "@/components/status";
 import { daysRemainingLabel, daysUntil, deadlineTone, formatDate, formatMoney } from "@/lib/format";
 import {
-  actionItems,
   caseStages,
   currentStageIndex,
-  nextActionItem,
   nextNotice,
-  openActionItems,
   openNotices,
   taxpayer,
   taxYears,
   totalOwed,
   yearBalance,
   yearNextStep,
-  type ActionItemType,
 } from "@/lib/mockData";
-
-const actionIcons: Record<ActionItemType, LucideIcon> = {
-  sign: PenLine,
-  upload: Upload,
-  "approve-letter": FileCheck,
-};
-
-const actionVerb: Record<ActionItemType, string> = {
-  sign: "Sign",
-  upload: "Upload",
-  "approve-letter": "Review",
-};
 
 export default function DashboardPage() {
   const stage = caseStages[currentStageIndex];
   const stagePct = Math.round(((currentStageIndex + 1) / caseStages.length) * 100);
   const yearsWithBalance = taxYears.filter((y) => y.balance).length;
   const unfiledYears = taxYears.filter((y) => y.status === "unfiled").length;
-  const doneCount = actionItems.length - openActionItems.length;
-  const donePct = Math.round((doneCount / actionItems.length) * 100);
   const nextDays = daysUntil(nextNotice.respondBy);
 
   return (
@@ -142,15 +114,7 @@ export default function DashboardPage() {
             <div className="h-2 rounded-full bg-primary" style={{ width: `${stagePct}%` }} />
           </div>
         </MetricTile>
-        <MetricTile
-          icon={ListChecks}
-          iconClass="text-purple-600"
-          label="Action items"
-          value={String(openActionItems.length)}
-          caption={
-            nextActionItem ? `Waiting on you · next due ${formatDate(nextActionItem.dueBy)}` : "All done"
-          }
-        />
+        <ActionItemsTile />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -255,54 +219,8 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        {/* Action queue */}
-        <Card className="self-start">
-          <CardHeader className="border-b">
-            <CardTitle>Your next steps</CardTitle>
-            <CardDescription>Your case moves forward when these are done</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="mb-1.5 flex justify-between text-xs text-muted-foreground">
-                <span>
-                  {doneCount} of {actionItems.length} done
-                </span>
-                <span className="tabular-nums">{donePct}%</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-secondary">
-                <div className="h-2 rounded-full bg-primary" style={{ width: `${donePct}%` }} />
-              </div>
-            </div>
-            <ul className="space-y-3">
-              {openActionItems.map((a) => {
-                const Icon = actionIcons[a.type];
-                return (
-                  <li key={a.id} className="flex gap-3 rounded-lg border p-3">
-                    <span className="grid size-8 shrink-0 place-items-center rounded-md bg-accent">
-                      <Icon className="size-4" aria-hidden />
-                    </span>
-                    <div className="min-w-0 flex-1 space-y-1.5">
-                      <p className="text-sm font-medium">{a.title}</p>
-                      <p className="text-xs text-muted-foreground">{a.why}</p>
-                      <div className="flex items-center justify-between gap-2">
-                        <StatusBadge tone={deadlineTone(a.dueBy)}>{daysRemainingLabel(a.dueBy)}</StatusBadge>
-                        <LinkButton href="/action-items" variant="outline" size="xs">
-                          {actionVerb[a.type]}
-                        </LinkButton>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <LinkButton href="/action-items" className="w-full">
-              Go to action items
-              <ArrowRight aria-hidden />
-            </LinkButton>
-          </CardFooter>
-        </Card>
+        {/* Action queue: updates as things get signed, uploaded and approved */}
+        <NextStepsCard />
       </div>
     </div>
   );
