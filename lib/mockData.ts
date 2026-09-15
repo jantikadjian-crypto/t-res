@@ -140,6 +140,13 @@ export const taxpayer: Taxpayer = {
   filingStatus: "Single",
 };
 
+// Fake identity shown (never collected) on the authorization screen. No real PII in v1.
+export const taxpayerIdentity = {
+  legalName: "Jordan A. Reyes",
+  ssnMasked: "•••-••-4417",
+  address: "1418 Cedar Bend Dr, Austin, TX 78758",
+};
+
 export const enrolledAgent: EnrolledAgent = {
   name: "Chris G.",
   credential: "Enrolled Agent",

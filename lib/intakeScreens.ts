@@ -4,19 +4,39 @@ import { intakeAnswers, taxpayer, type IntakeAnswers } from "@/lib/mockData";
 
 export const EMERGENCY_SITUATION = "The IRS took money from my pay or bank account";
 
-export const SITUATION_OPTIONS = [
-  "I owe and can't pay it all at once",
-  "I owe and can pay",
-  "I haven't filed some years",
-  "I got a letter I don't understand",
-  EMERGENCY_SITUATION,
+export const SITUATION_OPTIONS: { value: string; description: string }[] = [
+  { value: "I owe and can't pay it all at once", description: "The most common situation, and there are good options for it." },
+  { value: "I owe and can pay", description: "We'll check the amount is right and help you pay without extra penalties." },
+  { value: "I haven't filed some years", description: "We'll get you caught up. Filing often lowers what the IRS says you owe." },
+  { value: "I got a letter I don't understand", description: "We'll read it with you and explain what it means." },
+  { value: EMERGENCY_SITUATION, description: "We'll move your case to the front of the line." },
 ];
 
+export const NOT_WORKING = "Not working right now";
+
+// Values match intakeAnswers.incomeTypes. "Not working" is exclusive.
+export const INCOME_TYPE_OPTIONS: { value: string; title: string; description: string }[] = [
+  { value: "W-2 job", title: "A job with a W-2", description: "Your employer takes tax out of each paycheck." },
+  {
+    value: "Gig or delivery work",
+    title: "Gig, delivery or self-employed",
+    description: "Uber, DoorDash, freelance work. Usually no tax is taken out.",
+  },
+  { value: "Retirement or benefits", title: "Retirement or benefits", description: "Social Security, a pension, or unemployment." },
+  { value: NOT_WORKING, title: NOT_WORKING, description: "That's fine. It can make some options easier." },
+];
+
+// Notices that mean the IRS is close to taking money. They get a red "we'll put it first" line.
+export const LEVY_NOTICE_CODES = ["CP504", "LT11", "Letter 1058", "CP90"];
+
+// Stand-in for "the letter we just read" when a new file is uploaded in the demo.
+export const SAMPLE_UPLOAD_DOCUMENT_ID = "doc_cp14";
+
 // Answers live in React state for the session only (no localStorage in v1).
-export type IntakeState = IntakeAnswers & { noLetter: boolean };
+export type IntakeState = IntakeAnswers & { noLetter: boolean; noticeFreshUpload: boolean };
 
 export function initialIntakeState(): IntakeState {
-  return { ...structuredClone(intakeAnswers), noLetter: false };
+  return { ...structuredClone(intakeAnswers), noLetter: false, noticeFreshUpload: false };
 }
 
 export function isUrgent(s: IntakeState): boolean {
