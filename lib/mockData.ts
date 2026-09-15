@@ -1472,3 +1472,13 @@ export const laterGovernanceItems: GovernanceItem[] = [
     noticeId: "ntc_lt11",
   },
 ];
+
+// T-Res Pro: the demo practitioner account. Sign-in is a mock (any password, demo code); v1 has no real accounts.
+export const practitioner = {
+  name: enrolledAgent.name,
+  credential: enrolledAgent.credential,
+  cafNumber: representativeDetails.cafNumber,
+  email: "chris@tres-demo.example",
+  phoneMasked: "(512) •••-••47",
+  demoCode: "135790",
+};

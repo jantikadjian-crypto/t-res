@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CaseProvider } from "@/components/case-provider";
+import { ProSessionProvider } from "@/components/pro/pro-session";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +14,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full bg-canvas">
-        <CaseProvider>{children}</CaseProvider>
+        <CaseProvider>
+          <ProSessionProvider>{children}</ProSessionProvider>
+        </CaseProvider>
       </body>
     </html>
   );

@@ -251,8 +251,8 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               <MenuLink href="/settings/billing" icon={CreditCard} label="Billing & plan" hint={planHint} onSelect={() => closeMenu()} />
               <MenuLink href="/settings/notifications" icon={BellRing} label="Notification settings" onSelect={() => closeMenu()} />
               <div className="my-1 h-px bg-border" />
-              {/* Demo only: jump to what Chris sees in PLCY, the AI governance layer. */}
-              <MenuLink href="/plcy" icon={ShieldCheck} label={`${enrolledAgent.name}'s view in PLCY`} hint="Demo" onSelect={() => closeMenu()} />
+              {/* Demo only: switch to T-Res Pro, the professional's side (Chris's queue, and PLCY from there). */}
+              <MenuLink href="/pro/login" icon={ShieldCheck} label={`Sign in as ${enrolledAgent.name}`} hint="Demo" onSelect={() => closeMenu()} />
               {lane === "represented" && !escalatedOn && (
                 <MenuLink
                   href="/"

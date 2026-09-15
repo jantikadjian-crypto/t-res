@@ -12,6 +12,22 @@ const root = path.resolve(import.meta.dirname, "..");
 const out = path.resolve(process.argv[2] ?? path.join(root, ".artifact/index.html"));
 const stamp = process.env.STAMP ?? "";
 
+// Two products, two shareable links, one codebase. PRODUCT=pro builds T-Res Pro, which opens on its sign-in.
+// Each link holds both sides so the live demo still works; the other side is behind a labelled demo switch.
+const products = {
+  taxpayer: {
+    title: "T-Res Taxpayer App",
+    description: "Interactive progress build of the T-Res taxpayer app prototype.",
+    start: "/",
+  },
+  pro: {
+    title: "T-Res Pro",
+    description: "Interactive progress build of T-Res Pro, the side of T-Res for Enrolled Agents, CPAs and tax attorneys.",
+    start: "/pro/login",
+  },
+};
+const product = products[process.env.PRODUCT === "pro" ? "pro" : "taxpayer"];
+
 // The CSS the production build generated for every class the app uses.
 const indexHtml = fs.readFileSync(path.join(root, ".next/server/app/index.html"), "utf8");
 const cssHrefs = [...new Set([...indexHtml.matchAll(/href="(\/_next\/static\/[^"]+\.css)"/g)].map((m) => m[1]))];
@@ -32,6 +48,7 @@ const result = await esbuild.build({
     // Files from public/ ship next to the page (published as artifact files), and PDFs open on IRS.gov.
     "process.env.NEXT_PUBLIC_ASSET_BASE": '""',
     "process.env.NEXT_PUBLIC_ARTIFACT": '"1"',
+    "process.env.NEXT_PUBLIC_START_ROUTE": JSON.stringify(product.start),
   },
   alias: { "next/link": "./artifact/next-link.tsx", "next/navigation": "./artifact/next-navigation.ts" },
   legalComments: "none",
@@ -42,8 +59,8 @@ const js = result.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");
 
 const escapeHtml = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
-const html = `<title>T-Res Taxpayer App</title>
-<meta name="description" content="Interactive progress build of the T-Res taxpayer app prototype.">
+const html = `<title>${escapeHtml(product.title)}</title>
+<meta name="description" content="${escapeHtml(product.description)}">
 <style>
 ${css}
 body { background: var(--canvas); padding-bottom: 56px; }

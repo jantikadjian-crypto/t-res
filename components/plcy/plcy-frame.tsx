@@ -36,9 +36,9 @@ export function PlcyFrame({ children }: { children: React.ReactNode }) {
               </span>
               {enrolledAgent.name} · EA
             </span>
-            <LinkButton href="/" variant="outline" size="sm">
+            <LinkButton href="/pro" variant="outline" size="sm">
               <ArrowLeft aria-hidden />
-              Back to {taxpayer.firstName}&apos;s view
+              Back to T-Res Pro
             </LinkButton>
           </div>
         </div>

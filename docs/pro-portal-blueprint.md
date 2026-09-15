@@ -199,3 +199,10 @@ with clients, calendar sync, practitioner billing and payouts, and more than one
 | Sign-in realism | **Email, password and two-step code.** Prefilled demo email, any password accepted, demo code shown on screen. |
 | Demo caseload | **12 clients:** Jordan live, plus the 11 fictional clients above. |
 | Scope rule | **Mock sign-in only.** No real accounts; CLAUDE.md says so. |
+| Shareable links | **Two links, one codebase.** T-Res Pro gets its own link that opens on sign-in (`PRODUCT=pro` build). Each link holds both sides so the live demo works, with the other side behind a labelled demo switch. PLCY is reached from T-Res Pro. |
+
+## Progress
+
+- **Chunk 1 (sign-in + pro shell): built 2026-09-15.** `/pro/login` (email, password, two-step code, wrong-code,
+  locked, signed-in and signed-out states), the T-Res Pro frame with its sign-in guard, a first Today page with live
+  PLCY numbers, and the demo switches.

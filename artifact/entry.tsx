@@ -20,6 +20,10 @@ import { NoticeCenter } from "@/components/notices/notice-center";
 import { GovernanceInbox } from "@/components/plcy/governance-inbox";
 import { GovernanceItemView } from "@/components/plcy/governance-item";
 import { PlcyFrame } from "@/components/plcy/plcy-frame";
+import { ProFrame } from "@/components/pro/pro-frame";
+import { ProLogin } from "@/components/pro/pro-login";
+import { ProSessionProvider } from "@/components/pro/pro-session";
+import { ProToday } from "@/components/pro/pro-today";
 import { BillingOverview } from "@/components/settings/billing-overview";
 import { CancelFlow } from "@/components/settings/cancel-flow";
 import { NotificationSettings } from "@/components/settings/notification-settings";
@@ -99,6 +103,14 @@ function route(pathname: string): ReactNode {
 
   if (section === "sign") return <SignFlow key={pathname} docId={detail ?? ""} />;
 
+  if (section === "pro") {
+    return (
+      <ProFrame>
+        <Fragment key={pathname}>{detail === "login" ? <ProLogin /> : <ProToday />}</Fragment>
+      </ProFrame>
+    );
+  }
+
   if (section === "plcy") {
     return (
       <PlcyFrame>
@@ -126,10 +138,17 @@ function App() {
 
   return (
     <CaseProvider>
-      <div className="min-h-screen bg-canvas antialiased">{route(pathname)}</div>
+      <ProSessionProvider>
+        <div className="min-h-screen bg-canvas antialiased">{route(pathname)}</div>
+      </ProSessionProvider>
     </CaseProvider>
   );
 }
+
+// Each product's shareable link opens on its own start page (taxpayer app: the dashboard; T-Res Pro: sign-in).
+// scripts/build-artifact.mjs sets this per product.
+const START_ROUTE = process.env.NEXT_PUBLIC_START_ROUTE ?? "/";
+if (!window.location.hash.replace("#", "")) window.location.replace(`#${START_ROUTE}`);
 
 const container = document.getElementById("root");
 if (container) createRoot(container).render(<App />);
