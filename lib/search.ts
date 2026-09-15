@@ -2,7 +2,7 @@
 // When you add a page or a new kind of data, add it here so it can be found.
 import { formatMoney } from "@/lib/format";
 import { intakeScreens, intakeSteps } from "@/lib/intakeScreens";
-import { libraryEntries } from "@/lib/library";
+import { libraryEntries, libraryFiles } from "@/lib/library";
 import {
   account,
   actionItems,
@@ -132,7 +132,7 @@ export function staticSearchItems(): SearchItem[] {
       title: e.name,
       subtitle: e.short,
       href: `/library/${e.slug}`,
-      keywords: `${e.aliases.join(" ")} ${e.kind} ${e.definition} ${e.forYou ?? ""}`,
+      keywords: `${e.aliases.join(" ")} ${e.kind} ${e.definition} ${e.forYou ?? ""}${libraryFiles[e.slug] ? " pdf printable download blank form sample" : ""}`,
     })),
     ...settings,
     ...intakeScreens.map<SearchItem>((s) => ({

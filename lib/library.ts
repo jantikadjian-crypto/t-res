@@ -2,7 +2,7 @@
 // official IRS pages. Reference content, not case data (case data lives in mockData.ts).
 // Kept free of imports so scripts can load it directly (see the link check in CLAUDE.md).
 
-export type LibraryKind = "Form" | "Notice" | "Term";
+export type LibraryKind = "Form" | "Notice" | "Term" | "Publication";
 
 export type LibraryEntry = {
   slug: string;
@@ -512,7 +512,161 @@ export const libraryEntries: LibraryEntry[] = [
     irs: { url: "https://www.irs.gov/payments/online-account-for-individuals", label: "Online account for individuals" },
     related: ["account-transcript", "form-2848"],
   },
+
+  // More forms and IRS publications, each with a printable copy (see libraryFiles below).
+  {
+    slug: "form-433-d",
+    name: "Form 433-D",
+    kind: "Form",
+    short: "Installment Agreement (direct debit)",
+    definition:
+      "Sets up a payment plan paid by automatic withdrawals from your bank account. Paying by direct debit is one of the conditions for having a lien withdrawn.",
+    forYou: "We'll likely use this so your payments come out automatically, which also helps get your lien withdrawn.",
+    aliases: ["Form 433-D", "433-D"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/f433d.pdf", label: "Form 433-D (PDF)" },
+    related: ["installment-agreement", "lien-withdrawal", "form-9465"],
+    inYourCase: [{ label: "Our recommendation", href: "/intake/assessment" }],
+  },
+  {
+    slug: "form-12153",
+    name: "Form 12153",
+    kind: "Form",
+    short: "Request for a Collection Due Process or Equivalent Hearing",
+    definition: "The form to ask for a hearing with the IRS Independent Office of Appeals about a lien or levy.",
+    forYou: "If it's needed, we'd use this to ask for an equivalent hearing on your 2021 lien before Nov 10, 2026.",
+    aliases: ["Form 12153", "12153"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/f12153.pdf", label: "Form 12153 (PDF)" },
+    related: ["cdp-hearing", "letter-3172", "lt11"],
+    inYourCase: [{ label: "Your Letter 3172", href: "/notices/ntc_l3172" }],
+  },
+  {
+    slug: "form-9423",
+    name: "Form 9423",
+    kind: "Form",
+    short: "Collection Appeal Request",
+    definition:
+      "Appeals a collection action, like a levy or a rejected payment plan, through the Collection Appeals Program. It's usually faster than a Collection Due Process hearing, but the decision can't be taken to court.",
+    aliases: ["Form 9423", "9423"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/f9423.pdf", label: "Form 9423 (PDF)" },
+    related: ["cdp-hearing", "levy", "pub-1660"],
+  },
+  {
+    slug: "form-843",
+    name: "Form 843",
+    kind: "Form",
+    short: "Claim for Refund and Request for Abatement",
+    definition:
+      "Used to ask the IRS to remove (abate) penalties, or to refund certain taxes and fees. Penalty relief can often be asked for by phone or letter instead.",
+    forYou: "One way we can ask for First-Time Penalty Abatement on your 2021 penalties.",
+    aliases: ["Form 843", "843"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/f843.pdf", label: "Form 843 (PDF)" },
+    related: ["first-time-abatement", "failure-to-pay-penalty"],
+    inYourCase: [{ label: "2021 tax year", href: "/tax-years/2021" }],
+  },
+  {
+    slug: "form-4506-t",
+    name: "Form 4506-T",
+    kind: "Form",
+    short: "Request for Transcript of Tax Return",
+    definition:
+      "Asks the IRS to send transcripts of your tax records. Most people can get them faster in their IRS Online Account.",
+    aliases: ["Form 4506-T", "4506-T"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/f4506t.pdf", label: "Form 4506-T (PDF)" },
+    related: ["account-transcript", "wage-income-transcript", "irs-online-account"],
+  },
+  {
+    slug: "pub-1",
+    name: "Publication 1",
+    kind: "Publication",
+    short: "Your Rights as a Taxpayer",
+    definition:
+      "Explains the Taxpayer Bill of Rights, including the right to be informed, to challenge the IRS's position, to appeal, and to be represented.",
+    aliases: ["Publication 1", "Pub 1", "taxpayer bill of rights"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/p1.pdf", label: "Publication 1 (PDF)" },
+    related: ["enrolled-agent", "cdp-hearing"],
+  },
+  {
+    slug: "pub-594",
+    name: "Publication 594",
+    kind: "Publication",
+    short: "The IRS Collection Process",
+    definition:
+      "Walks through what happens when you owe: the bills and notices, liens, levies, and your options at each step.",
+    forYou: "A good overview of where you are now: after the CP504, before any LT11.",
+    aliases: ["Publication 594", "Pub 594", "collection process"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/p594.pdf", label: "Publication 594 (PDF)" },
+    related: ["cp504", "levy", "federal-tax-lien", "installment-agreement"],
+    inYourCase: [{ label: "Your CP504", href: "/notices/ntc_cp504" }],
+  },
+  {
+    slug: "pub-1660",
+    name: "Publication 1660",
+    kind: "Publication",
+    short: "Collection Appeal Rights",
+    definition:
+      "Explains your appeal rights for liens, levies and payment plans, including Collection Due Process hearings and the Collection Appeals Program.",
+    aliases: ["Publication 1660", "Pub 1660", "collection appeal rights"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/p1660.pdf", label: "Publication 1660 (PDF)" },
+    related: ["cdp-hearing", "form-12153", "form-9423"],
+  },
+  {
+    slug: "pub-1450",
+    name: "Publication 1450",
+    kind: "Publication",
+    short: "Requesting a Certificate of Release of Federal Tax Lien",
+    definition: "How to get proof that a lien has been released once the debt is paid or can no longer be collected.",
+    aliases: ["Publication 1450", "Pub 1450", "lien release"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/p1450.pdf", label: "Publication 1450 (PDF)" },
+    related: ["federal-tax-lien", "lien-withdrawal"],
+  },
+  {
+    slug: "pub-783",
+    name: "Publication 783",
+    kind: "Publication",
+    short: "Applying for a Certificate of Discharge from Federal Tax Lien",
+    definition: "How to have a specific property, like a home you're selling, taken out from under a lien.",
+    aliases: ["Publication 783", "Pub 783", "lien discharge"],
+    irs: { url: "https://www.irs.gov/pub/irs-pdf/p783.pdf", label: "Publication 783 (PDF)" },
+    related: ["federal-tax-lien", "pub-1450"],
+  },
 ];
+
+// Printable copies stored in public/forms (details in lib/irsFiles.ts, generated by scripts/irs-forms.mjs).
+export const libraryFiles: Record<string, string[]> = {
+  "form-1040": ["f1040.pdf"],
+  "form-2848": ["f2848.pdf", "i2848.pdf"],
+  "form-8821": ["f8821.pdf"],
+  "form-9465": ["f9465.pdf"],
+  "form-433-f": ["f433f.pdf"],
+  "form-433-a": ["f433a.pdf"],
+  "form-433-d": ["f433d.pdf"],
+  "form-656": ["f656b.pdf"],
+  "form-12277": ["f12277.pdf"],
+  "form-w2": ["fw2.pdf"],
+  "form-1099-nec": ["f1099nec.pdf"],
+  "form-1099-k": ["f1099k.pdf"],
+  "form-1099-int": ["f1099int.pdf"],
+  "form-12153": ["f12153.pdf"],
+  "form-9423": ["f9423.pdf"],
+  "form-843": ["f843.pdf"],
+  "form-4506-t": ["f4506t.pdf"],
+  "pub-1": ["p1.pdf"],
+  "pub-594": ["p594.pdf"],
+  "pub-1660": ["p1660.pdf"],
+  "pub-1450": ["p1450.pdf"],
+  "pub-783": ["p783.pdf"],
+  "cdp-hearing": ["p1660.pdf", "f12153.pdf"],
+  "letter-3172": ["p1660.pdf"],
+  "lien-withdrawal": ["f12277.pdf", "p1450.pdf"],
+  "installment-agreement": ["f9465.pdf", "f433d.pdf"],
+  "first-time-abatement": ["f843.pdf"],
+  // IRS sample notices (made-up details)
+  cp14: ["cp14_english.pdf"],
+  cp501: ["cp501_english.pdf"],
+  cp503: ["cp503_english.pdf"],
+  cp504: ["cp504_english.pdf"],
+  lt11: ["lt11_english.pdf"],
+};
 
 export function libraryEntry(slug: string): LibraryEntry | undefined {
   return libraryEntries.find((e) => e.slug === slug);

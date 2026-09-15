@@ -2,10 +2,11 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ExternalLink, Info } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
+import { FormFiles } from "@/components/library/form-files";
 import { kindStyle, LibraryBrowser } from "@/components/library/library-browser";
 import { LinkButton } from "@/components/link-button";
 import { PageHeader } from "@/components/page-header";
-import { libraryEntry } from "@/lib/library";
+import { libraryEntry, libraryFiles, type LibraryKind } from "@/lib/library";
 import { cn } from "@/lib/utils";
 
 // Bodies of /library and /library/[slug], shared by the Next pages and the progress artifact.
@@ -15,12 +16,22 @@ export function LibraryView() {
     <>
       <PageHeader
         title="Library"
-        description="Plain-English definitions of the IRS forms, notices and terms in your case, with links to the official IRS pages."
+        description="Plain-English definitions of the IRS forms, notices and terms in your case, with printable IRS copies and links to IRS.gov."
       />
       <LibraryBrowser />
     </>
   );
 }
+
+const filesHeading: Record<LibraryKind, { title: string; description: string }> = {
+  Form: { title: "Printable form", description: "Blank copies straight from IRS.gov. We fill these in for you." },
+  Notice: {
+    title: "Sample notice",
+    description: "The IRS's own sample, with made-up details, so you can see what this letter looks like.",
+  },
+  Term: { title: "Forms and guides", description: "The IRS files that go with this, straight from IRS.gov." },
+  Publication: { title: "Read the publication", description: "The full IRS publication, straight from IRS.gov." },
+};
 
 export function LibraryEntryView({ slug }: { slug: string }) {
   const entry = libraryEntry(slug);
@@ -39,6 +50,7 @@ export function LibraryEntryView({ slug }: { slug: string }) {
     );
   }
   const related = entry.related.map(libraryEntry).filter((e) => e !== undefined);
+  const files = libraryFiles[entry.slug] ?? [];
 
   return (
     <div className="space-y-6">
@@ -76,6 +88,18 @@ export function LibraryEntryView({ slug }: { slug: string }) {
               <EAReviewedBadge />
             </CardContent>
           </Card>
+
+          {files.length > 0 && (
+            <Card id="files">
+              <CardHeader className="border-b">
+                <CardTitle>{filesHeading[entry.kind].title}</CardTitle>
+                <CardDescription>{filesHeading[entry.kind].description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormFiles files={files} />
+              </CardContent>
+            </Card>
+          )}
 
           {entry.inYourCase && entry.inYourCase.length > 0 && (
             <Card>

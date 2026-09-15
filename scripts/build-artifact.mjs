@@ -27,7 +27,12 @@ const result = await esbuild.build({
   platform: "browser",
   target: "es2020",
   jsx: "automatic",
-  define: { "process.env.NODE_ENV": '"production"' },
+  define: {
+    "process.env.NODE_ENV": '"production"',
+    // Files from public/ ship next to the page (published as artifact files), and PDFs open on IRS.gov.
+    "process.env.NEXT_PUBLIC_ASSET_BASE": '""',
+    "process.env.NEXT_PUBLIC_ARTIFACT": '"1"',
+  },
   alias: { "next/link": "./artifact/next-link.tsx", "next/navigation": "./artifact/next-navigation.ts" },
   legalComments: "none",
   logLevel: "error",
