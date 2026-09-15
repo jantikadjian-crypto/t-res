@@ -32,11 +32,32 @@ export const LEVY_NOTICE_CODES = ["CP504", "LT11", "Letter 1058", "CP90"];
 // Stand-in for "the letter we just read" when a new file is uploaded in the demo.
 export const SAMPLE_UPLOAD_DOCUMENT_ID = "doc_cp14";
 
+// Screen 7 offers an income row for each way of earning money picked on screen 4.
+export const INCOME_ROW_LABELS: Record<string, string> = {
+  "W-2 job": "Take-home pay from your job",
+  "Gig or delivery work": "Gig or delivery income, after costs",
+  "Retirement or benefits": "Retirement or benefits",
+};
+
+export const PAY_FREQUENCIES = ["Every week", "Every two weeks", "Twice a month", "Once a month", "It varies"];
+
 // Answers live in React state for the session only (no localStorage in v1).
-export type IntakeState = IntakeAnswers & { noLetter: boolean; noticeFreshUpload: boolean };
+export type IntakeState = IntakeAnswers & {
+  noLetter: boolean;
+  noticeFreshUpload: boolean;
+  // Document checklist (screen 10): items put off until later, and files uploaded from it.
+  laterDocs: string[];
+  checklistUploads: Record<string, string>;
+};
 
 export function initialIntakeState(): IntakeState {
-  return { ...structuredClone(intakeAnswers), noLetter: false, noticeFreshUpload: false };
+  return {
+    ...structuredClone(intakeAnswers),
+    noLetter: false,
+    noticeFreshUpload: false,
+    laterDocs: [],
+    checklistUploads: {},
+  };
 }
 
 export function isUrgent(s: IntakeState): boolean {
@@ -114,7 +135,8 @@ export const intakeScreens: IntakeScreen[] = [
     step: "money",
     title: "What comes in each month?",
     why: "After taxes: the amount that actually lands in your account.",
-    isAnswered: (s) => s.monthlyIncome.some((r) => r.amount > 0),
+    // No income is a valid answer for someone who isn't working.
+    isAnswered: (s) => s.monthlyIncome.some((r) => r.amount > 0) || s.incomeTypes.includes(NOT_WORKING),
   },
   {
     slug: "money-out",

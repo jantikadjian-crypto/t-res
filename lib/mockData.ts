@@ -626,7 +626,8 @@ export const notifications: AppNotification[] = [
 ];
 
 export type MoneyRow = { label: string; amount: number };
-export type AssetRow = { label: string; value: number; owed: number };
+export type AssetKind = "bank" | "vehicle" | "retirement" | "home" | "other";
+export type AssetRow = { kind: AssetKind; label: string; value: number; owed: number };
 
 export type IntakeAnswers = {
   submittedOn: string;
@@ -676,8 +677,8 @@ export const intakeAnswers: IntakeAnswers = {
     { label: "Health insurance", amount: 310 },
   ],
   assets: [
-    { label: "Checking (Ally Bank)", value: 2300, owed: 0 },
-    { label: "2019 Honda Civic", value: 14000, owed: 9800 },
+    { kind: "bank", label: "Checking (Ally Bank)", value: 2300, owed: 0 },
+    { kind: "vehicle", label: "2019 Honda Civic", value: 14000, owed: 9800 },
   ],
   assessment: {
     recommendedPath: "Payment plan (installment agreement)",
