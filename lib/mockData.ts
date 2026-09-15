@@ -966,6 +966,31 @@ export const governanceItems: GovernanceItem[] = [
     resultHref: "/intake/assessment",
   },
   {
+    id: "gov_lane",
+    title: "Self-serve eligibility",
+    kind: "Eligibility check",
+    producedBy: "T-Res rules engine",
+    createdOn: "2026-09-12",
+    confidence: 1,
+    policyId: "pol_rules",
+    status: "auto-approved",
+    decidedOn: "2026-09-12",
+    summary:
+      "Found that Jordan can resolve this without representation: set up the payment plan online, file 2023 and ask for penalty relief themselves, with T-Res preparing everything.",
+    checks: [
+      { label: "Owes $50,000 or less (about $25,900 with 2023)", passed: true },
+      { label: "Only 2023 is unfiled, and T-Res can prepare it", passed: true },
+      { label: "No money taken and no employer contacted", passed: true },
+      { label: "About $440 a month fits the $910 left over", passed: true },
+    ],
+    evidence: [
+      { label: "Jordan's assessment", href: "/intake/assessment" },
+      { label: "2021 account transcript", href: "/documents/doc_tr_21" },
+      { label: "2023 wage & income transcript", href: "/documents/doc_wi_23" },
+    ],
+    resultHref: "/intake/assessment",
+  },
+  {
     id: "gov_fta",
     title: "First-Time Abatement eligibility (2021)",
     kind: "Eligibility check",

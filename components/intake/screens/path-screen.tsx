@@ -7,6 +7,7 @@ import { ChoiceGroup } from "@/components/intake/choice";
 import { useIntake } from "@/components/intake/intake-provider";
 import { PlanFeatureList, planPriceNote } from "@/components/plan-features";
 import { formatMoney } from "@/lib/format";
+import { selfServeCheck } from "@/lib/intakeScreens";
 import { enrolledAgent, resolutionPlans } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,8 @@ export function PathScreen() {
   const { state, update } = useIntake();
   const { plan } = useCase();
   const currentPlan = resolutionPlans.find((p) => p.id === plan.planId);
+  // Same rule as the assessment: Guided when the taxpayer can do it themselves, otherwise Full Resolution.
+  const recommendedId = selfServeCheck(state).eligible ? "guided" : "full";
 
   return (
     <div className="space-y-6">
@@ -46,7 +49,7 @@ export function PathScreen() {
                   <span>
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold">{p.name}</span>
-                      {p.recommended && (
+                      {p.id === recommendedId && (
                         <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-xs font-medium text-primary">Recommended for you</span>
                       )}
                     </span>

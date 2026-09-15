@@ -138,6 +138,10 @@ A plain-English version of the IRS's Collection Information Statement (Form 433-
 ### Step 6 · Assessment
 
 **11. `/intake/assessment` — "Here's what we think you should do."**
+- **How you'll get there** (added 2026-09-15): the two lanes. `selfServeCheck()` in lib/intakeScreens.ts checks four rules
+  (owes $50,000 or less, at most 2 unfiled years T-Res can prepare, no money taken, the plan fits the budget). If all pass,
+  "Do it yourself with T-Res" (Guided, no Form 2848) is recommended; otherwise "Have Chris represent you" (Full Resolution).
+  The lane picked preselects the plan on screen 12, and its "Recommended for you" follows the same rule.
 - AI-generated, **Approved by Chris G.** badge at the top (PLCY routes money recommendations to him). Four blocks:
   1. **Where you stand:** about $21,000 owed for 2021–2022, plus about $4,900 estimated for 2023.
   2. **Our recommendation:** a payment plan (installment agreement) of **about $440 a month**. It stops collection and

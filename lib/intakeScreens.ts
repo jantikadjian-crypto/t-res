@@ -1,6 +1,7 @@
 // Get Started wizard: the one list of steps and screens. The rail, progress bar,
 // Back/Continue and routing all read from here. Spec: docs/intake-wizard-scope.md.
-import { intakeAnswers, taxpayer, type IntakeAnswers } from "@/lib/mockData";
+import { formatMoney } from "@/lib/format";
+import { intakeAnswers, taxpayer, taxYears, totalOwed, type IntakeAnswers } from "@/lib/mockData";
 
 export const EMERGENCY_SITUATION = "The IRS took money from my pay or bank account";
 
@@ -62,6 +63,63 @@ export function initialIntakeState(): IntakeState {
 
 export function isUrgent(s: IntakeState): boolean {
   return s.situation === EMERGENCY_SITUATION || s.moneyTakenOrEmployerContacted === true;
+}
+
+// Two lanes. Self-serve: the taxpayer deals with the IRS themselves and T-Res prepares everything
+// (Guided plan, no Form 2848). Represented: Chris acts for them under Form 2848 (Full Resolution).
+// The IRS lets people set up a long-term payment plan online themselves up to this combined balance.
+export const ONLINE_PLAN_LIMIT = 50000;
+// Unfiled years T-Res can prepare for the taxpayer to file. More than this, Chris should run the catch-up.
+const MAX_SELF_SERVE_UNFILED = 2;
+
+export type LaneCriterion = { key: string; passed: boolean; text: string };
+
+export function selfServeCheck(s: IntakeState): { eligible: boolean; criteria: LaneCriterion[] } {
+  const estimated = taxYears.reduce((t, y) => t + (y.estimatedBalance ?? 0), 0);
+  const allIn = totalOwed + estimated;
+  const leftOver = s.monthlyIncome.reduce((t, r) => t + r.amount, 0) - s.monthlyExpenses.reduce((t, r) => t + r.amount, 0);
+  const monthly = intakeAnswers.assessment.estimatedMonthly;
+  const unfiled = s.unfiledAnswer === "some" ? s.unfiledYears : [];
+  const urgent = isUrgent(s);
+
+  const criteria: LaneCriterion[] = [
+    {
+      key: "balance",
+      passed: allIn <= ONLINE_PLAN_LIMIT,
+      text:
+        allIn <= ONLINE_PLAN_LIMIT
+          ? `You owe about ${formatMoney(allIn)}, under the ${formatMoney(ONLINE_PLAN_LIMIT)} limit for setting up a payment plan online yourself.`
+          : `You owe about ${formatMoney(allIn)}, over ${formatMoney(ONLINE_PLAN_LIMIT)}, so the IRS needs a full financial review.`,
+    },
+    {
+      key: "returns",
+      passed: s.unfiledAnswer !== "not-sure" && unfiled.length <= MAX_SELF_SERVE_UNFILED,
+      text:
+        s.unfiledAnswer === "not-sure"
+          ? "We're not sure yet which years are filed, so we'll check your IRS records first."
+          : unfiled.length === 0
+            ? "All your returns are filed."
+            : unfiled.length <= MAX_SELF_SERVE_UNFILED
+              ? `Only ${unfiled.join(" and ")} ${unfiled.length === 1 ? "isn't" : "aren't"} filed, and we'll prepare ${unfiled.length === 1 ? "it" : "them"} for you to file first.`
+              : `${unfiled.length} years aren't filed. Catching up on that many takes an Enrolled Agent.`,
+    },
+    {
+      key: "money",
+      passed: !urgent,
+      text: urgent
+        ? "The IRS has already taken money or contacted your employer, so this needs an Enrolled Agent today."
+        : "The IRS hasn't taken any money or contacted your employer.",
+    },
+    {
+      key: "budget",
+      passed: leftOver >= monthly,
+      text:
+        leftOver >= monthly
+          ? `About ${formatMoney(monthly)} a month fits inside the ${formatMoney(leftOver)} you have left over.`
+          : `About ${formatMoney(monthly)} a month is more than the ${formatMoney(Math.max(0, leftOver))} you have left over, so you may need a lower payment or a pause.`,
+    },
+  ];
+  return { eligible: criteria.every((c) => c.passed), criteria };
 }
 
 export type IntakeStepKey = "notice" | "situation" | "authorization" | "money" | "documents" | "assessment" | "path";
