@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Inbox, LayoutDashboard, LogOut, ShieldCheck, UserRound, Users, type LucideIcon } from "lucide-react";
+import { ChevronDown, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { useProSession } from "@/components/pro/pro-session";
 import { useProWorkspace } from "@/components/pro/use-pro-workspace";
 import { practitioner, proClients, taxpayer } from "@/lib/mockData";
+import { isProActive, proBreadcrumbsFor, proNav } from "@/lib/proNavigation";
 import { cn } from "@/lib/utils";
 
 export function ProWordmark({ className }: { className?: string }) {
@@ -26,24 +28,9 @@ const initials = practitioner.name
   .join("")
   .slice(0, 2);
 
-const pageTitle = (pathname: string) =>
-  pathname === "/pro"
-    ? "Today"
-    : pathname === "/pro/clients"
-      ? "Clients"
-      : pathname.startsWith("/pro/clients/")
-        ? "Client"
-        : pathname === "/pro/approvals"
-          ? "Approvals"
-          : pathname.startsWith("/pro/approvals/")
-            ? "Review"
-            : "T-Res Pro";
-
+// The labels, hrefs and icons come from lib/proNavigation.ts; only the live counts are added here.
 // `alert`: the count means something is waiting (yellow); otherwise it's just a total.
-type NavItem = { href: string; label: string; icon: LucideIcon; count?: number; note?: string; alert?: boolean };
-
-const isActive = (pathname: string, href: string) =>
-  href === "/pro" ? pathname === "/pro" : pathname === href || pathname.startsWith(`${href}/`);
+type NavItem = (typeof proNav)[number] & { count?: number; alert?: boolean };
 
 const itemClass =
   "flex h-9 items-center gap-2 rounded-md pr-2 pl-4 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -71,12 +58,11 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const nav: NavItem[] = [
-    { href: "/pro", label: "Today", icon: LayoutDashboard },
-    { href: "/pro/clients", label: "Clients", icon: Users, count: proClients.length },
-    { href: "/pro/approvals", label: "Approvals", icon: Inbox, count: approvals.length, alert: true },
-    { href: "/plcy", label: "Governance", icon: ShieldCheck, note: "PLCY" },
-  ];
+  const counts: Record<string, { count: number; alert?: boolean }> = {
+    "/pro/clients": { count: proClients.length },
+    "/pro/approvals": { count: approvals.length, alert: true },
+  };
+  const nav: NavItem[] = proNav.map((item) => ({ ...item, ...counts[item.href] }));
 
   const signOutNow = () => {
     setMenuOpen(false);
@@ -103,7 +89,7 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
 
         <nav aria-label="T-Res Pro" className="space-y-1">
           {nav.map(({ href, label, icon: Icon, count, note, alert }) => {
-            const active = isActive(pathname, href);
+            const active = isProActive(pathname, href);
             return (
               <Link
                 key={href}
@@ -144,10 +130,10 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-20 border-b bg-background px-4 py-3 md:px-6">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              <Link href="/pro" className="md:hidden" aria-label="T-Res Pro, Today">
+              <Link href="/pro" className="shrink-0 md:hidden" aria-label="T-Res Pro, Today">
                 <ProWordmark />
               </Link>
-              <span className="hidden text-sm font-medium md:inline">{pageTitle(pathname)}</span>
+              <Breadcrumbs crumbs={proBreadcrumbsFor(pathname)} homeHref="/pro" homeLabel="T-Res Pro home" />
             </div>
 
             <div className="relative">
