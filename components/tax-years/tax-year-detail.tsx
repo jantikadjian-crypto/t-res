@@ -14,6 +14,7 @@ import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge, StatusDot } from "@/components/status";
+import { ReliefNoteText } from "@/components/tax-years/relief-note";
 import { daysUntil, durationLabel, formatDate, formatMoney } from "@/lib/format";
 import {
   documents,
@@ -125,7 +126,7 @@ function BalanceCard({ y }: { y: TaxYear }) {
             <Sparkles className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
             <div className="space-y-1">
               <p className="text-sm font-medium text-green-900">Possible savings</p>
-              <p className="text-sm text-green-800">{y.reliefNote}</p>
+              <ReliefNoteText year={y} />
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1">
                 <Link href="/intake/assessment" className="text-sm font-medium text-green-900 underline">
                   See our full assessment

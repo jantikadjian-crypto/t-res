@@ -5,16 +5,16 @@ import { intakeScreens, intakeSteps } from "@/lib/intakeScreens";
 import { libraryEntries, libraryFiles } from "@/lib/library";
 import {
   account,
-  actionItems,
   enrolledAgent,
-  notices,
   paidInvoices,
   resolutionPlans,
   subscription,
   taxYears,
   yearBalance,
+  type ActionItem,
   type CaseDocument,
   type DocumentNote,
+  type Notice,
 } from "@/lib/mockData";
 
 export type SearchKind = "Page" | "Notice" | "To-do" | "Document" | "Note" | "Tax year" | "Library" | "Settings" | "Get Started";
@@ -41,7 +41,6 @@ const pages: SearchItem[] = [
   { id: "page-waiting", kind: "Page", title: "Documents waiting on you", subtitle: "To sign, approve or upload", href: "/documents/waiting", keywords: "requested missing signature" },
   { id: "page-library", kind: "Page", title: "Library", subtitle: "IRS forms, notices and terms explained", href: "/library", keywords: "glossary definitions help reference irs forms" },
   { id: "page-intake", kind: "Page", title: "Get Started", subtitle: "Your intake answers", href: "/intake/notice", keywords: "onboarding wizard intake questions" },
-  { id: "page-sign", kind: "Page", title: "Sign Form 2848", subtitle: "Secure signing", href: "/sign/doc_2848", keywords: "signature e-sign power of attorney" },
 ];
 
 const settings: SearchItem[] = [
@@ -97,22 +96,6 @@ const settings: SearchItem[] = [
 export function staticSearchItems(): SearchItem[] {
   return [
     ...pages,
-    ...notices.map<SearchItem>((n) => ({
-      id: `notice-${n.id}`,
-      kind: "Notice",
-      title: `${n.code}: ${n.plainTitle}`,
-      subtitle: `${n.title} · ${n.taxYear} tax year · ${n.statusLabel}`,
-      href: `/notices/${n.id}`,
-      keywords: [n.decode.whatItIs, n.decode.whatItMeans, n.decode.deadline, n.decode.whatWeAreDoing, formatMoney(n.amount)].join(" "),
-    })),
-    ...actionItems.map<SearchItem>((a) => ({
-      id: `todo-${a.id}`,
-      kind: "To-do",
-      title: a.title,
-      subtitle: a.why,
-      href: "/action-items",
-      keywords: `${a.uploadHint ?? ""} ${a.type}`,
-    })),
     ...taxYears.map<SearchItem>((y) => ({
       id: `year-${y.year}`,
       kind: "Tax year",
@@ -146,9 +129,36 @@ export function staticSearchItems(): SearchItem[] {
   ];
 }
 
-// Documents and notes change as the taxpayer uploads and writes, so they come from live state.
-export function caseSearchItems(docs: CaseDocument[], notesFor: (docId: string) => DocumentNote[]): SearchItem[] {
-  return docs.flatMap<SearchItem>((d) => [
+// Notices, to-dos, documents and notes change during a session (new letters, uploads, the taxpayer's
+// lane), so they come from live state. Only the current lane's to-dos and documents are searchable.
+export function caseSearchItems(
+  docs: CaseDocument[],
+  notesFor: (docId: string) => DocumentNote[],
+  actions: ActionItem[],
+  notices: Notice[]
+): SearchItem[] {
+  const noticeItems = notices.map<SearchItem>((n) => ({
+    id: `notice-${n.id}`,
+    kind: "Notice",
+    title: `${n.code}: ${n.plainTitle}`,
+    subtitle: `${n.title} · ${n.taxYear} tax year · ${n.statusLabel}`,
+    href: `/notices/${n.id}`,
+    keywords: [n.decode.whatItIs, n.decode.whatItMeans, n.decode.deadline, n.decode.whatWeAreDoing, formatMoney(n.amount)].join(" "),
+  }));
+  const todoItems = actions
+    .filter((a) => !a.done)
+    .map<SearchItem>((a) => {
+      const signDoc = docs.find((d) => d.relatedActionId === a.id && d.status === "needs-signature");
+      return {
+        id: `todo-${a.id}`,
+        kind: "To-do",
+        title: a.title,
+        subtitle: a.why,
+        href: signDoc ? `/sign/${signDoc.id}` : "/action-items",
+        keywords: `${a.uploadHint ?? ""} ${a.type} ${signDoc ? "signature e-sign power of attorney" : ""}`,
+      };
+    });
+  const docItems = docs.flatMap<SearchItem>((d) => [
     {
       id: `doc-${d.id}`,
       kind: "Document",
@@ -166,6 +176,7 @@ export function caseSearchItems(docs: CaseDocument[], notesFor: (docId: string) 
       keywords: n.text,
     })),
   ]);
+  return [...noticeItems, ...todoItems, ...docItems];
 }
 
 export function tokenize(query: string): string[] {

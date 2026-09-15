@@ -65,13 +65,16 @@ function Highlight({ text, tokens }: { text: string; tokens: string[] }) {
 // Search everything: opened from the top bar, with Ctrl+K / ⌘K, or "/".
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const { docs, notesFor } = useCase();
+  const { docs, notesFor, actions, notices } = useCase();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const items = useMemo(() => [...staticItems, ...caseSearchItems(docs, notesFor)], [docs, notesFor]);
+  const items = useMemo(
+    () => [...staticItems, ...caseSearchItems(docs, notesFor, actions, notices)],
+    [docs, notesFor, actions, notices]
+  );
   const tokens = tokenize(query);
   const results = useMemo(() => (query.trim() ? searchItems(items, query) : QUICK_LINKS), [items, query]);
 

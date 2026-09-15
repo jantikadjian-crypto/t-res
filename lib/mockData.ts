@@ -59,6 +59,8 @@ export type TaxYear = {
   csed: string | null;
   plainEnglish: string;
   reliefNote?: string;
+  // The same note for the self-serve lane, where the taxpayer sends the request.
+  selfServeReliefNote?: string;
   // From the IRS wage & income transcript.
   incomeOnRecord: IncomeRecord[];
   events: TaxYearEvent[];
@@ -86,8 +88,8 @@ export type Notice = {
     deadline: string;
     whatWeAreDoing: string;
   };
-  // "What we're doing" when the taxpayer is in the self-serve lane.
-  selfServeDoing?: string;
+  // Wording for the self-serve lane, where the taxpayer acts and T-Res prepares (overrides decode).
+  selfServe?: Partial<Notice["decode"]>;
 };
 
 // Self-serve: the taxpayer deals with the IRS themselves, T-Res prepares everything (Guided plan).
@@ -238,6 +240,8 @@ export const taxYears: TaxYear[] = [
       "You owe money for 2021 and the IRS has filed a public claim (a lien) against your property. This is the year we are working on first.",
     reliefNote:
       "Your 2021 penalties ($2,310) may qualify for First-Time Penalty Abatement, because you had no penalties in the three years before. We'll ask the IRS to remove them.",
+    selfServeReliefNote:
+      "Your 2021 penalties ($2,310) may qualify for First-Time Penalty Abatement, because you had no penalties in the three years before. We've written the request for you to send once your 2023 return is filed.",
     incomeOnRecord: [
       { payer: "Lone Star Logistics LLC", form: "W-2", amount: 61200 },
       { payer: "Uber Technologies (rideshare)", form: "1099-K", amount: 8900 },
@@ -314,8 +318,10 @@ export const notices: Notice[] = [
     statusLabel: "Action needed",
     tone: "bad",
     documentId: "doc_cp504",
-    selfServeDoing:
-      "You're handling this yourself with our help. Set up your payment plan on IRS.gov with the answers we give you, and mail the one-page reply we prepare. While a payment plan is in place, the IRS can't levy.",
+    selfServe: {
+      whatWeAreDoing:
+        "You're handling this yourself with our help. Set up your payment plan on IRS.gov with the answers we give you, and mail the one-page reply we wrote for you. While a payment plan is in place, the IRS can't levy.",
+    },
     decode: {
       whatItIs:
         "A notice saying the IRS intends to collect your unpaid 2021 balance by taking (levying) your state tax refund or other property.",
@@ -340,6 +346,11 @@ export const notices: Notice[] = [
     statusLabel: "We're handling it",
     tone: "warn",
     documentId: "doc_cp14",
+    selfServe: {
+      deadline:
+        "The IRS asks for payment by Sep 29, 2026. The payment plan you set up covers 2022 as well, so you don't need to reply separately.",
+      whatWeAreDoing: "Nothing extra for you to do. We include 2022 in the payment plan answers we give you.",
+    },
     decode: {
       whatItIs: "The IRS's first bill for the money owed on your 2022 return.",
       whatItMeans:
@@ -363,6 +374,10 @@ export const notices: Notice[] = [
     statusLabel: "Hearing window passed",
     tone: "neutral",
     documentId: "doc_l3172",
+    selfServe: {
+      whatWeAreDoing:
+        "Once your payment plan is running by direct debit, we'll prepare the lien withdrawal request (Form 12277) for you to sign and send. That's possible when the balance is under $25,000.",
+    },
     decode: {
       whatItIs:
         "Notice that the IRS filed a Notice of Federal Tax Lien — a public record that it has a legal claim to your property for the 2021 balance.",
@@ -458,6 +473,40 @@ Chris G., Enrolled Agent`,
       "In your IRS online account, apply for a long-term payment plan: about $440 a month by direct debit. Then upload the confirmation page so we can check it.",
   },
   {
+    id: "act_reply",
+    lane: "self-serve",
+    type: "approve-letter",
+    title: "Mail your CP504 reply",
+    why: "We wrote it for you. Read it and approve it, then print, sign and mail it before Sep 26.",
+    dueBy: "2026-09-25",
+    done: false,
+    relatedNoticeId: "ntc_cp504",
+    letterPreview: `To: Internal Revenue Service
+Re: CP504, tax year 2021 — Jordan A. Reyes, SSN •••-••-4417
+
+I received your CP504 notice dated September 2, 2026. I have applied for a long-term payment plan through my IRS online account to pay my 2021 and 2022 balances by direct debit, and I am preparing my 2023 return.
+
+Please hold collection while my payment plan request is processed.
+
+Jordan A. Reyes`,
+  },
+  {
+    id: "act_fta",
+    lane: "self-serve",
+    type: "approve-letter",
+    title: "Send your penalty relief request",
+    why: "It could remove $2,310 in 2021 penalties. Send it once your 2023 return is filed: the IRS needs every return filed first.",
+    dueBy: "2026-10-09",
+    done: false,
+    relatedTaxYear: 2021,
+    letterPreview: `To: Internal Revenue Service
+Re: Request for First-Time Penalty Abatement, tax year 2021 — Jordan A. Reyes, SSN •••-••-4417
+
+I am asking you to remove the penalties on my 2021 account under the First-Time Abatement policy. I had no penalties for 2018, 2019 or 2020, all of my required returns are filed, and I have a payment plan in place for the balance.
+
+Jordan A. Reyes`,
+  },
+  {
     id: "act_w2",
     type: "upload",
     title: "Upload your 2023 W-2s and 1099s",
@@ -518,6 +567,14 @@ export const documents: CaseDocument[] = [
   {
     id: "doc_wi_23", name: "2023 Wage & Income Transcript.pdf", category: "Transcript", source: "IRS", taxYear: 2023, addedOn: "2026-09-12", sizeKb: 74, status: "on-file",
     summary: "Every W-2 and 1099 the IRS received for you in 2023. We'll use it to prepare your missing return.",
+  },
+  {
+    id: "doc_reply", name: "CP504 Reply (draft).pdf", category: "Prepared by us", source: "T-Res", taxYear: 2021, addedOn: "2026-09-13", sizeKb: 22, status: "draft", relatedActionId: "act_reply", lane: "self-serve",
+    summary: "The one-page reply to your CP504 that you mail yourself. It tells the IRS you've applied for a payment plan and asks it to hold collection.",
+  },
+  {
+    id: "doc_ftaletter", name: "First-Time Abatement Request (draft).pdf", category: "Prepared by us", source: "T-Res", taxYear: 2021, addedOn: "2026-09-13", sizeKb: 19, status: "draft", relatedActionId: "act_fta", lane: "self-serve",
+    summary: "Your request to remove $2,310 in 2021 penalties. Send it once your 2023 return is filed.",
   },
   {
     id: "doc_engage", name: "Engagement Letter (signed).pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-03", sizeKb: 142, status: "on-file",
@@ -900,6 +957,10 @@ export type GovernanceItem = {
   noticeId?: string;
   // What Chris's approve button says, when "Approve" isn't specific enough.
   approveLabel?: string;
+  // Only part of the case in this lane (e.g. a letter under Chris's name exists only when represented).
+  lane?: Lane;
+  // The to-do this output belongs to, so its badge shows there too.
+  actionId?: string;
 };
 
 export const governancePolicies: GovernancePolicy[] = [
@@ -930,6 +991,13 @@ export const governancePolicies: GovernancePolicy[] = [
     spotCheck: "Chris spot-checks 1 in 50",
   },
   {
+    id: "pol_selfletters",
+    name: "Letters you send yourself",
+    rule: "Letters the taxpayer signs and sends themselves, from templates Chris approved, at 90% confidence or higher. Nothing goes out under Chris's name.",
+    outcome: "Auto-approve",
+    spotCheck: "Chris spot-checks 1 in 20",
+  },
+  {
     id: "pol_emergency",
     name: "Emergencies and final levy notices",
     rule: "Money already taken from a paycheck or bank account, or a final notice before levy (LT11 or Letter 1058). Moves a self-serve case to Chris.",
@@ -940,6 +1008,8 @@ export const governancePolicies: GovernancePolicy[] = [
 export const governanceItems: GovernanceItem[] = [
   {
     id: "gov_letter",
+    lane: "represented",
+    actionId: "act_letter",
     title: "CP504 response letter",
     kind: "IRS submission",
     producedBy: "T-Res letter drafter",
@@ -1129,6 +1199,58 @@ export const governanceItems: GovernanceItem[] = [
     ],
     evidence: [{ label: "2023 wage & income transcript", href: "/documents/doc_wi_23" }],
     resultHref: "/tax-years/2023",
+  },
+  {
+    id: "gov_reply",
+    lane: "self-serve",
+    actionId: "act_reply",
+    title: "CP504 reply for Jordan to mail",
+    kind: "Letter",
+    producedBy: "T-Res letter drafter",
+    createdOn: "2026-09-13",
+    confidence: 0.95,
+    policyId: "pol_selfletters",
+    status: "auto-approved",
+    decidedOn: "2026-09-13",
+    summary: "Drafted a one-page reply Jordan signs and mails: it says a payment plan has been requested online and asks the IRS to hold collection.",
+    output: actionItems.find((a) => a.id === "act_reply")?.letterPreview,
+    checks: [
+      { label: "Name and SSN match the Form 8821 on file", passed: true },
+      { label: "Goes out before the CP504 deadline (Sep 26, 2026)", passed: true },
+      { label: "Built from the CP504 reply template Chris approved", passed: true },
+      { label: "Signed by Jordan, not under Chris's name", passed: true },
+    ],
+    evidence: [
+      { label: "CP504 notice", href: "/documents/doc_cp504" },
+      { label: "The draft reply", href: "/documents/doc_reply" },
+    ],
+    resultHref: "/documents/doc_reply",
+  },
+  {
+    id: "gov_ftaletter",
+    lane: "self-serve",
+    actionId: "act_fta",
+    title: "Penalty relief request for Jordan to send",
+    kind: "Letter",
+    producedBy: "T-Res letter drafter",
+    createdOn: "2026-09-13",
+    confidence: 0.93,
+    policyId: "pol_selfletters",
+    status: "auto-approved",
+    decidedOn: "2026-09-13",
+    summary: "Drafted Jordan's First-Time Abatement request for $2,310 in 2021 penalties, to send once the 2023 return is filed.",
+    output: actionItems.find((a) => a.id === "act_fta")?.letterPreview,
+    checks: [
+      { label: "No penalties in 2018, 2019 or 2020", passed: true },
+      { label: "Scheduled after the 2023 return, since every return must be filed first", passed: true },
+      { label: "Built from the First-Time Abatement template Chris approved", passed: true },
+      { label: "Signed by Jordan, not under Chris's name", passed: true },
+    ],
+    evidence: [
+      { label: "2021 account transcript", href: "/documents/doc_tr_21" },
+      { label: "The draft request", href: "/documents/doc_ftaletter" },
+    ],
+    resultHref: "/documents/doc_ftaletter",
   },
 ];
 

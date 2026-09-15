@@ -246,10 +246,12 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
       [...seedNotices, ...(escalatedOn ? laterNotices : [])].map((n) => {
         const related = actions.filter((a) => a.relatedNoticeId === n.id);
         return n.status === "action-needed" && related.length > 0 && related.every((a) => a.done)
-          ? { ...n, status: "in-progress" as const, statusLabel: "We're handling it", tone: "warn" as const }
+          ? lane === "self-serve"
+            ? { ...n, status: "in-progress" as const, statusLabel: "You've responded", tone: "good" as const }
+            : { ...n, status: "in-progress" as const, statusLabel: "We're handling it", tone: "warn" as const }
           : n;
       }),
-    [actions, escalatedOn]
+    [actions, escalatedOn, lane]
   );
 
   const openNotices = useMemo(
@@ -270,14 +272,16 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
   // Live checks (e.g. "Form 2848 signed") follow the documents in this session.
   const governance = useMemo(
     () =>
-      [...seedGovernance, ...(escalatedOn ? laterGovernanceItems : [])].map((g) => ({
+      [...seedGovernance, ...(escalatedOn ? laterGovernanceItems : [])]
+        .filter((g) => !g.lane || g.lane === lane)
+        .map((g) => ({
         ...g,
         ...decisions[g.id],
         checks: g.checks.map((c) =>
           c.signedDocId ? { ...c, passed: docs.some((d) => d.id === c.signedDocId && d.status === "on-file") } : c
         ),
       })),
-    [decisions, docs, escalatedOn]
+    [decisions, docs, escalatedOn, lane]
   );
 
   return (

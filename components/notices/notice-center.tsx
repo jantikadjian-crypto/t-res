@@ -171,9 +171,7 @@ export function NoticeCenter({ selectedId }: { selectedId: string }) {
                     {label}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {key === "whatWeAreDoing" && lane === "self-serve" && selected.selfServeDoing
-                      ? selected.selfServeDoing
-                      : selected.decode[key]}
+                    {(lane === "self-serve" && selected.selfServe?.[key]) || selected.decode[key]}
                   </p>
                 </div>
               ))}

@@ -49,11 +49,11 @@ function RelatedLink({ item }: { item: ActionItem }) {
 }
 
 export function ActionQueue() {
-  const { actions, docs, signatures, completeAction, governance } = useCase();
+  const { actions, docs, signatures, completeAction, governance, lane } = useCase();
   const [openLetter, setOpenLetter] = useState<string | null>(null);
-  // Letters going to the IRS are governed in PLCY: show where Chris's sign-off stands.
-  const governedBy = (item: ActionItem) =>
-    item.relatedNoticeId ? governance.find((g) => g.noticeId === item.relatedNoticeId) : undefined;
+  // Every letter is governed in PLCY: show its review badge (Chris's sign-off, or checked by T-Res).
+  const governedBy = (item: ActionItem) => governance.find((g) => g.actionId === item.id);
+  const mover = lane === "self-serve" ? "your case moves" : "Chris moves your case";
 
   const todo = actions.filter((i) => !i.done).sort((a, b) => a.dueBy.localeCompare(b.dueBy));
   const done = actions
@@ -70,8 +70,8 @@ export function ActionQueue() {
               <h2 className="text-base font-medium">Your case moves when these are done</h2>
               <p className="text-sm text-muted-foreground" aria-live="polite">
                 {todo.length
-                  ? `Finish the ${todo.length} below and Chris moves your case to ${nextStage.label}: ${nextStage.description.toLowerCase()}`
-                  : `All done. Chris is moving your case to ${nextStage.label}.`}
+                  ? `Finish the ${todo.length} below and ${mover} to ${nextStage.label}: ${nextStage.description.toLowerCase()}`
+                  : `All done. ${lane === "self-serve" ? "Your case is moving" : "Chris is moving your case"} to ${nextStage.label}.`}
               </p>
             </div>
             <div className="text-2xl font-bold tabular-nums">
