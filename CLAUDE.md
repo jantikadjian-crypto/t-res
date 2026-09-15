@@ -17,6 +17,8 @@
 - Status colours come from the `StatusDot` / `StatusBadge` components in /components/status.tsx. Tones: `good` (green), `warn` (amber), `bad` (red), `neutral` (grey).
 - Visual language is the PLCY Governance Console (`Desktop\PLCY\Claude Code_Anthropic\plcy_customer_admin_portal`, e.g. `HITLGuardrails.tsx`): tokens in app/globals.css `:root` are copied from its theme.css. When unsure how something should look, copy the PLCY pattern.
 - Metric tiles: Card → CardTitle `text-sm` with a coloured lucide icon, value `text-2xl font-bold`, caption `text-xs text-muted-foreground`. Alerts: `border-{red|yellow}-200 bg-{red|yellow}-50` with a CTA button beside the text.
+- Routing: app pages with the sidebar live in `app/(app)/`; the full-screen Get Started wizard lives in `app/(onboarding)/intake/[screen]`. Wizard steps, screens, copy and Back/Continue rules come only from /lib/intakeScreens.ts; answers are held by `IntakeProvider` (React state). Spec: /docs/intake-wizard-scope.md.
+- Selection state that should survive the progress snapshot goes in the URL (e.g. /notices/[id], /tax-years/[year]), not React state.
 - Links that look like buttons use `<LinkButton />` from /components/link-button.tsx.
 - AI-generated content gets `<EAReviewedBadge />` from /components/ea-reviewed-badge.tsx.
 - Mock "today" is fixed in mockData (`MOCK_TODAY`) so day counts stay stable in demos.

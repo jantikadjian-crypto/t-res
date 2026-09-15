@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/app-shell/app-shell";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -7,12 +6,11 @@ export const metadata: Metadata = {
   description: "Track your IRS notices, balances, and next steps in plain English.",
 };
 
+// The app shell lives in app/(app)/layout.tsx; the full-screen wizard in app/(onboarding).
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full bg-canvas">
-        <AppShell>{children}</AppShell>
-      </body>
+      <body className="min-h-full bg-canvas">{children}</body>
     </html>
   );
 }

@@ -430,15 +430,43 @@ export const notifications: AppNotification[] = [
   { id: "n3", date: "2026-09-02", message: "New notice received: CP504 for 2021.", read: false },
 ];
 
+export type MoneyRow = { label: string; amount: number };
+export type AssetRow = { label: string; value: number; owed: number };
+
+export type IntakeAnswers = {
+  submittedOn: string;
+  noticeDocumentId: string | null;
+  situation: string | null;
+  unfiledAnswer: "some" | "none" | "not-sure" | null;
+  unfiledYears: number[];
+  incomeTypes: string[];
+  moneyTakenOrEmployerContacted: boolean | null;
+  authorization: { form8821SignedOn: string | null; form2848: "signed" | "waiting-for-signature" | null };
+  household: { size: number; payFrequency: string };
+  monthlyIncome: MoneyRow[];
+  monthlyExpenses: MoneyRow[];
+  assets: AssetRow[];
+  assessment: {
+    recommendedPath: string;
+    estimatedMonthly: number;
+    summary: string;
+    alsoDoing: string[];
+    ruledOut: { option: string; why: string }[];
+    eaReviewed: boolean;
+  };
+  chosenPlanId: string | null;
+};
+
 // What Jordan told us in the Get Started wizard (see docs/intake-wizard-scope.md).
-export const intakeAnswers = {
+export const intakeAnswers: IntakeAnswers = {
   submittedOn: "2026-09-03",
   noticeDocumentId: "doc_cp504",
   situation: "I owe and can't pay it all at once",
+  unfiledAnswer: "some",
   unfiledYears: [2023],
   incomeTypes: ["W-2 job", "Gig or delivery work"],
   moneyTakenOrEmployerContacted: false,
-  authorization: { form8821SignedOn: "2026-09-03", form2848: "waiting-for-signature" as const },
+  authorization: { form8821SignedOn: "2026-09-03", form2848: "waiting-for-signature" },
   household: { size: 1, payFrequency: "Every two weeks" },
   monthlyIncome: [
     { label: "Take-home pay (Lone Star Logistics)", amount: 3920 },
