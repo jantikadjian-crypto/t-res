@@ -173,7 +173,7 @@ export function NoticeCenter({ selectedId }: { selectedId: string }) {
                 <ArrowRight aria-hidden />
               </LinkButton>
             )}
-            <LinkButton href="/documents" variant="outline">
+            <LinkButton href={`/documents/${selected.documentId}`} variant="outline">
               <FileText aria-hidden />
               View the letter
             </LinkButton>

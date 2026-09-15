@@ -122,6 +122,19 @@ export type CaseDocument = {
   addedOn: string;
   sizeKb: number;
   status: DocumentStatus;
+  // Plain-English "what this is", shown on the document page and searchable.
+  summary: string;
+  // The file actually uploaded, when it differs from the document's name.
+  fileName?: string;
+  relatedActionId?: string;
+};
+
+export type DocumentNote = {
+  id: string;
+  author: "you" | "ea";
+  date: string;
+  text: string;
+  editedOn?: string;
 };
 
 export type AppNotification = {
@@ -412,24 +425,137 @@ Chris G., Enrolled Agent`,
 ];
 
 export const documents: CaseDocument[] = [
-  { id: "doc_cp504", name: "CP504 – Notice of Intent to Levy.pdf", category: "IRS notice", source: "You", taxYear: 2021, addedOn: "2026-09-04", sizeKb: 412, status: "on-file" },
-  { id: "doc_cp14", name: "CP14 – Balance Due Notice.pdf", category: "IRS notice", source: "You", taxYear: 2022, addedOn: "2026-09-09", sizeKb: 298, status: "on-file" },
-  { id: "doc_l3172", name: "Letter 3172 – Federal Tax Lien Filing.pdf", category: "IRS notice", source: "You", taxYear: 2021, addedOn: "2026-09-04", sizeKb: 356, status: "on-file" },
-  { id: "doc_cp503", name: "CP503 – Second Reminder.pdf", category: "IRS notice", source: "You", taxYear: 2021, addedOn: "2026-09-04", sizeKb: 240, status: "on-file" },
-  { id: "doc_668y", name: "Form 668(Y) – Notice of Federal Tax Lien.pdf", category: "IRS notice", source: "IRS", taxYear: 2021, addedOn: "2026-09-05", sizeKb: 188, status: "on-file" },
-  { id: "doc_1040_21", name: "2021 Form 1040 (copy).pdf", category: "Tax return", source: "You", taxYear: 2021, addedOn: "2026-09-03", sizeKb: 1840, status: "on-file" },
-  { id: "doc_1040_22", name: "2022 Form 1040 (copy).pdf", category: "Tax return", source: "You", taxYear: 2022, addedOn: "2026-09-03", sizeKb: 1760, status: "on-file" },
-  { id: "doc_tr_21", name: "2021 Account Transcript.pdf", category: "Transcript", source: "IRS", taxYear: 2021, addedOn: "2026-09-12", sizeKb: 96, status: "on-file" },
-  { id: "doc_tr_22", name: "2022 Account Transcript.pdf", category: "Transcript", source: "IRS", taxYear: 2022, addedOn: "2026-09-12", sizeKb: 91, status: "on-file" },
-  { id: "doc_wi_23", name: "2023 Wage & Income Transcript.pdf", category: "Transcript", source: "IRS", taxYear: 2023, addedOn: "2026-09-12", sizeKb: 74, status: "on-file" },
-  { id: "doc_engage", name: "Engagement Letter (signed).pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-03", sizeKb: 142, status: "on-file" },
-  { id: "doc_8821", name: "Form 8821 – Tax Information Authorization (signed).pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-03", sizeKb: 104, status: "on-file" },
-  { id: "doc_2848", name: "Form 2848 – Power of Attorney.pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-10", sizeKb: 118, status: "needs-signature" },
-  { id: "doc_letter", name: "CP504 Response Letter (draft).pdf", category: "Prepared by us", source: "T-Res", taxYear: 2021, addedOn: "2026-09-13", sizeKb: 36, status: "draft" },
-  { id: "doc_intake", name: "Intake Summary.pdf", category: "Prepared by us", source: "T-Res", addedOn: "2026-09-03", sizeKb: 210, status: "on-file" },
-  { id: "doc_w2_23", name: "2023 W-2s and 1099s", category: "Financial", source: "You", taxYear: 2023, addedOn: "2026-09-07", sizeKb: 0, status: "requested" },
-  { id: "doc_bank", name: "Bank statements (Jun–Aug 2026)", category: "Financial", source: "You", addedOn: "2026-09-07", sizeKb: 0, status: "requested" },
+  {
+    id: "doc_cp504", name: "CP504 – Notice of Intent to Levy.pdf", category: "IRS notice", source: "You", taxYear: 2021, addedOn: "2026-09-04", sizeKb: 412, status: "on-file",
+    summary: "The IRS's final warning before it can take your state refund or other property for 2021. Your response is due Sep 26, 2026.",
+  },
+  {
+    id: "doc_cp14", name: "CP14 – Balance Due Notice.pdf", category: "IRS notice", source: "You", taxYear: 2022, addedOn: "2026-09-09", sizeKb: 298, status: "on-file",
+    summary: "The IRS's first bill for your 2022 balance. We're handling the response for you.",
+  },
+  {
+    id: "doc_l3172", name: "Letter 3172 – Federal Tax Lien Filing.pdf", category: "IRS notice", source: "You", taxYear: 2021, addedOn: "2026-09-04", sizeKb: 356, status: "on-file",
+    summary: "Notice that the IRS filed a public lien for your 2021 balance, and your window to ask for a hearing (now passed).",
+  },
+  {
+    id: "doc_cp503", name: "CP503 – Second Reminder.pdf", category: "IRS notice", source: "You", taxYear: 2021, addedOn: "2026-09-04", sizeKb: 240, status: "on-file",
+    summary: "The IRS's second reminder about your 2021 balance. It has since been replaced by the CP504.",
+  },
+  {
+    id: "doc_668y", name: "Form 668(Y) – Notice of Federal Tax Lien.pdf", category: "IRS notice", source: "IRS", taxYear: 2021, addedOn: "2026-09-05", sizeKb: 188, status: "on-file",
+    summary: "The lien itself, as filed with Travis County. It stays on public record until the 2021 balance is resolved or the lien is withdrawn.",
+  },
+  {
+    id: "doc_1040_21", name: "2021 Form 1040 (copy).pdf", category: "Tax return", source: "You", taxYear: 2021, addedOn: "2026-09-03", sizeKb: 1840, status: "on-file",
+    summary: "Your 2021 tax return as you filed it. We use it to check the IRS's numbers.",
+  },
+  {
+    id: "doc_1040_22", name: "2022 Form 1040 (copy).pdf", category: "Tax return", source: "You", taxYear: 2022, addedOn: "2026-09-03", sizeKb: 1760, status: "on-file",
+    summary: "Your 2022 tax return as you filed it. We use it to check the IRS's numbers.",
+  },
+  {
+    id: "doc_tr_21", name: "2021 Account Transcript.pdf", category: "Transcript", source: "IRS", taxYear: 2021, addedOn: "2026-09-12", sizeKb: 96, status: "on-file",
+    summary: "The IRS's official record of every charge, payment and penalty on your 2021 account.",
+  },
+  {
+    id: "doc_tr_22", name: "2022 Account Transcript.pdf", category: "Transcript", source: "IRS", taxYear: 2022, addedOn: "2026-09-12", sizeKb: 91, status: "on-file",
+    summary: "The IRS's official record of every charge, payment and penalty on your 2022 account.",
+  },
+  {
+    id: "doc_wi_23", name: "2023 Wage & Income Transcript.pdf", category: "Transcript", source: "IRS", taxYear: 2023, addedOn: "2026-09-12", sizeKb: 74, status: "on-file",
+    summary: "Every W-2 and 1099 the IRS received for you in 2023. We'll use it to prepare your missing return.",
+  },
+  {
+    id: "doc_engage", name: "Engagement Letter (signed).pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-03", sizeKb: 142, status: "on-file",
+    summary: "Our agreement to work on your case, signed Sep 3, 2026.",
+  },
+  {
+    id: "doc_8821", name: "Form 8821 – Tax Information Authorization (signed).pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-03", sizeKb: 104, status: "on-file",
+    summary: "Lets us see your IRS records. It's read-only: we can't change anything or make payments with it. Signed Sep 3, 2026.",
+  },
+  {
+    id: "doc_2848", name: "Form 2848 – Power of Attorney.pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-10", sizeKb: 118, status: "needs-signature", relatedActionId: "act_2848",
+    summary: "Power of attorney that lets Chris G. speak to the IRS for you, so you don't have to take their calls.",
+  },
+  {
+    id: "doc_letter", name: "CP504 Response Letter (draft).pdf", category: "Prepared by us", source: "T-Res", taxYear: 2021, addedOn: "2026-09-13", sizeKb: 36, status: "draft", relatedActionId: "act_letter",
+    summary: "Our draft reply to your CP504. It asks for a 60-day hold on collection and for the 2021 penalty to be removed.",
+  },
+  {
+    id: "doc_intake", name: "Intake Summary.pdf", category: "Prepared by us", source: "T-Res", addedOn: "2026-09-03", sizeKb: 210, status: "on-file",
+    summary: "A summary of what you told us when you signed up, and the plan we recommended.",
+  },
+  {
+    id: "doc_w2_23", name: "2023 W-2s and 1099s", category: "Financial", source: "You", taxYear: 2023, addedOn: "2026-09-07", sizeKb: 0, status: "requested", relatedActionId: "act_w2",
+    summary: "Needed to file your 2023 return: the Lone Star Logistics W-2, the DoorDash 1099-NEC and the Ally Bank 1099-INT.",
+  },
+  {
+    id: "doc_bank", name: "Bank statements (Jun–Aug 2026)", category: "Financial", source: "You", addedOn: "2026-09-07", sizeKb: 0, status: "requested", relatedActionId: "act_bank",
+    summary: "Your Ally Bank statements for June, July and August 2026. The IRS uses them to set a payment you can afford.",
+  },
 ];
+
+// Notes on documents, shared between Jordan and the Enrolled Agent. Keyed by document id.
+export const documentNotes: Record<string, DocumentNote[]> = {
+  doc_cp504: [
+    { id: "note-cp504-1", author: "you", date: "2026-09-04", text: "Got this in the mail on Sep 2. The envelope said FINAL NOTICE in red." },
+    {
+      id: "note-cp504-2",
+      author: "ea",
+      date: "2026-09-05",
+      text: "Thanks, Jordan. This is the levy warning for 2021. Our response letter is drafted; we're only waiting on your Form 2848 signature before we send it.",
+    },
+  ],
+  doc_l3172: [
+    {
+      id: "note-l3172-1",
+      author: "ea",
+      date: "2026-09-05",
+      text: "The formal hearing window closed Dec 17, 2025. An equivalent hearing is still possible until Nov 10, 2026 if we need it.",
+    },
+  ],
+  doc_tr_21: [
+    {
+      id: "note-tr21-1",
+      author: "ea",
+      date: "2026-09-12",
+      text: "Transcript matches the CP504 amount. Your $1,500 payment from Feb 2023 is applied correctly.",
+    },
+  ],
+  doc_1040_21: [
+    {
+      id: "note-1040-21-1",
+      author: "you",
+      date: "2026-09-03",
+      text: "This is the copy from TurboTax. I drove for Uber that year and didn't make estimated payments.",
+    },
+  ],
+  doc_2848: [
+    { id: "note-2848-1", author: "ea", date: "2026-09-10", text: "Please sign by Sep 17 so we can answer the CP504 in time." },
+  ],
+  doc_letter: [
+    {
+      id: "note-letter-1",
+      author: "ea",
+      date: "2026-09-13",
+      text: "Draft ready for you to read. It asks for a 60-day hold and penalty relief on 2021.",
+    },
+  ],
+  doc_w2_23: [
+    {
+      id: "note-w2-1",
+      author: "you",
+      date: "2026-09-08",
+      text: "I have the W-2 but I'm still looking for the DoorDash 1099. Can I download it from the Dasher app?",
+    },
+    {
+      id: "note-w2-2",
+      author: "ea",
+      date: "2026-09-09",
+      text: "Yes: Dasher app › Account › Tax information. The PDF download works perfectly.",
+    },
+  ],
+};
 
 export const notifications: AppNotification[] = [
   { id: "n1", date: "2026-09-12", message: "We checked your IRS transcripts. No new changes.", read: false },

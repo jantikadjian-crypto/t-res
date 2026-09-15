@@ -9,7 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { FIRST_SCREEN, getScreen, intakeSteps } from "@/lib/intakeScreens";
-import { notices, openActionItems, openNotices } from "@/lib/mockData";
+import { documents, notices, openActionItems, openNotices } from "@/lib/mockData";
 
 export type NavItem = {
   href: string;
@@ -64,7 +64,12 @@ export function breadcrumbsFor(pathname: string): Crumb[] {
     if (group.id !== "home") crumbs.push({ label: group.label, href: group.items[0].href });
     crumbs.push({ label: item.label, href: item.href });
     if (detail) {
-      const label = section === "notices" ? (notices.find((n) => n.id === detail)?.code ?? detail) : detail;
+      const label =
+        section === "notices"
+          ? (notices.find((n) => n.id === detail)?.code ?? detail)
+          : section === "documents"
+            ? (documents.find((d) => d.id === detail)?.name ?? "Document")
+            : detail;
       crumbs.push({ label });
     }
     return crumbs;
