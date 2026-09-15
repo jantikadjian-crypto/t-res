@@ -10,6 +10,8 @@ export type IrsFile = {
   sourceUrl: string;
   sizeKb: number;
   pages: number;
+  // The page shown in the preview (IRS "Attention" cover sheets are skipped).
+  previewPage: number;
   revised: string | null;
   preview: string;
 };
@@ -22,6 +24,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f1040.pdf",
     "sizeKb": 215,
     "pages": 2,
+    "previewPage": 1,
     "revised": "2026-01-02",
     "preview": "f1040.png"
   },
@@ -32,6 +35,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f2848.pdf",
     "sizeKb": 139,
     "pages": 2,
+    "previewPage": 1,
     "revised": "2022-03-01",
     "preview": "f2848.png"
   },
@@ -42,6 +46,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/i2848.pdf",
     "sizeKb": 198,
     "pages": 8,
+    "previewPage": 1,
     "revised": "2021-09-03",
     "preview": "i2848.png"
   },
@@ -52,6 +57,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f8821.pdf",
     "sizeKb": 71,
     "pages": 1,
+    "previewPage": 1,
     "revised": "2021-01-23",
     "preview": "f8821.png"
   },
@@ -62,6 +68,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f9465.pdf",
     "sizeKb": 113,
     "pages": 2,
+    "previewPage": 1,
     "revised": "2022-03-01",
     "preview": "f9465.png"
   },
@@ -72,6 +79,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f433f.pdf",
     "sizeKb": 150,
     "pages": 4,
+    "previewPage": 1,
     "revised": "2025-04-01",
     "preview": "f433f.png"
   },
@@ -82,6 +90,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f433a.pdf",
     "sizeKb": 408,
     "pages": 8,
+    "previewPage": 1,
     "revised": "2026-06-29",
     "preview": "f433a.png"
   },
@@ -92,6 +101,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f433d.pdf",
     "sizeKb": 127,
     "pages": 4,
+    "previewPage": 1,
     "revised": "2024-07-02",
     "preview": "f433d.png"
   },
@@ -102,6 +112,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f656b.pdf",
     "sizeKb": 1004,
     "pages": 32,
+    "previewPage": 1,
     "revised": "2026-04-18",
     "preview": "f656b.png"
   },
@@ -112,6 +123,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f12277.pdf",
     "sizeKb": 83,
     "pages": 2,
+    "previewPage": 1,
     "revised": "2025-11-07",
     "preview": "f12277.png"
   },
@@ -122,6 +134,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/fw2.pdf",
     "sizeKb": 2100,
     "pages": 11,
+    "previewPage": 2,
     "revised": "2026-08-12",
     "preview": "fw2.png"
   },
@@ -132,6 +145,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f1099nec.pdf",
     "sizeKb": 525,
     "pages": 6,
+    "previewPage": 2,
     "revised": "2026-06-09",
     "preview": "f1099nec.png"
   },
@@ -142,6 +156,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f1099k.pdf",
     "sizeKb": 567,
     "pages": 6,
+    "previewPage": 2,
     "revised": "2026-05-26",
     "preview": "f1099k.png"
   },
@@ -152,6 +167,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f1099int.pdf",
     "sizeKb": 526,
     "pages": 7,
+    "previewPage": 2,
     "revised": "2024-01-18",
     "preview": "f1099int.png"
   },
@@ -162,6 +178,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f12153.pdf",
     "sizeKb": 2164,
     "pages": 4,
+    "previewPage": 1,
     "revised": "2022-07-21",
     "preview": "f12153.png"
   },
@@ -172,6 +189,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f9423.pdf",
     "sizeKb": 54,
     "pages": 2,
+    "previewPage": 1,
     "revised": "2020-05-13",
     "preview": "f9423.png"
   },
@@ -182,6 +200,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f843.pdf",
     "sizeKb": 110,
     "pages": 2,
+    "previewPage": 1,
     "revised": "2024-12-20",
     "preview": "f843.png"
   },
@@ -192,6 +211,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/f4506t.pdf",
     "sizeKb": 664,
     "pages": 2,
+    "previewPage": 1,
     "revised": "2025-05-20",
     "preview": "f4506t.png"
   },
@@ -202,6 +222,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/p1.pdf",
     "sizeKb": 317,
     "pages": 2,
+    "previewPage": 1,
     "revised": null,
     "preview": "p1.png"
   },
@@ -212,6 +233,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/p594.pdf",
     "sizeKb": 163,
     "pages": 8,
+    "previewPage": 1,
     "revised": "2025-12-11",
     "preview": "p594.png"
   },
@@ -222,6 +244,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/p1660.pdf",
     "sizeKb": 656,
     "pages": 4,
+    "previewPage": 1,
     "revised": "2022-02-04",
     "preview": "p1660.png"
   },
@@ -232,6 +255,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/p1450.pdf",
     "sizeKb": 127,
     "pages": 1,
+    "previewPage": 1,
     "revised": "2020-02-27",
     "preview": "p1450.png"
   },
@@ -242,6 +266,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/irs-pdf/p783.pdf",
     "sizeKb": 51,
     "pages": 4,
+    "previewPage": 1,
     "revised": "2022-12-08",
     "preview": "p783.png"
   },
@@ -252,6 +277,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/notices/cp14_english.pdf",
     "sizeKb": 104,
     "pages": 6,
+    "previewPage": 1,
     "revised": "2025-11-07",
     "preview": "cp14_english.png"
   },
@@ -262,6 +288,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/notices/cp501_english.pdf",
     "sizeKb": 390,
     "pages": 5,
+    "previewPage": 1,
     "revised": null,
     "preview": "cp501_english.png"
   },
@@ -272,6 +299,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/notices/cp503_english.pdf",
     "sizeKb": 156,
     "pages": 5,
+    "previewPage": 1,
     "revised": "2018-01-08",
     "preview": "cp503_english.png"
   },
@@ -282,6 +310,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/notices/cp504_english.pdf",
     "sizeKb": 262,
     "pages": 7,
+    "previewPage": 1,
     "revised": null,
     "preview": "cp504_english.png"
   },
@@ -292,6 +321,7 @@ export const irsFiles: Record<string, IrsFile> = {
     "sourceUrl": "https://www.irs.gov/pub/notices/lt11_english.pdf",
     "sizeKb": 99,
     "pages": 5,
+    "previewPage": 1,
     "revised": "2019-08-29",
     "preview": "lt11_english.png"
   }

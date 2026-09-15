@@ -1,6 +1,7 @@
 // IRS files for the Library: downloads the PDFs listed in scripts/irs-forms.json into public/forms
 // (blank forms, publications and sample notices are U.S. government works, public domain), renders a
-// PNG preview of page 1 of each, and writes lib/irsFiles.ts.
+// PNG preview of each (the first real page; IRS "Attention" cover sheets are skipped), and writes
+// lib/irsFiles.ts.
 //
 //   node scripts/irs-forms.mjs            download anything missing, re-render previews
 //   node scripts/irs-forms.mjs --refresh  re-download everything (new IRS revisions)
@@ -33,7 +34,7 @@ for (const f of list) {
 }
 fs.writeFileSync(listPath, `[\n${list.map((f) => `  ${JSON.stringify(f)}`).join(",\n")}\n]\n`);
 
-const pages = JSON.parse(
+const rendered = JSON.parse(
   execFileSync("python", [path.join(root, "scripts/render_pdf_previews.py"), ...list.map((f) => path.join(outDir, f.file))], {
     encoding: "utf8",
     maxBuffer: 1024 * 1024,
@@ -49,7 +50,8 @@ const files = Object.fromEntries(
       kind: f.kind,
       sourceUrl: f.url,
       sizeKb: Math.round(fs.statSync(path.join(outDir, f.file)).size / 1024),
-      pages: pages[f.file],
+      pages: rendered[f.file].pages,
+      previewPage: rendered[f.file].previewPage,
       revised: f.revised ?? null,
       preview: f.file.replace(/\.pdf$/, ".png"),
     },
@@ -68,6 +70,8 @@ export type IrsFile = {
   sourceUrl: string;
   sizeKb: number;
   pages: number;
+  // The page shown in the preview (IRS "Attention" cover sheets are skipped).
+  previewPage: number;
   revised: string | null;
   preview: string;
 };
@@ -76,5 +80,7 @@ export const irsFiles: Record<string, IrsFile> = ${JSON.stringify(files, null, 2
 `;
 fs.writeFileSync(path.join(root, "lib/irsFiles.ts"), ts);
 
-const previewKb = list.reduce((s, f) => s + fs.statSync(path.join(outDir, f.preview ?? f.file.replace(/\.pdf$/, ".png"))).size / 1024, 0);
+const skipped = Object.values(files).filter((f) => f.previewPage > 1);
+const previewKb = Object.values(files).reduce((s, f) => s + fs.statSync(path.join(outDir, f.preview)).size / 1024, 0);
 console.log(`${list.length} files · previews ${Math.round(previewKb)} KB · wrote lib/irsFiles.ts`);
+if (skipped.length) console.log(`Skipped cover sheets: ${skipped.map((f) => `${f.file} → page ${f.previewPage}`).join(", ")}`);

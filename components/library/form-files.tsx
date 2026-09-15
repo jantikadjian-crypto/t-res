@@ -23,7 +23,7 @@ function FormFileCard({ file }: { file: IrsFile }) {
         {/* eslint-disable-next-line @next/next/no-img-element -- static previews rendered by scripts/irs-forms.mjs */}
         <img
           src={assetUrl(`forms/${file.preview}`)}
-          alt={`Page 1 of ${file.title}`}
+          alt={`Page ${file.previewPage} of ${file.title}`}
           loading="lazy"
           className="aspect-[8.5/11] w-full max-w-full rounded-sm bg-white object-cover object-top shadow-sm ring-1 ring-black/5 transition-transform group-hover:scale-[1.01]"
         />
