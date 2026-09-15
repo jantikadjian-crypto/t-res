@@ -1,31 +1,42 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, CreditCard, PauseCircle } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, Check, CheckCircle2, CreditCard, PauseCircle, Repeat, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
 import { LinkButton } from "@/components/link-button";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, formatDate, formatMoney } from "@/lib/format";
-import { enrolledAgent, nextNotice, paidInvoices, resolutionPlans, subscription, type Tone } from "@/lib/mockData";
+import {
+  enrolledAgent,
+  nextNotice,
+  paidInvoices,
+  planFeatures,
+  resolutionPlans,
+  subscription,
+  type Tone,
+} from "@/lib/mockData";
+import { cn } from "@/lib/utils";
 
 function addMonths(iso: string, n: number) {
   const [y, m, d] = iso.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1 + n, d)).toISOString().slice(0, 10);
 }
 
-/** "or 6 × $275" → 275. One-time plans have no installment. */
-export function installmentOf(priceNote: string): number | null {
-  const match = priceNote.match(/×\s*\$([\d,]+)/);
-  return match ? Number(match[1].replace(/,/g, "")) : null;
-}
-
+/** What a plan costs this taxpayer from here: what's paid counts toward any plan. */
 export function billingSummary(planId: string) {
   const current = resolutionPlans.find((p) => p.id === planId) ?? resolutionPlans[1];
   const paid = subscription.installmentsPaid * subscription.installmentAmount;
   const remaining = Math.max(0, current.price - paid);
-  const installment = installmentOf(current.priceNote) ?? remaining;
-  return { current, paid, remaining, installment };
+  const credit = Math.max(0, paid - current.price);
+  const oneTime = current.installments === 1;
+  const count = remaining === 0 ? 0 : oneTime ? 1 : Math.max(1, current.installments - subscription.installmentsPaid);
+  const each = count ? Math.round(remaining / count) : 0;
+  // Remaining payments, with any rounding left on the last one.
+  const amounts = Array.from({ length: count }, (_, i) => (i === count - 1 ? remaining - each * (count - 1) : each));
+  return { current, paid, remaining, credit, oneTime, amounts };
 }
 
 const statusMeta: Record<string, { tone: Tone; label: string }> = {
@@ -34,18 +45,53 @@ const statusMeta: Record<string, { tone: Tone; label: string }> = {
   canceled: { tone: "neutral", label: "Canceled" },
 };
 
+function PlanChangeSummary({
+  fromId,
+  toId,
+  firstDue,
+}: {
+  fromId: string;
+  toId: string;
+  firstDue: string;
+}) {
+  const from = billingSummary(fromId).current;
+  const target = billingSummary(toId);
+  const gained = target.current.features.filter((f) => !from.features.includes(f));
+  const lost = from.features.filter((f) => !target.current.features.includes(f));
+  return (
+    <div className="space-y-2 text-sm">
+      {gained.length > 0 && (
+        <p>
+          <span className="font-medium text-green-700">You add:</span> {gained.join(", ")}.
+        </p>
+      )}
+      {lost.length > 0 && (
+        <p>
+          <span className="font-medium text-red-600">You lose:</span> {lost.join(", ")}.
+        </p>
+      )}
+      <p className="text-muted-foreground">
+        {target.credit > 0
+          ? `You've already paid more than this plan costs. We'll refund ${formatMoney(target.credit)}.`
+          : target.remaining === 0
+            ? "Nothing more to pay."
+            : target.amounts.length === 1
+              ? `You'll pay ${formatMoney(target.remaining)} once, on ${formatDate(firstDue)}.`
+              : `Your remaining ${target.amounts.length} payments become ${formatMoney(target.amounts[0])} each, starting ${formatDate(firstDue)}.`}
+      </p>
+    </div>
+  );
+}
+
 export function BillingOverview() {
   const { plan, resumePlan, switchPlan } = useCase();
-  const { current, paid, remaining, installment } = billingSummary(plan.planId);
+  const { current, paid, remaining, amounts } = billingSummary(plan.planId);
+  const [pendingId, setPendingId] = useState<string | null>(null);
   const pct = Math.min(100, Math.round((paid / current.price) * 100));
   const firstDue = plan.status === "paused" ? subscription.pauseResumesOn : subscription.nextChargeOn;
-  const count = plan.status === "canceled" || !installment ? 0 : Math.ceil(remaining / installment);
-  const upcoming = Array.from({ length: count }, (_, i) => ({
-    date: addMonths(firstDue, i),
-    amount: Math.min(installment, remaining - i * installment),
-  }));
+  const upcoming = plan.status === "canceled" ? [] : amounts.map((amount, i) => ({ date: addMonths(firstDue, i), amount }));
   const status = statusMeta[plan.status];
-  const others = resolutionPlans.filter((p) => p.id !== plan.planId);
+  const switchedFrom = plan.switchedFrom ? resolutionPlans.find((p) => p.id === plan.switchedFrom) : undefined;
 
   return (
     <div className="space-y-6">
@@ -72,6 +118,20 @@ export function BillingOverview() {
           <Button onClick={resumePlan}>Restart my plan</Button>
         </div>
       )}
+      {switchedFrom && plan.status === "active" && (
+        <div role="status" className="flex flex-col gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 sm:flex-row sm:items-center">
+          <Repeat className="size-5 shrink-0 text-blue-600" aria-hidden />
+          <p className="flex-1 text-sm text-blue-800">
+            <span className="font-medium text-blue-900">
+              You changed from {switchedFrom.name} to {current.name} on {formatDate(plan.changedOn ?? subscription.startedOn)}.
+            </span>{" "}
+            {enrolledAgent.name} will confirm within one business day. Nothing is charged until then.
+          </p>
+          <Button variant="outline" className="border-blue-300 bg-white" onClick={() => switchPlan(switchedFrom.id)}>
+            Undo
+          </Button>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
@@ -83,17 +143,12 @@ export function BillingOverview() {
             <CardDescription>{current.blurb}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
-            {plan.switchedFrom && plan.status === "active" && (
-              <p className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
-                You switched from {resolutionPlans.find((p) => p.id === plan.switchedFrom)?.name} on{" "}
-                {formatDate(plan.changedOn ?? subscription.startedOn)}. {enrolledAgent.name} will confirm the change within one
-                business day.
-              </p>
-            )}
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <span className="text-2xl font-bold tabular-nums">{formatMoney(current.price)}</span>
               <span className="text-sm text-muted-foreground">
-                {installmentOf(current.priceNote) ? `total, paid as ${current.priceNote.replace(/^or\s*/, "")}` : "one-time"}
+                {current.installments > 1
+                  ? `total, or ${current.installments} × ${formatMoney(current.price / current.installments)}`
+                  : "one-time"}
               </span>
             </div>
             <div>
@@ -102,11 +157,11 @@ export function BillingOverview() {
                 <span>{plan.status === "canceled" ? "No more payments" : `${formatMoney(remaining)} left`}</span>
               </div>
               <div className="h-2 w-full rounded-full bg-secondary">
-                <div className="h-2 rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
               </div>
             </div>
             <ul className="grid gap-2 sm:grid-cols-2">
-              {current.includes.map((item) => (
+              {current.features.map((item) => (
                 <li key={item} className="flex gap-2 text-sm">
                   <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
                   {item}
@@ -162,6 +217,99 @@ export function BillingOverview() {
         </Card>
       </div>
 
+      {/* Upgrade or downgrade: every plan side by side */}
+      <Card id="plans">
+        <CardHeader className="border-b">
+          <CardTitle>Change your plan</CardTitle>
+          <CardDescription>
+            Upgrade or downgrade any time. The {formatMoney(paid)} you&apos;ve paid counts toward any plan.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            {resolutionPlans.map((p) => {
+              const isCurrent = p.id === plan.planId;
+              const upgrade = p.price > current.price;
+              const label = plan.status === "canceled" ? `Restart on ${p.name}` : `${upgrade ? "Upgrade" : "Downgrade"} to ${p.name}`;
+              return (
+                <div
+                  key={p.id}
+                  className={cn("flex flex-col gap-4 rounded-xl border p-5", isCurrent && "border-primary ring-1 ring-primary")}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold">{p.name}</p>
+                    {isCurrent ? (
+                      <Badge>Your plan</Badge>
+                    ) : (
+                      p.recommended && <span className="text-xs font-medium text-primary">Recommended</span>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-2xl font-bold tabular-nums">{formatMoney(p.price)}</span>{" "}
+                    <span className="text-sm text-muted-foreground">
+                      {p.installments > 1 ? `or ${p.installments} × ${formatMoney(p.price / p.installments)}` : "one-time"}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{p.blurb}</p>
+                  <ul className="space-y-1.5 text-sm">
+                    {planFeatures.map((f) => {
+                      const has = p.features.includes(f);
+                      return (
+                        <li key={f} className={cn("flex gap-2", !has && "text-muted-foreground")}>
+                          {has ? (
+                            <Check className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
+                          ) : (
+                            <X className="mt-0.5 size-4 shrink-0 text-muted-foreground/50" aria-hidden />
+                          )}
+                          <span>
+                            {f}
+                            {!has && <span className="sr-only"> (not included)</span>}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <div className="mt-auto space-y-3">
+                    {isCurrent && plan.status !== "canceled" ? (
+                      <Button variant="secondary" disabled className="w-full">
+                        Current plan
+                      </Button>
+                    ) : pendingId === p.id ? (
+                      <div className="space-y-3 rounded-lg bg-accent/60 p-3" role="group" aria-label={`Confirm: ${label}`}>
+                        <PlanChangeSummary fromId={plan.planId} toId={p.id} firstDue={firstDue} />
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              switchPlan(p.id);
+                              setPendingId(null);
+                            }}
+                          >
+                            Confirm
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => setPendingId(null)}>
+                            Keep {current.name}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        variant={upgrade || plan.status === "canceled" ? "default" : "outline"}
+                        className="w-full"
+                        onClick={() => setPendingId(p.id)}
+                      >
+                        {plan.status === "canceled" ? null : upgrade ? <ArrowUpCircle aria-hidden /> : <ArrowDownCircle aria-hidden />}
+                        {label}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="py-0">
         <CardHeader className="border-b pt-6">
           <CardTitle>Payments</CardTitle>
@@ -195,7 +343,7 @@ export function BillingOverview() {
                 <tr key={u.date}>
                   <td className="px-6 py-3 whitespace-nowrap">{formatDate(u.date)}</td>
                   <td className="px-3 py-3">
-                    {current.name} · {installmentOf(current.priceNote) ? `payment ${subscription.installmentsPaid + i + 1}` : "balance"}
+                    {current.name} · {current.installments > 1 ? `payment ${subscription.installmentsPaid + i + 1} of ${current.installments}` : "balance"}
                   </td>
                   <td className="px-3 py-3 text-right tabular-nums">{formatMoney(u.amount)}</td>
                   <td className="px-6 py-3">
@@ -216,38 +364,6 @@ export function BillingOverview() {
           </table>
         </div>
       </Card>
-
-      {plan.status !== "canceled" && (
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle>Other plans</CardTitle>
-            <CardDescription>Switch any time. What you&apos;ve already paid counts toward the new plan.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            {others.map((p) => {
-              const left = Math.max(0, p.price - paid);
-              return (
-                <div key={p.id} className="flex flex-col gap-3 rounded-xl border p-4">
-                  <div>
-                    <p className="font-medium">
-                      {p.name}
-                      {p.recommended && <span className="ml-2 text-xs font-normal text-primary">Recommended</span>}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{p.blurb}</p>
-                  </div>
-                  <p className="text-sm">
-                    <span className="font-semibold tabular-nums">{formatMoney(p.price)}</span>{" "}
-                    <span className="text-muted-foreground">· {formatMoney(left)} left after what you&apos;ve paid</span>
-                  </p>
-                  <Button variant="outline" className="mt-auto w-fit" onClick={() => switchPlan(p.id)}>
-                    Switch to {p.name}
-                  </Button>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

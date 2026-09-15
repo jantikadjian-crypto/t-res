@@ -705,32 +705,51 @@ export const intakeAnswers: IntakeAnswers = {
   chosenPlanId: "full",
 };
 
+// Every feature a plan can include, in the order the plan comparison shows them.
+export const planFeatures = [
+  "Payment-plan request prepared",
+  "Missing 2023 return prepared",
+  "EA review of everything",
+  "Chris talks to the IRS for you",
+  "Penalty relief request",
+  "Lien withdrawal request",
+  "Monthly IRS transcript monitoring",
+  "Yearly filing check-in",
+];
+
+// Placeholder prices until Jack confirms real ones.
 export const resolutionPlans = [
   {
     id: "guided",
     name: "Guided",
     price: 395,
+    installments: 1,
     priceNote: "one-time",
     blurb: "We prepare your payment-plan request and 2023 return. You submit them yourself.",
     includes: ["Payment-plan request prepared", "2023 return prepared", "EA review of everything"],
+    features: planFeatures.slice(0, 3),
     recommended: false,
   },
   {
     id: "full",
     name: "Full Resolution",
     price: 1650,
+    installments: 6,
     priceNote: "or 6 × $275",
     blurb: "Chris represents you with the IRS from start to finish. You never have to call them.",
     includes: ["Everything in Guided", "Chris talks to the IRS for you", "Penalty relief request", "Lien withdrawal request"],
+    features: planFeatures.slice(0, 6),
     recommended: true,
   },
   {
     id: "protect",
     name: "Resolution + Protection",
-    price: 2150,
-    priceNote: "or 6 × $359",
+    price: 2160,
+    installments: 6,
+    priceNote: "or 6 × $360",
     blurb: "Full Resolution, plus we watch your IRS account for three years so nothing surprises you again.",
     includes: ["Everything in Full Resolution", "Monthly transcript monitoring", "Yearly filing check-in"],
+    features: planFeatures,
     recommended: false,
   },
 ];

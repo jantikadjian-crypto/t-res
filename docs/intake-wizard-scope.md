@@ -154,7 +154,7 @@ A plain-English version of the IRS's Collection Information Statement (Form 433-
 - Three cards from `resolutionPlans` (stacked on a phone), middle one marked **Recommended**:
   - Guided · $395 one-time
   - **Full Resolution · $1,650 or 6 × $275**
-  - Resolution + Protection · $2,150 or 6 × $359
+  - Resolution + Protection · $2,160 or 6 × $360
 - Each card: price, one-line pitch, 3–4 inclusions, "Choose this". The selected card gets the primary ring.
 - **No payment** (no billing in v1): "You won't be charged today. Chris confirms your plan before anything is billed."
 - Jordan: Full Resolution. Writes: `chosenPlanId`.
