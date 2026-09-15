@@ -513,6 +513,54 @@ export const libraryEntries: LibraryEntry[] = [
     related: ["account-transcript", "form-2848"],
   },
 
+  {
+    slug: "cp90",
+    name: "CP90",
+    kind: "Notice",
+    short: "Final notice of intent to levy and your right to a hearing",
+    definition:
+      "The IRS's final warning before it can take wages, bank accounts or other property. Like the LT11, it gives you 30 days to ask for a Collection Due Process hearing.",
+    forYou: "You haven't received one. Answering your CP504 and setting up a payment plan keeps it that way.",
+    aliases: ["CP90"],
+    irs: { url: "https://www.irs.gov/individuals/understanding-your-cp90-notice", label: "Understanding your CP90 notice" },
+    related: ["lt11", "cdp-hearing", "levy", "form-12153"],
+  },
+  {
+    slug: "cp71c",
+    name: "CP71C",
+    kind: "Notice",
+    short: "Annual reminder of balance due",
+    definition: "A once-a-year reminder of a tax balance that's still unpaid, with the current amount including penalties and interest.",
+    forYou: "You haven't received one. If your balances were still open next year, this is the reminder you'd get.",
+    aliases: ["CP71C"],
+    irs: { url: "https://www.irs.gov/individuals/understanding-your-cp71c-notice", label: "Understanding your CP71C notice" },
+    related: ["cp14", "cp501", "installment-agreement"],
+  },
+  {
+    slug: "cp521",
+    name: "CP521",
+    kind: "Notice",
+    short: "Payment plan reminder",
+    definition: "A monthly reminder for a payment plan: the payment that's due, when it's due, and how much you still owe.",
+    forYou: "Once your payment plan starts, you'll get one of these each month.",
+    aliases: ["CP521"],
+    irs: { url: "https://www.irs.gov/individuals/understanding-your-cp521-notice", label: "Understanding your CP521 notice" },
+    related: ["installment-agreement", "form-433-d", "cp523"],
+    inYourCase: [{ label: "Your recommended payment plan", href: "/intake/assessment" }],
+  },
+  {
+    slug: "cp523",
+    name: "CP523",
+    kind: "Notice",
+    short: "Notice of intent to end your payment plan",
+    definition:
+      "Warns that the IRS plans to end (default) your payment plan, usually because of missed payments or a new unpaid balance, and may then levy. You can fix the problem or appeal before the date on the notice.",
+    forYou: "Missed payments or a new balance could trigger this. We'll help you stay on track so you never get one.",
+    aliases: ["CP523"],
+    irs: { url: "https://www.irs.gov/individuals/understanding-your-cp523-notice", label: "Understanding your CP523 notice" },
+    related: ["installment-agreement", "cp521", "form-9423", "levy"],
+  },
+
   // More forms and IRS publications, each with a printable copy (see libraryFiles below).
   {
     slug: "form-433-d",
@@ -666,6 +714,10 @@ export const libraryFiles: Record<string, string[]> = {
   cp503: ["cp503_english.pdf"],
   cp504: ["cp504_english.pdf"],
   lt11: ["lt11_english.pdf"],
+  cp90: ["cp90_english.pdf"],
+  cp71c: ["cp71c_english.pdf"],
+  cp521: ["cp521_english.pdf"],
+  cp523: ["cp523_english.pdf"],
 };
 
 export function libraryEntry(slug: string): LibraryEntry | undefined {

@@ -26,5 +26,9 @@
   {"file":"cp501_english.pdf","title":"Sample CP501 notice","kind":"Sample notice","url":"https://www.irs.gov/pub/notices/cp501_english.pdf","revised":null},
   {"file":"cp503_english.pdf","title":"Sample CP503 notice","kind":"Sample notice","url":"https://www.irs.gov/pub/notices/cp503_english.pdf","revised":"2018-01-08"},
   {"file":"cp504_english.pdf","title":"Sample CP504 notice","kind":"Sample notice","url":"https://www.irs.gov/pub/notices/cp504_english.pdf","revised":null},
-  {"file":"lt11_english.pdf","title":"Sample LT11 notice","kind":"Sample notice","url":"https://www.irs.gov/pub/notices/lt11_english.pdf","revised":"2019-08-29"}
+  {"file":"lt11_english.pdf","title":"Sample LT11 notice","kind":"Sample notice","url":"https://www.irs.gov/pub/notices/lt11_english.pdf","revised":"2019-08-29"},
+  {"file":"cp90_english.pdf","title":"Sample CP90 notice","kind":"Sample notice","url":"https://www.irs.gov/pub/notices/cp90_english.pdf","revised":null},
+  {"file":"cp71c_english.pdf","title":"Sample CP71C notice","kind":"Sample notice","url":"https://www.irs.gov/pub/notices/cp71c_english.pdf","revised":"2019-05-14"},
+  {"file":"cp521_english.pdf","title":"Sample CP521 notice","kind":"Sample notice","url":"https://www.irs.gov/pub/notices/cp521_english.pdf","revised":null},
+  {"file":"cp523_english.pdf","title":"Sample CP523 notice","kind":"Sample notice","url":"https://www.irs.gov/pub/notices/cp523_english.pdf","revised":"2019-04-30"}
 ]

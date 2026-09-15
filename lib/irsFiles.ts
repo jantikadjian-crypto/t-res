@@ -324,5 +324,49 @@ export const irsFiles: Record<string, IrsFile> = {
     "previewPage": 1,
     "revised": "2019-08-29",
     "preview": "lt11_english.png"
+  },
+  "cp90_english.pdf": {
+    "file": "cp90_english.pdf",
+    "title": "Sample CP90 notice",
+    "kind": "Sample notice",
+    "sourceUrl": "https://www.irs.gov/pub/notices/cp90_english.pdf",
+    "sizeKb": 257,
+    "pages": 5,
+    "previewPage": 1,
+    "revised": null,
+    "preview": "cp90_english.png"
+  },
+  "cp71c_english.pdf": {
+    "file": "cp71c_english.pdf",
+    "title": "Sample CP71C notice",
+    "kind": "Sample notice",
+    "sourceUrl": "https://www.irs.gov/pub/notices/cp71c_english.pdf",
+    "sizeKb": 141,
+    "pages": 6,
+    "previewPage": 1,
+    "revised": "2019-05-14",
+    "preview": "cp71c_english.png"
+  },
+  "cp521_english.pdf": {
+    "file": "cp521_english.pdf",
+    "title": "Sample CP521 notice",
+    "kind": "Sample notice",
+    "sourceUrl": "https://www.irs.gov/pub/notices/cp521_english.pdf",
+    "sizeKb": 241,
+    "pages": 5,
+    "previewPage": 1,
+    "revised": null,
+    "preview": "cp521_english.png"
+  },
+  "cp523_english.pdf": {
+    "file": "cp523_english.pdf",
+    "title": "Sample CP523 notice",
+    "kind": "Sample notice",
+    "sourceUrl": "https://www.irs.gov/pub/notices/cp523_english.pdf",
+    "sizeKb": 314,
+    "pages": 10,
+    "previewPage": 1,
+    "revised": "2019-04-30",
+    "preview": "cp523_english.png"
   }
 };
