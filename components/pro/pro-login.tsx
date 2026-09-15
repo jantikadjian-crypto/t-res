@@ -13,10 +13,9 @@ import { practitioner } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 const MAX_TRIES = 3;
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// T-Res Pro sign-in: email and password, then a two-step code. A realistic mock: any password works and the
-// demo code is on screen. Tax professionals must use multi-factor authentication (FTC Safeguards Rule).
+// T-Res Pro sign-in: email and password, then a two-step code. A mock: any email and password work (even blank),
+// and the demo code is on screen. Tax professionals must use multi-factor authentication (FTC Safeguards Rule).
 export function ProLogin() {
   const router = useRouter();
   const { session, justSignedOut, signIn, signOut } = useProSession();
@@ -29,16 +28,9 @@ export function ProLogin() {
   const [showReset, setShowReset] = useState(false);
   const locked = tries >= MAX_TRIES;
 
+  // Demo: whatever is typed is accepted.
   const submitCredentials = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!EMAIL.test(email.trim())) {
-      setError("Enter the email address you use for T-Res Pro.");
-      return;
-    }
-    if (!password) {
-      setError("Enter your password. In this demo, any password works.");
-      return;
-    }
     setError(null);
     setCode("");
     setStep("code");
@@ -54,7 +46,7 @@ export function ProLogin() {
       return;
     }
     setError(null);
-    signIn(email.trim());
+    signIn(email.trim() || practitioner.email);
     router.push("/pro");
   };
 
@@ -108,7 +100,8 @@ export function ProLogin() {
                 <Field id="pro-email" label="Email">
                   <input
                     id="pro-email"
-                    type="email"
+                    type="text"
+                    inputMode="email"
                     autoComplete="username"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -139,7 +132,7 @@ export function ProLogin() {
                 </button>
                 {showReset && (
                   <p className="rounded-lg bg-accent/60 p-3 text-sm text-muted-foreground">
-                    In this demo, any password works. Password reset comes with real accounts.
+                    In this demo, any email and password work. Password reset comes with real accounts.
                   </p>
                 )}
               </form>
@@ -212,7 +205,7 @@ export function ProLogin() {
         )}
 
         <div className="space-y-2 text-center text-xs text-muted-foreground">
-          <p>Demo: a sample practitioner account. Any password works, and the code is shown on screen.</p>
+          <p>Demo: type any email and password. The code is shown on screen.</p>
           <p>
             Paying your own taxes?{" "}
             <Link href="/" className="text-primary hover:underline">

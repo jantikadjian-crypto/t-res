@@ -11,7 +11,7 @@
 - Core screens: Dashboard, Notice Center, Tax Years, Action Queue, Documents, Intake Wizard, plus Settings (profile, notifications, security, billing & plan). No messaging, no auth.
 - Billing is display-only mock data (plan, payment schedule, pause/switch/cancel in React state). No payment processing and no card-entry forms. Cancelling must stay as easy as signing up: no forced steps, reasons optional.
 - No real IRS / transcript / e-Services integration — that is v2. Do not add API calls or credentials.
-- Professional side (T-Res Pro, for EAs/CPAs/attorneys): blueprint and build order in /docs/pro-portal-blueprint.md. Its sign-in is a mock (any password, demo two-step code, session in React state): no real accounts or auth in v1.
+- Professional side (T-Res Pro, for EAs/CPAs/attorneys): blueprint and build order in /docs/pro-portal-blueprint.md. Its sign-in is a mock (any email and password, even blank; demo two-step code; session in React state): no real accounts or auth in v1.
 - State: React state only. No localStorage (breaks in some preview environments).
 
 ## Conventions

@@ -196,7 +196,7 @@ with clients, calendar sync, practitioner billing and payouts, and more than one
 | Question | Decision |
 |---|---|
 | One workspace or two? | **T-Res Pro + PLCY.** T-Res Pro is where the professional works (queue, clients, approvals); PLCY stays the governance console (policies, audit record). |
-| Sign-in realism | **Email, password and two-step code.** Prefilled demo email, any password accepted, demo code shown on screen. |
+| Sign-in realism | **Email, password and two-step code.** Prefilled demo email; any email and password accepted (Jack, 2026-09-15); demo code shown on screen. |
 | Demo caseload | **12 clients:** Jordan live, plus the 11 fictional clients above. |
 | Scope rule | **Mock sign-in only.** No real accounts; CLAUDE.md says so. |
 | Shareable links | **Two links, one codebase.** T-Res Pro gets its own link that opens on sign-in (`PRODUCT=pro` build). Each link holds both sides so the live demo works, with the other side behind a labelled demo switch. PLCY is reached from T-Res Pro. |
