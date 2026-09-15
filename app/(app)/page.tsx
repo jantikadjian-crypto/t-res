@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AlertTriangle, ArrowRight, Clock, DollarSign, ListChecks, Scale, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -87,7 +88,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Vitals */}
+      {/* Vitals: each opens what it describes */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile
           icon={DollarSign}
@@ -95,6 +96,7 @@ export default function DashboardPage() {
           label="Total owed"
           value={formatMoney(totalOwed)}
           caption={`Across ${yearsWithBalance} tax years · ${unfiledYears} year not filed`}
+          href="/tax-years"
         />
         <MetricTile
           icon={Clock}
@@ -102,13 +104,15 @@ export default function DashboardPage() {
           label="Next deadline"
           value={`${nextDays} ${nextDays === 1 ? "day" : "days"}`}
           caption={`${nextNotice.code} response · ${formatDate(nextNotice.respondBy)}`}
+          href={`/notices/${nextNotice.id}`}
         />
         <MetricTile
           icon={Scale}
           iconClass="text-blue-600"
           label="Case stage"
           value={`Step ${currentStageIndex + 1} of ${caseStages.length}`}
-          caption={stage.label}
+          caption={`${stage.label} · see what moves it forward`}
+          href="/action-items"
         >
           <div className="mt-3 h-2 w-full rounded-full bg-secondary">
             <div className="h-2 rounded-full bg-primary" style={{ width: `${stagePct}%` }} />
@@ -137,16 +141,19 @@ export default function DashboardPage() {
                   const step = yearNextStep(y);
                   return (
                     <li key={y.year} className="flex flex-col gap-3 px-6 py-4 first:pt-0 sm:flex-row sm:items-center">
-                      <div className="flex min-w-0 flex-1 gap-3">
+                      <Link
+                        href={`/tax-years/${y.year}`}
+                        className="group/year -m-2 flex min-w-0 flex-1 gap-3 rounded-lg p-2 outline-none hover:bg-accent/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+                      >
                         <StatusDot tone={y.tone} className="mt-2" />
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-medium">{y.year}</span>
+                            <span className="font-medium group-hover/year:text-primary group-hover/year:underline">{y.year}</span>
                             <StatusBadge tone={y.tone}>{y.statusLabel}</StatusBadge>
                           </div>
                           <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{y.plainEnglish}</p>
                         </div>
-                      </div>
+                      </Link>
                       <div className="flex items-center justify-between gap-4 pl-5 sm:justify-end sm:pl-0">
                         <div className="text-right">
                           <div className="font-medium tabular-nums">
@@ -176,7 +183,9 @@ export default function DashboardPage() {
             </CardContent>
             <CardFooter className="justify-between">
               <span className="text-sm text-muted-foreground">Total owed across all years</span>
-              <span className="font-semibold tabular-nums">{formatMoney(totalOwed)}</span>
+              <Link href="/tax-years" className="font-semibold tabular-nums hover:text-primary hover:underline">
+                {formatMoney(totalOwed)}
+              </Link>
             </CardFooter>
           </Card>
 
@@ -200,17 +209,23 @@ export default function DashboardPage() {
                       <Badge variant="outline" className="font-mono">
                         {n.code}
                       </Badge>
-                      <span className="text-sm font-medium">{n.plainTitle}</span>
+                      <Link href={`/notices/${n.id}`} className="text-sm font-medium hover:text-primary hover:underline">
+                        {n.plainTitle}
+                      </Link>
                       <StatusBadge tone={deadlineTone(n.respondBy)} className="sm:ml-auto">
                         Respond by {formatDate(n.respondBy)} · {daysRemainingLabel(n.respondBy)}
                       </StatusBadge>
                     </div>
                     <p className="text-sm text-muted-foreground">{n.decode.whatItMeans}</p>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <span>
-                        {n.taxYear} tax year · received {formatDate(n.receivedOn)}
-                      </span>
+                      <Link href={`/tax-years/${n.taxYear}`} className="hover:text-foreground hover:underline">
+                        {n.taxYear} tax year
+                      </Link>
+                      <span>· received {formatDate(n.receivedOn)}</span>
                       {n.decode.eaReviewed && <EAReviewedBadge />}
+                      <Link href={`/documents/${n.documentId}`} className="text-primary hover:underline sm:ml-auto">
+                        View the letter
+                      </Link>
                     </div>
                   </li>
                 ))}

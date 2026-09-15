@@ -41,9 +41,10 @@ function MenuLink({
 export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [readIds, setReadIds] = useState<string[]>(() => notifications.filter((n) => n.read).map((n) => n.id));
   const menuButton = useRef<HTMLButtonElement>(null);
   const { plan } = useCase();
-  const unread = notifications.filter((n) => !n.read).length;
+  const unread = notifications.filter((n) => !readIds.includes(n.id)).length;
   const planName = resolutionPlans.find((p) => p.id === plan.planId)?.name;
   const planHint = plan.status === "active" ? planName : plan.status === "paused" ? "Paused" : "Canceled";
 
@@ -63,14 +64,16 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 md:gap-3">
-          <Badge
-            variant="outline"
-            className="hidden gap-1 border-border bg-background text-foreground lg:inline-flex"
-            title={`IRS transcripts last checked ${formatDate(transcriptsLastChecked)}`}
+          <Link
+            href="/documents/from-irs"
+            title={`IRS transcripts last checked ${formatDate(transcriptsLastChecked)}. Open your IRS records.`}
+            className="hidden rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:inline-flex"
           >
-            <Clock className="size-3" aria-hidden />
-            Transcripts checked: {daysAgoLabel(transcriptsLastChecked)}
-          </Badge>
+            <Badge variant="outline" className="gap-1 border-border bg-background text-foreground hover:bg-accent">
+              <Clock className="size-3" aria-hidden />
+              Transcripts checked: {daysAgoLabel(transcriptsLastChecked)}
+            </Badge>
+          </Link>
 
           <div className="relative">
             <Button
@@ -99,18 +102,48 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                   onClick={() => setBellOpen(false)}
                 />
                 <div className="absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-xl border bg-card p-2 shadow-lg">
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">Notifications</div>
+                  <div className="flex items-center justify-between px-2 py-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">Notifications</span>
+                    {unread > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setReadIds(notifications.map((n) => n.id))}
+                        className="rounded text-xs font-medium text-primary hover:underline"
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
                   <ul>
-                    {notifications.map((n) => (
-                      <li key={n.id} className="flex gap-2.5 rounded-lg px-2 py-2 hover:bg-accent">
-                        <StatusDot tone={n.read ? "neutral" : "warn"} className="mt-1.5" />
-                        <div className="min-w-0">
-                          <p className="text-sm">{n.message}</p>
-                          <p className="text-xs text-muted-foreground">{formatDate(n.date)}</p>
-                        </div>
-                      </li>
-                    ))}
+                    {notifications.map((n) => {
+                      const read = readIds.includes(n.id);
+                      return (
+                        <li key={n.id}>
+                          <Link
+                            href={n.href}
+                            onClick={() => {
+                              setReadIds((ids) => (ids.includes(n.id) ? ids : [...ids, n.id]));
+                              setBellOpen(false);
+                            }}
+                            className="flex gap-2.5 rounded-lg px-2 py-2 outline-none hover:bg-accent focus-visible:bg-accent"
+                          >
+                            <StatusDot tone={read ? "neutral" : "warn"} className="mt-1.5" />
+                            <div className="min-w-0">
+                              <p className={read ? "text-sm text-muted-foreground" : "text-sm"}>{n.message}</p>
+                              <p className="text-xs text-muted-foreground">{formatDate(n.date)}</p>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
+                  <Link
+                    href="/settings/notifications"
+                    onClick={() => setBellOpen(false)}
+                    className="mt-1 block rounded-lg px-2 py-1.5 text-xs text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:bg-accent"
+                  >
+                    Notification settings
+                  </Link>
                 </div>
               </>
             )}
@@ -156,18 +189,30 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
               }}
               className="absolute right-0 z-20 mt-2 w-64 rounded-xl border bg-card p-1.5 shadow-lg"
             >
-              <div className="px-3 py-2">
+              <Link
+                href="/settings"
+                role="menuitem"
+                onClick={() => closeMenu()}
+                className="block rounded-lg px-3 py-2 outline-none hover:bg-accent focus-visible:bg-accent"
+              >
                 <p className="text-sm font-medium">
                   {taxpayer.firstName} {taxpayer.lastName}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">{account.email}</p>
-              </div>
+              </Link>
               <div className="my-1 h-px bg-border" />
               <MenuLink href="/settings" icon={Settings} label="Settings" onSelect={() => closeMenu()} />
               <MenuLink href="/settings/billing" icon={CreditCard} label="Billing & plan" hint={planHint} onSelect={() => closeMenu()} />
               <MenuLink href="/settings/notifications" icon={BellRing} label="Notification settings" onSelect={() => closeMenu()} />
               <div className="my-1 h-px bg-border" />
-              <p className="px-3 py-1.5 text-xs text-muted-foreground">Case {caseNumber}</p>
+              <Link
+                href="/"
+                role="menuitem"
+                onClick={() => closeMenu()}
+                className="block rounded-lg px-3 py-1.5 text-xs text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:bg-accent"
+              >
+                Case {caseNumber} · go to dashboard
+              </Link>
             </div>
           </div>
         </div>

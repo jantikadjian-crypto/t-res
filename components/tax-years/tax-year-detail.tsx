@@ -8,14 +8,22 @@ import {
   Landmark,
   Sparkles,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge, StatusDot } from "@/components/status";
 import { daysUntil, durationLabel, formatDate, formatMoney } from "@/lib/format";
-import { taxYears, totalOwed, transcriptsLastChecked, yearBalance, yearNextStep, type TaxYear } from "@/lib/mockData";
+import {
+  documents,
+  taxYears,
+  totalOwed,
+  transcriptsLastChecked,
+  yearBalance,
+  yearNextStep,
+  type TaxYear,
+} from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 const balanceParts = [
@@ -29,6 +37,10 @@ const unfiled = taxYears.filter((y) => y.status === "unfiled");
 const earliestCsed = taxYears
   .filter((y): y is TaxYear & { csed: string } => y.csed !== null)
   .sort((a, b) => a.csed.localeCompare(b.csed))[0];
+const lienDocument = documents.find((d) => /tax lien/i.test(d.name) && d.source === "IRS");
+
+// The IRS record behind a year's numbers: account transcript, or wage & income for unfiled years.
+const transcriptFor = (year: number) => documents.find((d) => d.category === "Transcript" && d.taxYear === year);
 
 function BalanceCard({ y }: { y: TaxYear }) {
   if (!y.balance) {
@@ -63,11 +75,22 @@ function BalanceCard({ y }: { y: TaxYear }) {
   }
 
   const total = yearBalance(y);
+  const transcript = transcriptFor(y.year);
   return (
     <Card>
       <CardHeader className="border-b">
         <CardTitle>What you owe for {y.year}</CardTitle>
-        <CardDescription>From your IRS account transcript, checked {formatDate(transcriptsLastChecked)}</CardDescription>
+        <CardDescription>
+          From your IRS account transcript, checked {formatDate(transcriptsLastChecked)}
+        </CardDescription>
+        {transcript && (
+          <CardAction>
+            <LinkButton href={`/documents/${transcript.id}`} variant="ghost" size="sm">
+              View transcript
+              <ArrowRight aria-hidden />
+            </LinkButton>
+          </CardAction>
+        )}
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="flex h-3 w-full overflow-hidden rounded-full bg-secondary" aria-hidden>
@@ -100,9 +123,12 @@ function BalanceCard({ y }: { y: TaxYear }) {
         {y.reliefNote && (
           <div className="flex gap-3 rounded-lg border border-green-200 bg-green-50 p-3">
             <Sparkles className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
-            <div>
+            <div className="space-y-1">
               <p className="text-sm font-medium text-green-900">Possible savings</p>
               <p className="text-sm text-green-800">{y.reliefNote}</p>
+              <Link href="/intake/assessment" className="text-sm font-medium text-green-900 underline">
+                See our full assessment
+              </Link>
             </div>
           </div>
         )}
@@ -161,6 +187,7 @@ export function TaxYearDetail({ year }: { year: number }) {
   const y = taxYears.find((t) => t.year === year) ?? taxYears[0];
   const step = yearNextStep(y);
   const incomeTotal = y.incomeOnRecord.reduce((s, r) => s + r.amount, 0);
+  const transcript = transcriptFor(y.year);
 
   return (
     <div className="space-y-6">
@@ -168,7 +195,7 @@ export function TaxYearDetail({ year }: { year: number }) {
         title="Tax Years"
         description="What you owe for each year, and how long the IRS has to collect it."
         actions={
-          <LinkButton href="/documents" variant="outline">
+          <LinkButton href="/documents/from-irs" variant="outline">
             <FileSearch aria-hidden />
             IRS transcripts
           </LinkButton>
@@ -181,7 +208,8 @@ export function TaxYearDetail({ year }: { year: number }) {
           iconClass="text-red-600"
           label="Total owed"
           value={formatMoney(totalOwed)}
-          caption={`Across ${taxYears.filter((t) => t.balance).length} years with a balance`}
+          caption={`Across ${taxYears.filter((t) => t.balance).length} years with a balance · see the plan`}
+          href="/intake/assessment"
         />
         <MetricTile
           icon={Landmark}
@@ -189,6 +217,7 @@ export function TaxYearDetail({ year }: { year: number }) {
           label="Liens filed"
           value={String(liens.length)}
           caption={liens.length ? `${liens.map((l) => l.year).join(", ")} · public record` : "None"}
+          href={lienDocument ? `/documents/${lienDocument.id}` : undefined}
         />
         <MetricTile
           icon={FileWarning}
@@ -196,6 +225,7 @@ export function TaxYearDetail({ year }: { year: number }) {
           label="Not filed"
           value={String(unfiled.length)}
           caption={unfiled.map((u) => `${u.year} · est. ${formatMoney(u.estimatedBalance ?? 0)}`).join(", ") || "All filed"}
+          href={unfiled[0] ? `/tax-years/${unfiled[0].year}` : undefined}
         />
         <MetricTile
           icon={Hourglass}
@@ -203,6 +233,7 @@ export function TaxYearDetail({ year }: { year: number }) {
           label="Earliest collection deadline"
           value={durationLabel(daysUntil(earliestCsed.csed))}
           caption={`${earliestCsed.year} · ends ${formatDate(earliestCsed.csed)}`}
+          href={`/tax-years/${earliestCsed.year}`}
         />
       </div>
 
@@ -215,7 +246,7 @@ export function TaxYearDetail({ year }: { year: number }) {
               href={`/tax-years/${t.year}`}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center justify-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors",
+                "flex items-center justify-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                 active ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -256,8 +287,14 @@ export function TaxYearDetail({ year }: { year: number }) {
             <CardHeader className="border-b">
               <CardTitle>Income the IRS has on record</CardTitle>
               <CardDescription>
-                From your {y.year} wage &amp; income transcript. Anything missing? Upload the form and we&apos;ll check it.
+                From your {y.year} wage &amp; income records. Anything missing? Upload the form and we&apos;ll check it.
               </CardDescription>
+              <CardAction>
+                <LinkButton href={transcript ? `/documents/${transcript.id}` : "/documents/from-irs"} variant="ghost" size="sm">
+                  View transcript
+                  <ArrowRight aria-hidden />
+                </LinkButton>
+              </CardAction>
             </CardHeader>
             <CardContent className="overflow-x-auto px-0">
               <table className="w-full text-sm">
@@ -303,7 +340,13 @@ export function TaxYearDetail({ year }: { year: number }) {
                 {[...y.events].reverse().map((e) => (
                   <li key={`${e.date}-${e.label}`} className="relative">
                     <StatusDot tone={e.tone} className="absolute top-1.5 -left-[25px] size-2.5 ring-4 ring-card" />
-                    <p className="text-sm font-medium">{e.label}</p>
+                    {e.href ? (
+                      <Link href={e.href} className="text-sm font-medium hover:text-primary hover:underline">
+                        {e.label}
+                      </Link>
+                    ) : (
+                      <p className="text-sm font-medium">{e.label}</p>
+                    )}
                     <p className="text-xs text-muted-foreground">{formatDate(e.date)}</p>
                   </li>
                 ))}

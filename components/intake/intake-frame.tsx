@@ -96,32 +96,27 @@ export function IntakeFrame({ children }: { children: React.ReactNode }) {
           <ol className="sticky top-24 space-y-1">
             {intakeSteps.map((step, i) => {
               const status = isDone || i < stepIndex ? "done" : i === stepIndex ? "current" : "upcoming";
+              // Replay: every step already has answers, so any step can be opened.
               return (
                 <li key={step.key}>
-                  {status === "done" ? (
-                    <Link
-                      href={`/intake/${firstScreenOfStep(step.key)}`}
-                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent"
-                    >
+                  <Link
+                    href={`/intake/${firstScreenOfStep(step.key)}`}
+                    aria-current={status === "current" ? "step" : undefined}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50",
+                      status === "current" && "bg-secondary font-medium",
+                      status === "upcoming" && "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {status === "done" ? (
                       <CheckCircle2 className="size-4 text-green-600" aria-hidden />
-                      {step.label}
-                    </Link>
-                  ) : (
-                    <div
-                      aria-current={status === "current" ? "step" : undefined}
-                      className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm",
-                        status === "current" ? "bg-secondary font-medium" : "text-muted-foreground"
-                      )}
-                    >
-                      {status === "current" ? (
-                        <CircleDot className="size-4 text-primary" aria-hidden />
-                      ) : (
-                        <Circle className="size-4" aria-hidden />
-                      )}
-                      {step.label}
-                    </div>
-                  )}
+                    ) : status === "current" ? (
+                      <CircleDot className="size-4 text-primary" aria-hidden />
+                    ) : (
+                      <Circle className="size-4" aria-hidden />
+                    )}
+                    {step.label}
+                  </Link>
                 </li>
               );
             })}

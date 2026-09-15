@@ -72,6 +72,7 @@ export function NoticeCenter({ selectedId }: { selectedId: string }) {
           label="Needs action"
           value={String(needAction)}
           caption="Waiting on a response"
+          href={`/notices/${notices.find((n) => n.status === "action-needed")?.id ?? orderedNotices[0].id}`}
         />
         <MetricTile
           icon={Clock}
@@ -79,6 +80,7 @@ export function NoticeCenter({ selectedId }: { selectedId: string }) {
           label="We're handling"
           value={String(handling)}
           caption="Nothing needed from you"
+          href={`/notices/${notices.find((n) => n.status === "in-progress")?.id ?? orderedNotices[0].id}`}
         />
         <MetricTile
           icon={CalendarClock}
@@ -86,13 +88,15 @@ export function NoticeCenter({ selectedId }: { selectedId: string }) {
           label="Next deadline"
           value={next ? `${daysUntil(next.respondBy)} days` : "None"}
           caption={next ? `${next.code} · ${formatDate(next.respondBy)}` : "You're all caught up"}
+          href={next ? `/notices/${next.id}` : undefined}
         />
         <MetricTile
           icon={Inbox}
           iconClass="text-purple-600"
           label="On file"
           value={String(notices.length)}
-          caption={`Since ${formatDate(firstReceived.receivedOn)}`}
+          caption={`Since ${formatDate(firstReceived.receivedOn)} · see the letters`}
+          href="/documents"
         />
       </div>
 

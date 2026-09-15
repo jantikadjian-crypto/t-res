@@ -32,6 +32,8 @@ export type TaxYearEvent = {
   date: string;
   label: string;
   tone: Tone;
+  // Where to see the details: a notice, document or to-do.
+  href?: string;
 };
 
 export type IncomeRecord = {
@@ -144,6 +146,7 @@ export type AppNotification = {
   date: string;
   message: string;
   read: boolean;
+  href: string;
 };
 
 export const taxpayer: Taxpayer = {
@@ -233,12 +236,12 @@ export const taxYears: TaxYear[] = [
       { payer: "Uber Technologies (rideshare)", form: "1099-K", amount: 8900 },
     ],
     events: [
-      { date: "2022-04-18", label: "Return filed", tone: "good" },
-      { date: "2022-05-16", label: "Balance assessed", tone: "warn" },
-      { date: "2023-02-10", label: "Payment of $1,500 received", tone: "good" },
-      { date: "2025-08-18", label: "CP503 second reminder", tone: "warn" },
-      { date: "2025-11-03", label: "Federal tax lien filed", tone: "bad" },
-      { date: "2026-09-02", label: "CP504 notice received", tone: "bad" },
+      { date: "2022-04-18", label: "Return filed", tone: "good", href: "/documents/doc_1040_21" },
+      { date: "2022-05-16", label: "Balance assessed", tone: "warn", href: "/documents/doc_tr_21" },
+      { date: "2023-02-10", label: "Payment of $1,500 received", tone: "good", href: "/documents/doc_tr_21" },
+      { date: "2025-08-18", label: "CP503 second reminder", tone: "warn", href: "/notices/ntc_cp503" },
+      { date: "2025-11-03", label: "Federal tax lien filed", tone: "bad", href: "/documents/doc_668y" },
+      { date: "2026-09-02", label: "CP504 notice received", tone: "bad", href: "/notices/ntc_cp504" },
     ],
   },
   {
@@ -259,9 +262,9 @@ export const taxYears: TaxYear[] = [
       { payer: "Uber Technologies (rideshare)", form: "1099-K", amount: 5100 },
     ],
     events: [
-      { date: "2023-04-17", label: "Return filed", tone: "good" },
-      { date: "2023-06-12", label: "Balance assessed", tone: "warn" },
-      { date: "2026-09-08", label: "CP14 notice received", tone: "warn" },
+      { date: "2023-04-17", label: "Return filed", tone: "good", href: "/documents/doc_1040_22" },
+      { date: "2023-06-12", label: "Balance assessed", tone: "warn", href: "/documents/doc_tr_22" },
+      { date: "2026-09-08", label: "CP14 notice received", tone: "warn", href: "/notices/ntc_cp14" },
     ],
   },
   {
@@ -284,8 +287,8 @@ export const taxYears: TaxYear[] = [
       { payer: "Ally Bank", form: "1099-INT", amount: 42 },
     ],
     events: [
-      { date: "2024-04-15", label: "Filing deadline passed", tone: "bad" },
-      { date: "2026-09-12", label: "2023 income records pulled from the IRS", tone: "neutral" },
+      { date: "2024-04-15", label: "Filing deadline passed", tone: "bad", href: "/action-items" },
+      { date: "2026-09-12", label: "2023 income records pulled from the IRS", tone: "neutral", href: "/documents/doc_wi_23" },
     ],
   },
 ];
@@ -620,9 +623,9 @@ export const documentNotes: Record<string, DocumentNote[]> = {
 };
 
 export const notifications: AppNotification[] = [
-  { id: "n1", date: "2026-09-12", message: "We checked your IRS transcripts. No new changes.", read: false },
-  { id: "n2", date: "2026-09-08", message: "New notice received: CP14 for 2022.", read: false },
-  { id: "n3", date: "2026-09-02", message: "New notice received: CP504 for 2021.", read: false },
+  { id: "n1", date: "2026-09-12", message: "We checked your IRS transcripts. No new changes.", read: false, href: "/documents/from-irs" },
+  { id: "n2", date: "2026-09-08", message: "New notice received: CP14 for 2022.", read: false, href: "/notices/ntc_cp14" },
+  { id: "n3", date: "2026-09-02", message: "New notice received: CP504 for 2021.", read: false, href: "/notices/ntc_cp504" },
 ];
 
 export type MoneyRow = { label: string; amount: number };

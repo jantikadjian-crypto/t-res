@@ -32,15 +32,19 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </Link>
 
-      <div className="mb-6 rounded-lg bg-accent p-3">
+      <Link
+        href="/settings"
+        onClick={onNavigate}
+        className="mb-6 block rounded-lg bg-accent p-3 transition-colors outline-none hover:bg-accent/70 focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
         <div className="flex items-center gap-2">
           <UserRound className="size-3" aria-hidden />
           <span className="text-xs font-medium">
             {taxpayer.firstName} {taxpayer.lastName}
           </span>
         </div>
-        <p className="mt-1 pl-5 text-xs text-muted-foreground">Case {caseNumber}</p>
-      </div>
+        <p className="mt-1 pl-5 text-xs text-muted-foreground">Case {caseNumber} · Settings</p>
+      </Link>
 
       <nav aria-label="Main" className="space-y-1">
         {navGroups.map((group) => {
@@ -99,9 +103,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
       <div className="mt-8 space-y-3">
         <Link
-          href="/"
+          href="/action-items"
           onClick={onNavigate}
-          className="block rounded-lg bg-accent p-3 transition-colors hover:bg-accent/80"
+          className="block rounded-lg bg-accent p-3 transition-colors hover:bg-accent/70"
         >
           <div className="mb-2 flex items-center gap-2">
             <Scale className="size-4 text-primary" aria-hidden />
@@ -131,13 +135,17 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </Link>
         )}
 
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+        <Link
+          href="/settings/security"
+          onClick={onNavigate}
+          className="block rounded-lg border border-blue-200 bg-blue-50 p-3 transition-colors hover:bg-blue-100"
+        >
           <div className="mb-1 flex items-center gap-2">
             <BadgeCheck className="size-3 text-blue-600" aria-hidden />
             <span className="text-xs font-medium text-blue-800">Your {enrolledAgent.credential}</span>
           </div>
           <p className="text-xs text-blue-700">{enrolledAgent.name} · licensed to represent you before the IRS</p>
-        </div>
+        </Link>
       </div>
     </div>
   );

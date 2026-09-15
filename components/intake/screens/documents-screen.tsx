@@ -4,12 +4,13 @@ import { CheckCircle2, Clock, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCase } from "@/components/case-provider";
 import { useIntake } from "@/components/intake/intake-provider";
+import { LinkButton } from "@/components/link-button";
 import { StatusBadge } from "@/components/status";
 import { buildDocumentChecklist, type ChecklistItem } from "@/lib/intakeChecklist";
 import { MOCK_TODAY, type CaseDocument, type Tone } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
-type ItemStatus = { tone: Tone; label: string; done: boolean };
+type ItemStatus = { tone: Tone; label: string; done: boolean; doc?: CaseDocument };
 
 export function DocumentsScreen() {
   const { state, update } = useIntake();
@@ -18,11 +19,12 @@ export function DocumentsScreen() {
 
   const statusOf = (item: ChecklistItem): ItemStatus => {
     const matched = item.docIds.map((id) => docs.find((d) => d.id === id)).filter((d): d is CaseDocument => !!d);
-    if (state.checklistUploads[item.key] || matched.some((d) => d.status === "on-file" || d.status === "in-review")) {
-      return { tone: "good", label: "Already in", done: true };
-    }
+    const inFile = matched.find((d) => d.status === "on-file" || d.status === "in-review");
+    const uploadedHere = docs.find((d) => d.id === `upload-${item.key}-${state.checklistUploads[item.key]}`);
+    if (inFile || uploadedHere) return { tone: "good", label: "Already in", done: true, doc: inFile ?? uploadedHere };
     if (state.laterDocs.includes(item.key)) return { tone: "neutral", label: "On your to-do list", done: false };
-    if (matched.some((d) => d.status === "requested")) return { tone: "warn", label: "Waiting on you", done: false };
+    const requested = matched.find((d) => d.status === "requested");
+    if (requested) return { tone: "warn", label: "Waiting on you", done: false, doc: requested };
     return { tone: "warn", label: "Needed", done: false };
   };
 
@@ -85,10 +87,7 @@ export function DocumentsScreen() {
           const later = state.laterDocs.includes(item.key);
           const inputId = `checklist-${item.key}`;
           return (
-            <li
-              key={item.key}
-              className={cn("flex flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-center", status.done && "bg-card/60")}
-            >
+            <li key={item.key} className="flex flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-center">
               <span
                 className={cn(
                   "grid size-9 shrink-0 place-items-center rounded-full",
@@ -108,7 +107,13 @@ export function DocumentsScreen() {
                   <p className="text-xs text-muted-foreground">Uploaded {state.checklistUploads[item.key]} · added to Documents</p>
                 )}
               </div>
-              {!status.done && (
+              {status.done ? (
+                status.doc && (
+                  <LinkButton href={`/documents/${status.doc.id}`} variant="outline" size="sm" className="shrink-0">
+                    View
+                  </LinkButton>
+                )
+              ) : (
                 <div className="flex shrink-0 gap-2">
                   <input
                     id={inputId}

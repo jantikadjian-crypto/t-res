@@ -553,11 +553,35 @@ export function DocumentLibrary({ view, initialStatus = "any" }: { view: Documen
                             {d.name}
                           </Link>
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                            <Badge variant="outline" className="lg:hidden">
-                              {d.category}
-                            </Badge>
-                            {d.taxYear && <span>{d.taxYear} tax year</span>}
-                            <span className="md:hidden">From {sourceLabel[d.source]}</span>
+                            <button
+                              type="button"
+                              onClick={() => setCategory(d.category)}
+                              title={`Show only ${d.category}`}
+                              className="rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 lg:hidden"
+                            >
+                              <Badge variant="outline" className="hover:bg-accent">
+                                {d.category}
+                              </Badge>
+                            </button>
+                            {d.taxYear && (
+                              <Link href={`/tax-years/${d.taxYear}`} className="hover:text-foreground hover:underline">
+                                {d.taxYear} tax year
+                              </Link>
+                            )}
+                            <Link
+                              href={
+                                d.status === "requested"
+                                  ? "/documents/waiting"
+                                  : d.source === "You"
+                                    ? "/documents/mine"
+                                    : d.source === "IRS"
+                                      ? "/documents/from-irs"
+                                      : "/documents/from-tres"
+                              }
+                              className="hover:text-foreground hover:underline md:hidden"
+                            >
+                              From {sourceLabel[d.source]}
+                            </Link>
                             {noteCount > 0 && (
                               <Link
                                 href={`/documents/${d.id}#notes`}
@@ -573,9 +597,33 @@ export function DocumentLibrary({ view, initialStatus = "any" }: { view: Documen
                       </div>
                     </td>
                     <td className="hidden px-3 py-3 lg:table-cell">
-                      <Badge variant="outline">{d.category}</Badge>
+                      <button
+                        type="button"
+                        onClick={() => setCategory(d.category)}
+                        title={`Show only ${d.category}`}
+                        className="rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                      >
+                        <Badge variant="outline" className="hover:bg-accent">
+                          {d.category}
+                        </Badge>
+                      </button>
                     </td>
-                    <td className="hidden px-3 py-3 text-muted-foreground md:table-cell">{sourceLabel[d.source]}</td>
+                    <td className="hidden px-3 py-3 text-muted-foreground md:table-cell">
+                      <Link
+                        href={
+                          d.status === "requested"
+                            ? "/documents/waiting"
+                            : d.source === "You"
+                              ? "/documents/mine"
+                              : d.source === "IRS"
+                                ? "/documents/from-irs"
+                                : "/documents/from-tres"
+                        }
+                        className="hover:text-foreground hover:underline"
+                      >
+                        {sourceLabel[d.source]}
+                      </Link>
+                    </td>
                     <td className="hidden px-3 py-3 whitespace-nowrap text-muted-foreground sm:table-cell">
                       {d.status === "requested" ? `Requested ${formatDate(d.addedOn)}` : formatDate(d.addedOn)}
                     </td>

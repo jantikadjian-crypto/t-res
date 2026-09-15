@@ -163,7 +163,9 @@ export function ProfileSettings() {
             <dd className="font-mono">{caseNumber}</dd>
             <dt className="text-muted-foreground">Your EA</dt>
             <dd>
-              {enrolledAgent.name}, {enrolledAgent.credential}
+              <Link href="/settings/security" className="text-primary hover:underline">
+                {enrolledAgent.name}, {enrolledAgent.credential}
+              </Link>
             </dd>
             <dt className="text-muted-foreground">Member since</dt>
             <dd>{formatDate(account.memberSince)}</dd>

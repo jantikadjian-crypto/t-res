@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SignatureRecord } from "@/components/case-provider";
@@ -44,7 +45,11 @@ export function SignatureCertificate({ record }: { record: SignatureRecord }) {
         </div>
 
         <dl className="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)] gap-x-6 gap-y-2.5 text-sm">
-          <Row label="Document">{record.documentName}</Row>
+          <Row label="Document">
+            <Link href={`/documents/${record.docId}`} className="text-primary hover:underline">
+              {record.documentName}
+            </Link>
+          </Row>
           <Row label="Signed by">{record.signerName}</Row>
           <Row label="Signed on">{record.signedAt}</Row>
           <Row label="Method">{record.method === "typed" ? "Typed signature" : "Drawn signature"}</Row>
@@ -52,7 +57,7 @@ export function SignatureCertificate({ record }: { record: SignatureRecord }) {
           <Row label="Device">{record.device}</Row>
           <Row label="IP address">{record.ipAddress}</Row>
           <Row label="Fingerprint">
-            <code className="font-mono text-xs break-all" title="SHA-256">
+            <code className="font-mono text-xs break-all select-all" title="SHA-256">
               {record.fingerprint}
             </code>
           </Row>

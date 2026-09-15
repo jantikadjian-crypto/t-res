@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight, FileCheck, ListChecks, PenLine, Upload, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
@@ -33,6 +34,7 @@ export function ActionItemsTile() {
       label="Action items"
       value={String(openActions.length)}
       caption={next ? `Waiting on you · next due ${formatDate(next.dueBy)}` : "All done"}
+      href="/action-items"
     />
   );
 }
@@ -49,7 +51,7 @@ export function NextStepsCard() {
         <CardDescription>Your case moves forward when these are done</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>
+        <Link href="/action-items" className="block rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
           <div className="mb-1.5 flex justify-between text-xs text-muted-foreground">
             <span>
               {doneCount} of {actions.length} done
@@ -59,7 +61,7 @@ export function NextStepsCard() {
           <div className="h-2 w-full rounded-full bg-secondary">
             <div className="h-2 rounded-full bg-primary transition-all" style={{ width: `${donePct}%` }} />
           </div>
-        </div>
+        </Link>
         {openActions.length === 0 ? (
           <p className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">
             Nothing waiting on you right now.
@@ -69,17 +71,20 @@ export function NextStepsCard() {
             {openActions.map((a) => {
               const Icon = actionIcons[a.type];
               const signDoc = docs.find((d) => d.relatedActionId === a.id && d.status === "needs-signature");
+              const href = signDoc ? `/sign/${signDoc.id}` : "/action-items";
               return (
-                <li key={a.id} className="flex gap-3 rounded-lg border p-3">
+                <li key={a.id} className="flex gap-3 rounded-lg border p-3 transition-colors hover:border-foreground/20">
                   <span className="grid size-8 shrink-0 place-items-center rounded-md bg-accent">
                     <Icon className="size-4" aria-hidden />
                   </span>
                   <div className="min-w-0 flex-1 space-y-1.5">
-                    <p className="text-sm font-medium">{a.title}</p>
+                    <Link href={href} className="block text-sm font-medium hover:text-primary hover:underline">
+                      {a.title}
+                    </Link>
                     <p className="text-xs text-muted-foreground">{a.why}</p>
                     <div className="flex items-center justify-between gap-2">
                       <StatusBadge tone={deadlineTone(a.dueBy)}>{daysRemainingLabel(a.dueBy)}</StatusBadge>
-                      <LinkButton href={signDoc ? `/sign/${signDoc.id}` : "/action-items"} variant="outline" size="xs">
+                      <LinkButton href={href} variant="outline" size="xs">
                         {actionVerb[a.type]}
                       </LinkButton>
                     </div>
