@@ -7,18 +7,15 @@ import { BadgeCheck, CheckCircle, ChevronDown, Scale, UserRound } from "lucide-r
 import { useCase } from "@/components/case-provider";
 import { daysRemainingLabel } from "@/lib/format";
 import { caseNumber, caseStages, currentStageIndex, enrolledAgent, taxpayer } from "@/lib/mockData";
-import { navGroups } from "@/lib/navigation";
+import { activeNavHref, navGroups } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
 const stage = caseStages[currentStageIndex];
 const stagePct = Math.round(((currentStageIndex + 1) / caseStages.length) * 100);
 
-function isActive(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
-}
-
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const activeHref = activeNavHref(pathname);
   const { openActions } = useCase();
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const nextAction = openActions[0];
@@ -65,7 +62,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               </button>
               <div id={`nav-${group.id}`} hidden={!open} className="mt-1 space-y-1">
                 {group.items.map(({ href, label, icon: Icon, count, urgent }) => {
-                  const active = isActive(pathname, href);
+                  const active = href === activeHref;
                   // Action items change as things get done this session.
                   const shown = href === "/action-items" ? openActions.length : count;
                   return (

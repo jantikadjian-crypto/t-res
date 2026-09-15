@@ -8,7 +8,8 @@
 - Money always formatted, deadlines always show days remaining, IRS jargon always translated.
 
 ## Scope (v1)
-- 5 screens only: Dashboard, Notice Center, Tax Years, Action Queue, Intake Wizard. No billing, no messaging, no auth.
+- Core screens: Dashboard, Notice Center, Tax Years, Action Queue, Documents, Intake Wizard, plus Settings (profile, notifications, security, billing & plan). No messaging, no auth.
+- Billing is display-only mock data (plan, payment schedule, pause/switch/cancel in React state). No payment processing and no card-entry forms. Cancelling must stay as easy as signing up: no forced steps, reasons optional.
 - No real IRS / transcript / e-Services integration — that is v2. Do not add API calls or credentials.
 - State: React state only. No localStorage (breaks in some preview environments).
 

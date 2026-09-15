@@ -735,6 +735,60 @@ export const resolutionPlans = [
   },
 ];
 
+// Account, plan and billing. Display-only mock data: no real payments or card details.
+export const account = {
+  preferredName: "Jordan",
+  email: "jordan.reyes@example.com",
+  phone: "(512) 555-0182",
+  mailingAddress: "1418 Cedar Bend Dr, Austin, TX 78758",
+  memberSince: "2026-09-03",
+  twoStepMethod: "Text message to (512) •••-••82",
+};
+
+export const signInActivity = [
+  { id: "s1", when: "Sep 14, 2026 · 9:12 AM", device: "Chrome on Windows", place: "Austin, TX", current: true },
+  { id: "s2", when: "Sep 12, 2026 · 8:47 PM", device: "Safari on iPhone", place: "Austin, TX", current: false },
+  { id: "s3", when: "Sep 3, 2026 · 6:30 PM", device: "Safari on iPhone", place: "Austin, TX", current: false },
+];
+
+export type NotificationTopic = {
+  id: string;
+  label: string;
+  description: string;
+  email: boolean;
+  text: boolean;
+  // Deadline emails can't be switched off: missing one can cost the taxpayer real options.
+  emailLocked?: boolean;
+};
+
+export const notificationTopics: NotificationTopic[] = [
+  { id: "notices", label: "New IRS notices", description: "When a new letter shows up on your IRS account, or you upload one.", email: true, text: true },
+  { id: "deadlines", label: "Deadline reminders", description: "Before any IRS deadline. Email reminders can't be turned off.", email: true, text: true, emailLocked: true },
+  { id: "requests", label: "Document and signature requests", description: "When we need something from you.", email: true, text: true },
+  { id: "updates", label: "Case updates from Chris", description: "When your case moves to a new stage.", email: true, text: false },
+  { id: "summary", label: "Weekly case summary", description: "A short Monday email with where things stand.", email: false, text: false },
+];
+
+export const reminderLeadDays = [14, 7, 3, 1];
+
+export type PlanStatus = "active" | "paused" | "canceled";
+
+export const subscription = {
+  planId: "full",
+  startedOn: "2026-09-03",
+  installmentsPaid: 1,
+  installmentAmount: 275,
+  nextChargeOn: "2026-10-03",
+  // A 30-day pause from MOCK_TODAY.
+  pauseResumesOn: "2026-10-14",
+  paymentMethod: { brand: "Visa", last4: "4242", expires: "08/28" },
+  billingEmail: "jordan.reyes@example.com",
+};
+
+export const paidInvoices = [
+  { id: "INV-0142-01", date: "2026-09-03", description: "Full Resolution · payment 1 of 6", amount: 275 },
+];
+
 // Derived values — compute here so every screen agrees.
 export function yearBalance(y: TaxYear): number {
   return y.balance ? y.balance.tax + y.balance.penalties + y.balance.interest : 0;

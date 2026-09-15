@@ -6,9 +6,11 @@ import {
   documentNotes,
   documents as seedDocuments,
   MOCK_TODAY,
+  subscription,
   type ActionItem,
   type CaseDocument,
   type DocumentNote,
+  type PlanStatus,
 } from "@/lib/mockData";
 
 export type SignatureRecord = {
@@ -24,6 +26,16 @@ export type SignatureRecord = {
   ipAddress: string;
   fingerprint: string; // SHA-256 of what was signed
   audit: { label: string; at: string }[];
+};
+
+export type PlanState = {
+  planId: string;
+  status: PlanStatus;
+  changedOn?: string;
+  resumesOn?: string;
+  cancelReason?: string;
+  // Set when the taxpayer switched plans this session; the EA confirms it.
+  switchedFrom?: string;
 };
 
 type Completion = { completedOn: string; uploadedFile?: string };
@@ -42,17 +54,24 @@ type CaseContextValue = {
   completeAction: (actionId: string, file?: UploadedFile) => void;
   signatures: Record<string, SignatureRecord>;
   recordSignature: (record: SignatureRecord) => void;
+  plan: PlanState;
+  cancelPlan: (reason?: string) => void;
+  pausePlan: () => void;
+  resumePlan: () => void;
+  switchPlan: (planId: string) => void;
 };
 
 const CaseContext = createContext<CaseContextValue | null>(null);
 
 // One place for everything the taxpayer changes during a session: uploads, notes, finished
-// to-dos and signatures. Lives in the root layout so every page agrees. React state only (v1).
+// to-dos, signatures and their plan. Lives in the root layout so every page agrees.
+// React state only (v1).
 export function CaseProvider({ children }: { children: React.ReactNode }) {
   const [docs, setDocs] = useState<CaseDocument[]>(seedDocuments);
   const [notes, setNotes] = useState<Record<string, DocumentNote[]>>(documentNotes);
   const [completions, setCompletions] = useState<Record<string, Completion>>({});
   const [signatures, setSignatures] = useState<Record<string, SignatureRecord>>({});
+  const [plan, setPlan] = useState<PlanState>({ planId: subscription.planId, status: "active" });
 
   const markDone = useCallback((actionId: string | undefined, uploadedFile?: string) => {
     if (!actionId) return;
@@ -142,6 +161,29 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const cancelPlan = useCallback(
+    (reason?: string) => setPlan((p) => ({ ...p, status: "canceled", changedOn: MOCK_TODAY, resumesOn: undefined, cancelReason: reason })),
+    []
+  );
+  const pausePlan = useCallback(
+    () => setPlan((p) => ({ ...p, status: "paused", changedOn: MOCK_TODAY, resumesOn: subscription.pauseResumesOn })),
+    []
+  );
+  const resumePlan = useCallback(
+    () => setPlan((p) => ({ ...p, status: "active", changedOn: MOCK_TODAY, resumesOn: undefined, cancelReason: undefined })),
+    []
+  );
+  const switchPlan = useCallback(
+    (planId: string) =>
+      setPlan((p) => ({
+        planId,
+        status: "active",
+        changedOn: MOCK_TODAY,
+        switchedFrom: planId === subscription.planId ? undefined : (p.switchedFrom ?? p.planId),
+      })),
+    []
+  );
+
   const actions = useMemo(
     () =>
       seedActions.map((a) => {
@@ -171,6 +213,11 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
         completeAction,
         signatures,
         recordSignature,
+        plan,
+        cancelPlan,
+        pausePlan,
+        resumePlan,
+        switchPlan,
       }}
     >
       {children}

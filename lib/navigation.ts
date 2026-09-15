@@ -1,11 +1,13 @@
 // One map of the app: the sidebar and the breadcrumbs both read from here.
 import {
   CalendarRange,
+  CreditCard,
   FileWarning,
   FolderOpen,
   Home,
   ListChecks,
   Rocket,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 import { FIRST_SCREEN, getScreen, intakeSteps } from "@/lib/intakeScreens";
@@ -42,17 +44,50 @@ export const navGroups: NavGroup[] = [
       { href: "/documents", label: "Documents", icon: FolderOpen },
     ],
   },
+  {
+    id: "account",
+    label: "Account",
+    items: [
+      { href: "/settings", label: "Settings", icon: Settings },
+      { href: "/settings/billing", label: "Billing & plan", icon: CreditCard },
+    ],
+  },
 ];
+
+const allItems = navGroups.flatMap((group) => group.items.map((item) => ({ group, item })));
+
+/** The nav item a path belongs to: the longest matching href, so /settings/billing is Billing, not Settings. */
+function matchNav(pathname: string) {
+  return allItems
+    .filter(({ item }) =>
+      item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`)
+    )
+    .sort((a, b) => b.item.href.length - a.item.href.length)[0];
+}
+
+export function activeNavHref(pathname: string): string | undefined {
+  return matchNav(pathname)?.item.href;
+}
 
 export type Crumb = { label: string; href?: string };
 
-// Documents tabs are pages under /documents; name them in the breadcrumbs.
-const documentViewLabels: Record<string, string> = {
+// Names for sub-pages that aren't nav items themselves.
+const segmentLabels: Record<string, string> = {
   mine: "My documents",
   "from-tres": "From T-Res",
   "from-irs": "From the IRS",
   waiting: "Waiting on you",
+  notifications: "Notifications",
+  security: "Security",
+  cancel: "Cancel plan",
 };
+
+function segmentLabel(section: string, segment: string): string {
+  if (segmentLabels[segment]) return segmentLabels[segment];
+  if (section === "notices") return notices.find((n) => n.id === segment)?.code ?? segment;
+  if (section === "documents") return documents.find((d) => d.id === segment)?.name ?? "Document";
+  return segment;
+}
 
 /** Trail after the home icon, e.g. Your Case › Notices › CP504. The last crumb is the current page. */
 export function breadcrumbsFor(pathname: string): Crumb[] {
@@ -73,23 +108,16 @@ export function breadcrumbsFor(pathname: string): Crumb[] {
     return [{ label: "Get Started", href: `/intake/${FIRST_SCREEN}` }, { label: step?.label ?? "All done" }];
   }
 
-  const base = section ? `/${section}` : "/";
-  for (const group of navGroups) {
-    const item = group.items.find((i) => i.href === base);
-    if (!item) continue;
-    const crumbs: Crumb[] = [];
-    if (group.id !== "home") crumbs.push({ label: group.label, href: group.items[0].href });
-    crumbs.push({ label: item.label, href: item.href });
-    if (detail) {
-      const label =
-        section === "notices"
-          ? (notices.find((n) => n.id === detail)?.code ?? detail)
-          : section === "documents"
-            ? (documentViewLabels[detail] ?? documents.find((d) => d.id === detail)?.name ?? "Document")
-            : detail;
-      crumbs.push({ label });
-    }
-    return crumbs;
+  const match = matchNav(pathname);
+  if (!match) return [];
+  const crumbs: Crumb[] = [];
+  if (match.group.id !== "home") crumbs.push({ label: match.group.label, href: match.group.items[0].href });
+  crumbs.push({ label: match.item.label, href: match.item.href });
+
+  let href = match.item.href === "/" ? "" : match.item.href;
+  for (const segment of pathname.slice(href.length).split("/").filter(Boolean)) {
+    href += `/${segment}`;
+    crumbs.push({ label: segmentLabel(section ?? "", segment), href });
   }
-  return [];
+  return crumbs;
 }
