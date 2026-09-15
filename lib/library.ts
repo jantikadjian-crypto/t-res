@@ -46,7 +46,7 @@ export const libraryEntries: LibraryEntry[] = [
     short: "Power of Attorney and Declaration of Representative",
     definition:
       "Gives a licensed tax professional permission to represent you before the IRS: to talk to them for you, receive your notices, and act on the tax matters and years listed on the form.",
-    forYou: "Lets Chris G. speak to the IRS for you about your income tax for 2021 to 2023. It's waiting on your signature.",
+    forYou: "Lets Chris V. speak to the IRS for you about your income tax for 2021 to 2023. It's waiting on your signature.",
     aliases: ["Form 2848", "2848", "power of attorney"],
     irs: { url: "https://www.irs.gov/forms-pubs/about-form-2848", label: "About Form 2848" },
     related: ["form-8821", "enrolled-agent", "caf-number"],
@@ -442,7 +442,7 @@ export const libraryEntries: LibraryEntry[] = [
     short: "A tax professional licensed by the IRS",
     definition:
       "A federally licensed tax practitioner who can represent taxpayers before the IRS on any tax matter, including collections and appeals.",
-    forYou: "Chris G. is your Enrolled Agent.",
+    forYou: "Chris V. is your Enrolled Agent.",
     aliases: ["enrolled agent"],
     irs: { url: "https://www.irs.gov/tax-professionals/enrolled-agents", label: "Enrolled agents" },
     related: ["form-2848", "caf-number"],
@@ -455,7 +455,7 @@ export const libraryEntries: LibraryEntry[] = [
     short: "A representative's IRS ID number",
     definition:
       "The Centralized Authorization File number the IRS gives a representative. It goes on Form 2848 and Form 8821 so the IRS can match the authorization to them.",
-    forYou: "Chris G.'s CAF number is printed on your Form 2848.",
+    forYou: "Chris V.'s CAF number is printed on your Form 2848.",
     aliases: ["CAF number", "CAF"],
     irs: { url: "https://www.irs.gov/instructions/i2848", label: "Instructions for Form 2848" },
     related: ["form-2848", "enrolled-agent"],

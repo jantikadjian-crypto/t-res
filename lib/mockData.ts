@@ -202,7 +202,7 @@ export const signingTerms: Record<
   doc_2848: {
     formLabel: "Form 2848",
     agreeing: [
-      "Chris G. can speak with the IRS about your income tax (Form 1040) for 2021, 2022 and 2023.",
+      "Chris V. can speak with the IRS about your income tax (Form 1040) for 2021, 2022 and 2023.",
       "He gets copies of your IRS notices and can see your records for those years.",
       "He can't cash or deposit your refund checks, and he can't sign tax returns for you.",
       "You can cancel it at any time by telling us or the IRS.",
@@ -212,7 +212,7 @@ export const signingTerms: Record<
 };
 
 export const enrolledAgent: EnrolledAgent = {
-  name: "Chris G.",
+  name: "Chris V.",
   credential: "Enrolled Agent",
 };
 
@@ -475,7 +475,7 @@ We represent Jordan Reyes under the enclosed Form 2848. Jordan intends to resolv
 
 We request a 60-day hold on collection while we file the missing 2023 return and submit Form 9465, Installment Agreement Request. We also request First-Time Penalty Abatement of the 2021 failure-to-pay penalty.
 
-Chris G., Enrolled Agent`,
+Chris V., Enrolled Agent`,
   },
   {
     id: "act_opa",
@@ -547,7 +547,7 @@ Jordan A. Reyes`,
     dueBy: "2026-09-23",
     done: false,
     relatedTaxYear: 2023,
-    letterPreview: `${return2023Preview}\n\nPreparer: Chris G., Enrolled Agent`,
+    letterPreview: `${return2023Preview}\n\nPreparer: Chris V., Enrolled Agent`,
     openLabel: "Review your return",
     approveLabel: "Approve for e-filing",
   },
@@ -627,7 +627,7 @@ export const documents: CaseDocument[] = [
   },
   {
     id: "doc_1040_23r", name: "2023 Form 1040 (draft).pdf", category: "Tax return", source: "T-Res", taxYear: 2023, addedOn: MOCK_TODAY, sizeKb: 214, status: "draft", relatedActionId: "act_file23r", lane: "represented", after: "act_w2",
-    summary: "Your 2023 return, prepared by Chris G. from your W-2s and 1099s. Chris e-files it once you approve. Estimated balance due: about $4,900.",
+    summary: "Your 2023 return, prepared by Chris V. from your W-2s and 1099s. Chris e-files it once you approve. Estimated balance due: about $4,900.",
   },
   {
     id: "doc_engage", name: "Engagement Letter (signed).pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-03", sizeKb: 142, status: "on-file",
@@ -639,7 +639,7 @@ export const documents: CaseDocument[] = [
   },
   {
     id: "doc_2848", name: "Form 2848 – Power of Attorney.pdf", category: "Authorization", source: "T-Res", addedOn: "2026-09-10", sizeKb: 118, status: "needs-signature", relatedActionId: "act_2848", lane: "represented",
-    summary: "Power of attorney that lets Chris G. speak to the IRS for you, so you don't have to take their calls.",
+    summary: "Power of attorney that lets Chris V. speak to the IRS for you, so you don't have to take their calls.",
   },
   {
     id: "doc_letter", name: "CP504 Response Letter (draft).pdf", category: "Prepared by us", source: "T-Res", taxYear: 2021, addedOn: "2026-09-13", sizeKb: 36, status: "draft", relatedActionId: "act_letter", lane: "represented",
@@ -1357,7 +1357,7 @@ export const governanceItems: GovernanceItem[] = [
     eaMinutes: 6,
     approveLabel: "Approve for e-filing",
     summary: "Prepared Jordan's 2023 Form 1040 from the uploaded W-2s and 1099s. You're the preparer, so it's yours to approve before it's e-filed.",
-    output: `${return2023Preview}\n\nPreparer: Chris G., Enrolled Agent`,
+    output: `${return2023Preview}\n\nPreparer: Chris V., Enrolled Agent`,
     checks: [
       { label: "Every W-2 and 1099 on the IRS wage & income record is included", passed: true },
       { label: "Math checked by the rules engine", passed: true },
