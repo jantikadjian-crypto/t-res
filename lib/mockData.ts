@@ -280,7 +280,7 @@ export const taxYears: TaxYear[] = [
     assessedOn: null,
     csed: null,
     plainEnglish:
-      "The IRS has no 2023 return from you. Filing it is required before any payment plan can be approved — we will prepare it once your W-2s and 1099s are in.",
+      "No 2023 return on file yet. It has to be filed before a payment plan, so we'll prepare it once your W-2s and 1099s are in.",
     incomeOnRecord: [
       { payer: "Lone Star Logistics LLC", form: "W-2", amount: 58400 },
       { payer: "DoorDash, Inc. (delivery)", form: "1099-NEC", amount: 11700 },
@@ -835,6 +835,9 @@ export const nextNotice = openNotices[0];
 // The way forward for a tax year: every red or amber year gets a remedy.
 export function yearNextStep(y: TaxYear): { href: string; label: string; primary: boolean } {
   if (y.status === "unfiled") return { href: "/action-items", label: "Start filing", primary: true };
-  if (y.lienFiled) return { href: "/notices", label: "Respond now", primary: true };
+  if (y.lienFiled) {
+    const notice = openNotices.find((n) => n.taxYear === y.year);
+    return { href: notice ? `/notices/${notice.id}` : "/notices", label: "Open notice", primary: true };
+  }
   return { href: `/tax-years/${y.year}`, label: "Details", primary: false };
 }

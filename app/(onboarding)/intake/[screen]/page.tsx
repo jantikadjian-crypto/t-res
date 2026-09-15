@@ -1,7 +1,7 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { screenBodies } from "@/components/intake/screen-bodies";
-import { ScreenPlaceholder } from "@/components/intake/screen-placeholder";
-import { getScreen, intakeScreens } from "@/lib/intakeScreens";
+import { getScreen, intakeScreens, intakeSteps } from "@/lib/intakeScreens";
 
 export const dynamicParams = false;
 
@@ -9,9 +9,15 @@ export function generateStaticParams() {
   return intakeScreens.map((s) => ({ screen: s.slug }));
 }
 
+export async function generateMetadata(props: PageProps<"/intake/[screen]">): Promise<Metadata> {
+  const { screen } = await props.params;
+  const step = intakeSteps.find((s) => s.key === getScreen(screen)?.step);
+  return { title: `${step?.label ?? "All done"} · Get Started · T-Res` };
+}
+
 export default async function IntakeScreenPage(props: PageProps<"/intake/[screen]">) {
   const { screen } = await props.params;
-  if (!getScreen(screen)) notFound();
   const Body = screenBodies[screen];
-  return Body ? <Body /> : <ScreenPlaceholder slug={screen} />;
+  if (!getScreen(screen) || !Body) notFound();
+  return <Body />;
 }

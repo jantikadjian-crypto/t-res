@@ -608,7 +608,7 @@ export function DocumentLibrary({ view, initialStatus = "any" }: { view: Documen
                         </Badge>
                       </button>
                     </td>
-                    <td className="hidden px-3 py-3 text-muted-foreground md:table-cell">
+                    <td className="hidden px-3 py-3 whitespace-nowrap text-muted-foreground md:table-cell">
                       <Link
                         href={
                           d.status === "requested"
@@ -627,11 +627,11 @@ export function DocumentLibrary({ view, initialStatus = "any" }: { view: Documen
                     <td className="hidden px-3 py-3 whitespace-nowrap text-muted-foreground sm:table-cell">
                       {d.status === "requested" ? `Requested ${formatDate(d.addedOn)}` : formatDate(d.addedOn)}
                     </td>
-                    <td className="hidden px-3 py-3 text-right text-muted-foreground tabular-nums lg:table-cell">
+                    <td className="hidden px-3 py-3 text-right whitespace-nowrap text-muted-foreground tabular-nums lg:table-cell">
                       {d.sizeKb ? formatFileSize(d.sizeKb) : "—"}
                     </td>
                     <td className="px-4 py-3 sm:px-6">
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 xl:flex-nowrap">
                         <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>
                         {action?.kind === "upload" && (
                           <RowUpload

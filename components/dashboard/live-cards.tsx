@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, FileCheck, ListChecks, PenLine, Upload, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, FileCheck, ListChecks, PenLine, Upload, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, deadlineTone, formatDate } from "@/lib/format";
-import type { ActionItemType } from "@/lib/mockData";
+import { enrolledAgent, nextNotice, type ActionItemType } from "@/lib/mockData";
 
 // Dashboard pieces that change as the taxpayer signs, uploads and approves things.
 
@@ -23,6 +23,72 @@ const actionVerb: Record<ActionItemType, string> = {
   upload: "Upload",
   "approve-letter": "Review",
 };
+
+// The most urgent notice, and the one thing that moves it forward right now.
+export function UrgencyBanner() {
+  const { actions, docs } = useCase();
+  const next = actions
+    .filter((a) => a.relatedNoticeId === nextNotice.id && !a.done)
+    .sort((a, b) => a.dueBy.localeCompare(b.dueBy))[0];
+  const deadline = `${formatDate(nextNotice.respondBy)} · ${daysRemainingLabel(nextNotice.respondBy)}`;
+
+  if (!next) {
+    return (
+      <div role="status" className="flex flex-col gap-4 rounded-xl border border-green-200 bg-green-50 p-4 sm:flex-row sm:items-center">
+        <div className="flex flex-1 gap-3">
+          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-green-600" aria-hidden />
+          <div>
+            <p className="font-medium text-green-900">Your {nextNotice.code} response is ready to send</p>
+            <p className="mt-1 text-sm text-green-800">
+              Nothing else is needed from you on this notice. {enrolledAgent.name} will send it before {deadline}.
+            </p>
+          </div>
+        </div>
+        <LinkButton href={`/notices/${nextNotice.id}`} variant="outline" className="ml-8 w-fit border-green-300 bg-white sm:ml-0">
+          See the notice
+        </LinkButton>
+      </div>
+    );
+  }
+
+  const signDoc = docs.find((d) => d.relatedActionId === next.id && d.status === "needs-signature");
+  const cta =
+    next.type === "sign"
+      ? { href: signDoc ? `/sign/${signDoc.id}` : "/action-items", label: "Sign now" }
+      : { href: "/action-items", label: "Review the letter" };
+
+  return (
+    <div role="alert" className="flex flex-col gap-4 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center">
+      <div className="flex flex-1 gap-3">
+        <AlertTriangle className="mt-0.5 size-5 shrink-0 text-red-600" aria-hidden />
+        <div>
+          <p className="font-medium text-red-900">
+            Respond to your {nextNotice.code} by {deadline}
+          </p>
+          <p className="mt-1 text-sm text-red-800">
+            {nextNotice.plainTitle}. This is fixable:{" "}
+            {next.type === "sign"
+              ? "we've drafted your response and just need your signature to send it."
+              : `your Form 2848 is signed. Approve the response letter we drafted so ${enrolledAgent.name} can send it.`}
+          </p>
+        </div>
+      </div>
+      <div className="flex shrink-0 flex-wrap gap-2 pl-8 sm:pl-0">
+        <LinkButton
+          href={`/notices/${nextNotice.id}`}
+          variant="outline"
+          className="border-red-200 bg-white text-red-700 hover:bg-red-100 hover:text-red-800"
+        >
+          What this means
+        </LinkButton>
+        <LinkButton href={cta.href} className="bg-red-600 text-white hover:bg-red-700">
+          {cta.label}
+          <ArrowRight aria-hidden />
+        </LinkButton>
+      </div>
+    </div>
+  );
+}
 
 export function ActionItemsTile() {
   const { openActions } = useCase();

@@ -6,6 +6,7 @@ import { AlertTriangle, ArrowLeft, FileCheck, FileText, FileUp, PenLine, Upload 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
+import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
 import { LinkButton } from "@/components/link-button";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status";
@@ -199,7 +200,11 @@ export function DocumentDetail({ id }: { id: string }) {
               <CardTitle>What this is</CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
-              <p className="text-sm">{doc.summary}</p>
+              <div className="space-y-2">
+                <p className="text-sm">{doc.summary}</p>
+                {/* Our plain-English summary; a fresh upload's gets reviewed first. */}
+                {doc.status !== "requested" && <EAReviewedBadge pending={doc.status === "in-review"} />}
+              </div>
               <dl className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] gap-x-6 gap-y-3 text-sm">
                 <DetailRow label="Status">
                   <StatusBadge tone={meta.tone}>{signature ? "Signed · on file" : meta.label}</StatusBadge>

@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, Check, CheckCircle2, CreditCard, PauseCircle, Repeat, X } from "lucide-react";
+import { AlertTriangle, ArrowDownCircle, ArrowUpCircle, CheckCircle2, CreditCard, PauseCircle, Repeat } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCase } from "@/components/case-provider";
 import { LinkButton } from "@/components/link-button";
+import { PlanFeatureList, planPriceNote } from "@/components/plan-features";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, formatDate, formatMoney } from "@/lib/format";
 import {
   enrolledAgent,
   nextNotice,
   paidInvoices,
-  planFeatures,
   resolutionPlans,
   subscription,
   type Tone,
@@ -246,29 +246,10 @@ export function BillingOverview() {
                   </div>
                   <div>
                     <span className="text-2xl font-bold tabular-nums">{formatMoney(p.price)}</span>{" "}
-                    <span className="text-sm text-muted-foreground">
-                      {p.installments > 1 ? `or ${p.installments} × ${formatMoney(p.price / p.installments)}` : "one-time"}
-                    </span>
+                    <span className="text-sm text-muted-foreground">{planPriceNote(p)}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">{p.blurb}</p>
-                  <ul className="space-y-1.5 text-sm">
-                    {planFeatures.map((f) => {
-                      const has = p.features.includes(f);
-                      return (
-                        <li key={f} className={cn("flex gap-2", !has && "text-muted-foreground")}>
-                          {has ? (
-                            <Check className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
-                          ) : (
-                            <X className="mt-0.5 size-4 shrink-0 text-muted-foreground/50" aria-hidden />
-                          )}
-                          <span>
-                            {f}
-                            {!has && <span className="sr-only"> (not included)</span>}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  <PlanFeatureList plan={p} className="space-y-1.5" />
                   <div className="mt-auto space-y-3">
                     {isCurrent && plan.status !== "canceled" ? (
                       <Button variant="secondary" disabled className="w-full">

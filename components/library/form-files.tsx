@@ -1,24 +1,27 @@
 import { Download, ExternalLink } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { assetUrl, IN_ARTIFACT } from "@/lib/assets";
 import { formatDate, formatFileSize } from "@/lib/format";
 import { irsFiles, type IrsFile } from "@/lib/irsFiles";
+import { cn } from "@/lib/utils";
 
-const buttonBase =
-  "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
-
-function FormFileCard({ file }: { file: IrsFile }) {
+// `wide`: a single file sits beside its preview instead of filling half a grid.
+function FormFileCard({ file, wide = false }: { file: IrsFile; wide?: boolean }) {
   // Local copy in the app; the official IRS file in the progress artifact.
   const pdf = IN_ARTIFACT ? file.sourceUrl : assetUrl(`forms/${file.file}`);
   const sample = file.kind === "Sample notice";
 
   return (
-    <figure className="flex flex-col overflow-hidden rounded-xl border bg-card">
+    <figure className={cn("flex flex-col overflow-hidden rounded-xl border bg-card", wide && "sm:flex-row")}>
       <a
         href={pdf}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`Open ${file.title} (PDF, opens in a new tab)`}
-        className="group block border-b bg-muted/40 p-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className={cn(
+          "group block border-b bg-muted/40 p-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+          wide && "sm:w-2/5 sm:shrink-0 sm:border-r sm:border-b-0"
+        )}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- static previews rendered by scripts/irs-forms.mjs */}
         <img
@@ -38,13 +41,13 @@ function FormFileCard({ file }: { file: IrsFile }) {
           </p>
         </div>
         <div className="mt-auto flex flex-wrap gap-2">
-          <a href={pdf} target="_blank" rel="noopener noreferrer" className={`${buttonBase} bg-primary text-primary-foreground hover:bg-primary/80`}>
+          <a href={pdf} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: "sm" })}>
             Open PDF
-            <ExternalLink className="size-3.5" aria-hidden />
+            <ExternalLink aria-hidden />
           </a>
           {!IN_ARTIFACT && (
-            <a href={pdf} download={file.file} className={`${buttonBase} border bg-background hover:bg-accent`}>
-              <Download className="size-3.5" aria-hidden />
+            <a href={pdf} download={file.file} className={buttonVariants({ size: "sm", variant: "outline" })}>
+              <Download aria-hidden />
               Download
             </a>
           )}
@@ -63,6 +66,7 @@ function FormFileCard({ file }: { file: IrsFile }) {
 export function FormFiles({ files }: { files: string[] }) {
   const list = files.map((f) => irsFiles[f]).filter((f): f is IrsFile => f !== undefined);
   if (list.length === 0) return null;
+  if (list.length === 1) return <FormFileCard file={list[0]} wide />;
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {list.map((f) => (

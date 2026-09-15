@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Check, ShieldCheck, X } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { useCase } from "@/components/case-provider";
 import { ChoiceGroup } from "@/components/intake/choice";
 import { useIntake } from "@/components/intake/intake-provider";
+import { PlanFeatureList, planPriceNote } from "@/components/plan-features";
 import { formatMoney } from "@/lib/format";
-import { enrolledAgent, planFeatures, resolutionPlans } from "@/lib/mockData";
+import { enrolledAgent, resolutionPlans } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export function PathScreen() {
@@ -54,29 +55,10 @@ export function PathScreen() {
                 </span>
                 <span className="pl-8 text-right sm:pl-0">
                   <span className="block text-2xl font-bold tabular-nums">{formatMoney(p.price)}</span>
-                  <span className="block text-xs text-muted-foreground">
-                    {p.installments > 1 ? `or ${p.installments} × ${formatMoney(p.price / p.installments)}` : "one-time"}
-                  </span>
+                  <span className="block text-xs text-muted-foreground">{planPriceNote(p)}</span>
                 </span>
               </span>
-              <span className="grid gap-x-6 gap-y-1.5 pl-8 text-sm sm:grid-cols-2">
-                {planFeatures.map((f) => {
-                  const has = p.features.includes(f);
-                  return (
-                    <span key={f} className={cn("flex gap-2", !has && "text-muted-foreground")}>
-                      {has ? (
-                        <Check className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
-                      ) : (
-                        <X className="mt-0.5 size-4 shrink-0 text-muted-foreground/50" aria-hidden />
-                      )}
-                      <span>
-                        {f}
-                        {!has && <span className="sr-only"> (not included)</span>}
-                      </span>
-                    </span>
-                  );
-                })}
-              </span>
+              <PlanFeatureList plan={p} as="span" className="grid gap-x-6 gap-y-1.5 pl-8 sm:grid-cols-2" />
             </button>
           );
         })}

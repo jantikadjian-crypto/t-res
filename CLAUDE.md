@@ -25,6 +25,8 @@
 - Library (IRS forms, notices, terms + IRS.gov links) lives in /lib/library.ts, kept import-free. Link any page that mentions a form or notice to its entry (`libraryMatches(text)`). After changing IRS links, verify they load.
 - Printable IRS files: list in /scripts/irs-forms.json (irs.gov/pub/irs-pdf and irs.gov/pub/notices only, public domain). `node scripts/irs-forms.mjs` downloads missing PDFs to public/forms, renders page-1 PNG previews (Python + pypdfium2) and regenerates /lib/irsFiles.ts. Map files to Library entries in `libraryFiles`. Never hand-edit irsFiles.ts.
 - Search everything: /lib/search.ts builds the index for the Ctrl+K palette (components/search). New pages or data kinds must be added to the index.
+- Sidebar and breadcrumbs both read /lib/navigation.ts. Settings and Billing & plan are reached from the account menu (name, top right) only: their group has `sidebar: false` so breadcrumbs still name them.
+- Notice status is live: read `notices` / `openNotices` from `useCase()`, not mockData. A notice needing action moves to "We're handling it" once every to-do tied to it (`relatedNoticeId`) is done.
 - Selection state that should survive the progress snapshot goes in the URL (e.g. /notices/[id], /tax-years/[year]), not React state.
 - Links that look like buttons use `<LinkButton />` from /components/link-button.tsx.
 - AI-generated content gets `<EAReviewedBadge />` from /components/ea-reviewed-badge.tsx.

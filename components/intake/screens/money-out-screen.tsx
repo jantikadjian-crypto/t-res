@@ -1,7 +1,8 @@
 "use client";
 
-import { Info } from "lucide-react";
+import { BookOpen, Info } from "lucide-react";
 import { useIntake } from "@/components/intake/intake-provider";
+import { LinkButton } from "@/components/link-button";
 import { MoneyRows, sumAmounts } from "@/components/intake/money-fields";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -71,6 +72,12 @@ export function MoneyOutScreen() {
           </div>
         </dl>
         <p className={cn("text-sm", meta.text)}>{meta.message}</p>
+        {left < 0 && (
+          <LinkButton href="/library/currently-not-collectible" variant="outline" size="sm" className="border-red-200 bg-white">
+            <BookOpen aria-hidden />
+            How a collection pause works
+          </LinkButton>
+        )}
       </div>
     </div>
   );

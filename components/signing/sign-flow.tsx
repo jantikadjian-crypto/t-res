@@ -154,7 +154,7 @@ function Line({ label, value }: { label: string; value: string }) {
 // The form itself, filled in with the real case details.
 function Form2848Pages({ taxMatters }: { taxMatters: { matter: string; form: string; years: string }[] }) {
   return (
-    <div className="max-h-[34rem] space-y-4 overflow-y-auto rounded-xl border bg-muted/40 p-4" tabIndex={0} aria-label="Form 2848, 2 pages">
+    <div className="space-y-4 rounded-xl border bg-muted/40 p-4" aria-label="Form 2848, 2 pages">
       <div className="space-y-4 rounded-sm bg-white p-5 text-xs shadow-sm ring-1 ring-black/5">
         <div className="flex items-start justify-between gap-3 border-b pb-2">
           <div>
@@ -177,7 +177,7 @@ function Form2848Pages({ taxMatters }: { taxMatters: { matter: string; form: str
         </section>
         <section className="space-y-1">
           <p className="font-semibold">3 Acts authorized</p>
-          <table className="w-full border text-left">
+          <table className="w-full border text-left text-xs">
             <thead className="bg-muted/60">
               <tr>
                 <th className="border px-2 py-1 font-medium">Description of matter</th>

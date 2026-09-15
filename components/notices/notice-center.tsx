@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
+  BookOpen,
   CalendarClock,
   Clock,
   FileSearch,
@@ -13,6 +16,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCase } from "@/components/case-provider";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
@@ -21,7 +25,7 @@ import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status";
 import { daysRemainingLabel, daysUntil, deadlineTone, formatDate, formatMoney } from "@/lib/format";
 import { libraryMatches } from "@/lib/library";
-import { notices, openNotices, type Notice } from "@/lib/mockData";
+import { notices as allNotices, type Notice } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 type DecodeKey = Exclude<keyof Notice["decode"], "eaReviewed">;
@@ -39,15 +43,16 @@ function deadlineText(n: Notice) {
     : `Respond by ${formatDate(n.respondBy)} · ${daysRemainingLabel(n.respondBy)}`;
 }
 
-// Open notices first (soonest deadline on top), then closed ones, newest first.
-const orderedNotices = [
-  ...openNotices,
-  ...notices.filter((n) => n.status === "closed").sort((a, b) => b.receivedOn.localeCompare(a.receivedOn)),
-];
-
-const firstReceived = [...notices].sort((a, b) => a.receivedOn.localeCompare(b.receivedOn))[0];
+const firstReceived = [...allNotices].sort((a, b) => a.receivedOn.localeCompare(b.receivedOn))[0];
 
 export function NoticeCenter({ selectedId }: { selectedId: string }) {
+  // Live: a notice moves to "We're handling it" once its to-dos are signed and approved.
+  const { notices, openNotices } = useCase();
+  // Open notices first (soonest deadline on top), then closed ones, newest first.
+  const orderedNotices = [
+    ...openNotices,
+    ...notices.filter((n) => n.status === "closed").sort((a, b) => b.receivedOn.localeCompare(a.receivedOn)),
+  ];
   const selected = notices.find((n) => n.id === selectedId) ?? orderedNotices[0];
   const needAction = notices.filter((n) => n.status === "action-needed").length;
   const handling = notices.filter((n) => n.status === "in-progress").length;
@@ -185,7 +190,8 @@ export function NoticeCenter({ selectedId }: { selectedId: string }) {
             {libraryMatches(selected.code)
               .slice(0, 1)
               .map((entry) => (
-                <LinkButton key={entry.slug} href={`/library/${entry.slug}`} variant="ghost">
+                <LinkButton key={entry.slug} href={`/library/${entry.slug}`} variant="outline">
+                  <BookOpen aria-hidden />
                   What is a {selected.code}?
                 </LinkButton>
               ))}

@@ -14,7 +14,6 @@ import { DocumentsView } from "@/components/documents/documents-view";
 import { IntakeFrame } from "@/components/intake/intake-frame";
 import { IntakeProvider } from "@/components/intake/intake-provider";
 import { screenBodies } from "@/components/intake/screen-bodies";
-import { ScreenPlaceholder } from "@/components/intake/screen-placeholder";
 import { LibraryEntryView, LibraryView } from "@/components/library/library-views";
 import { NoticeCenter } from "@/components/notices/notice-center";
 import { BillingOverview } from "@/components/settings/billing-overview";
@@ -74,12 +73,15 @@ function route(pathname: string): ReactNode {
   const [section, detail, extra] = pathname.split("/").filter(Boolean);
 
   if (section === "intake") {
-    const slug = detail ?? FIRST_SCREEN;
+    // Unknown screens start the wizard from the top, like /intake does.
+    const slug = detail && screenBodies[detail] ? detail : FIRST_SCREEN;
     const Body = screenBodies[slug];
     return (
       <IntakeProvider>
         <IntakeFrame>
-          <Fragment key={slug}>{Body ? <Body /> : <ScreenPlaceholder slug={slug} />}</Fragment>
+          <Fragment key={slug}>
+            <Body />
+          </Fragment>
         </IntakeFrame>
       </IntakeProvider>
     );

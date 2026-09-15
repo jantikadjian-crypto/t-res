@@ -13,7 +13,7 @@ import { SituationScreen } from "@/components/intake/screens/situation-screen";
 import { UnfiledScreen } from "@/components/intake/screens/unfiled-screen";
 
 // The answer area for each wizard screen, shared by the Next page and the interactive
-// progress artifact. A screen without an entry falls back to the placeholder.
+// progress artifact. Every screen in lib/intakeScreens.ts needs an entry here.
 export const screenBodies: Record<string, React.ComponentType> = {
   notice: NoticeScreen,
   situation: SituationScreen,

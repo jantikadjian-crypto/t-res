@@ -126,9 +126,12 @@ function BalanceCard({ y }: { y: TaxYear }) {
             <div className="space-y-1">
               <p className="text-sm font-medium text-green-900">Possible savings</p>
               <p className="text-sm text-green-800">{y.reliefNote}</p>
-              <Link href="/intake/assessment" className="text-sm font-medium text-green-900 underline">
-                See our full assessment
-              </Link>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1">
+                <Link href="/intake/assessment" className="text-sm font-medium text-green-900 underline">
+                  See our full assessment
+                </Link>
+                <EAReviewedBadge />
+              </div>
             </div>
           </div>
         )}
@@ -208,7 +211,7 @@ export function TaxYearDetail({ year }: { year: number }) {
           iconClass="text-red-600"
           label="Total owed"
           value={formatMoney(totalOwed)}
-          caption={`Across ${taxYears.filter((t) => t.balance).length} years with a balance · see the plan`}
+          caption={`Across ${taxYears.filter((t) => t.balance).length} years · see the plan`}
           href="/intake/assessment"
         />
         <MetricTile
@@ -230,9 +233,9 @@ export function TaxYearDetail({ year }: { year: number }) {
         <MetricTile
           icon={Hourglass}
           iconClass="text-blue-600"
-          label="Earliest collection deadline"
+          label="Collection deadline"
           value={durationLabel(daysUntil(earliestCsed.csed))}
-          caption={`${earliestCsed.year} · ends ${formatDate(earliestCsed.csed)}`}
+          caption={`Earliest: ${earliestCsed.year} · ends ${formatDate(earliestCsed.csed)}`}
           href={`/tax-years/${earliestCsed.year}`}
         />
       </div>

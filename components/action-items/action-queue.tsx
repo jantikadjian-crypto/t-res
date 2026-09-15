@@ -171,10 +171,13 @@ export function ActionQueue() {
                           <FileUp aria-hidden />
                           Upload files
                         </Button>
-                        <Button variant="outline" onClick={() => document.getElementById(`camera-${item.id}`)?.click()}>
-                          <Camera aria-hidden />
-                          Take a photo
-                        </Button>
+                        {/* Only on phones and tablets, where it opens the camera. */}
+                        <span className="hidden pointer-coarse:contents">
+                          <Button variant="outline" onClick={() => document.getElementById(`camera-${item.id}`)?.click()}>
+                            <Camera aria-hidden />
+                            Take a photo
+                          </Button>
+                        </span>
                       </>
                     )}
                     {item.type === "approve-letter" &&

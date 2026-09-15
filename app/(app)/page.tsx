@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Clock, DollarSign, ListChecks, Scale, Upload } from "lucide-react";
+import type { Metadata } from "next";
+import { ArrowRight, Clock, DollarSign, ListChecks, Scale, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -10,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ActionItemsTile, NextStepsCard } from "@/components/dashboard/live-cards";
+import { ActionItemsTile, NextStepsCard, UrgencyBanner } from "@/components/dashboard/live-cards";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
 import { LinkButton } from "@/components/link-button";
 import { MetricTile } from "@/components/metric-tile";
@@ -28,6 +29,8 @@ import {
   yearBalance,
   yearNextStep,
 } from "@/lib/mockData";
+
+export const metadata: Metadata = { title: "Dashboard · T-Res" };
 
 export default function DashboardPage() {
   const stage = caseStages[currentStageIndex];
@@ -55,38 +58,8 @@ export default function DashboardPage() {
         }
       />
 
-      {/* Urgency banner */}
-      <div
-        role="alert"
-        className="flex flex-col gap-4 rounded-xl border border-red-200 bg-red-50 p-4 sm:flex-row sm:items-center"
-      >
-        <div className="flex flex-1 gap-3">
-          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-red-600" aria-hidden />
-          <div>
-            <p className="font-medium text-red-900">
-              Respond to your {nextNotice.code} by {formatDate(nextNotice.respondBy)} ·{" "}
-              {daysRemainingLabel(nextNotice.respondBy)}
-            </p>
-            <p className="mt-1 text-sm text-red-800">
-              {nextNotice.plainTitle}. This is fixable: we&apos;ve drafted your response and just need your
-              signature to send it.
-            </p>
-          </div>
-        </div>
-        <div className="flex shrink-0 flex-wrap gap-2 pl-8 sm:pl-0">
-          <LinkButton
-            href={`/notices/${nextNotice.id}`}
-            variant="outline"
-            className="border-red-200 bg-white text-red-700 hover:bg-red-100 hover:text-red-800"
-          >
-            What this means
-          </LinkButton>
-          <LinkButton href="/action-items" className="bg-red-600 text-white hover:bg-red-700">
-            Respond now
-            <ArrowRight aria-hidden />
-          </LinkButton>
-        </div>
-      </div>
+      {/* Urgency banner: follows the case as things get signed and approved */}
+      <UrgencyBanner />
 
       {/* Vitals: each opens what it describes */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -151,7 +124,7 @@ export default function DashboardPage() {
                             <span className="font-medium group-hover/year:text-primary group-hover/year:underline">{y.year}</span>
                             <StatusBadge tone={y.tone}>{y.statusLabel}</StatusBadge>
                           </div>
-                          <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{y.plainEnglish}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">{y.plainEnglish}</p>
                         </div>
                       </Link>
                       <div className="flex items-center justify-between gap-4 pl-5 sm:justify-end sm:pl-0">

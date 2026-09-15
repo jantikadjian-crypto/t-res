@@ -6,10 +6,12 @@ import {
   documentNotes,
   documents as seedDocuments,
   MOCK_TODAY,
+  notices as seedNotices,
   subscription,
   type ActionItem,
   type CaseDocument,
   type DocumentNote,
+  type Notice,
   type PlanStatus,
 } from "@/lib/mockData";
 
@@ -52,6 +54,8 @@ type CaseContextValue = {
   actions: ActionItem[];
   openActions: ActionItem[];
   completeAction: (actionId: string, file?: UploadedFile) => void;
+  notices: Notice[];
+  openNotices: Notice[];
   signatures: Record<string, SignatureRecord>;
   recordSignature: (record: SignatureRecord) => void;
   plan: PlanState;
@@ -198,6 +202,23 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
     [actions]
   );
 
+  // A notice needs action until every to-do tied to it is done. Then it's ours to handle.
+  const notices = useMemo(
+    () =>
+      seedNotices.map((n) => {
+        const related = actions.filter((a) => a.relatedNoticeId === n.id);
+        return n.status === "action-needed" && related.length > 0 && related.every((a) => a.done)
+          ? { ...n, status: "in-progress" as const, statusLabel: "We're handling it", tone: "warn" as const }
+          : n;
+      }),
+    [actions]
+  );
+
+  const openNotices = useMemo(
+    () => notices.filter((n) => n.status !== "closed").sort((a, b) => a.respondBy.localeCompare(b.respondBy)),
+    [notices]
+  );
+
   return (
     <CaseContext
       value={{
@@ -211,6 +232,8 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
         actions,
         openActions,
         completeAction,
+        notices,
+        openNotices,
         signatures,
         recordSignature,
         plan,

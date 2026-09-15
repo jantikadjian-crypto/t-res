@@ -46,8 +46,10 @@ const html = `<title>T-Res Taxpayer App</title>
 <meta name="description" content="Interactive progress build of the T-Res taxpayer app prototype.">
 <style>
 ${css}
-body { background: var(--canvas); }
-.tres-stamp { position: fixed; left: 16px; bottom: 16px; z-index: 50; max-width: min(28rem, calc(100vw - 32px)); display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: 12px; background: var(--foreground); color: var(--background); font-size: 12px; line-height: 1.35; box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.35); }
+body { background: var(--canvas); padding-bottom: 56px; }
+/* Small pill in the bottom-right corner; the page scrolls clear of it. */
+.tres-stamp { position: fixed; right: 16px; bottom: 16px; z-index: 50; max-width: min(22rem, calc(100vw - 32px)); display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 10px; border-radius: 999px; background: var(--foreground); color: var(--background); font-size: 11px; line-height: 1.3; box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.35); }
+.tres-stamp span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tres-stamp i { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; flex: none; }
 .tres-stamp button { flex: none; border: 0; background: transparent; color: inherit; opacity: .7; cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 6px; border-radius: 6px; }
 .tres-stamp button:hover, .tres-stamp button:focus-visible { opacity: 1; background: rgb(255 255 255 / .12); }
@@ -65,7 +67,7 @@ body { background: var(--canvas); }
 </script>
 ${
   stamp
-    ? `<div class="tres-stamp" role="status"><i></i><span>${escapeHtml(stamp)}</span><button type="button" aria-label="Dismiss">×</button></div>`
+    ? `<div class="tres-stamp" role="status"><i></i><span title="${escapeHtml(stamp).replace(/"/g, "&quot;")}">${escapeHtml(stamp)}</span><button type="button" aria-label="Dismiss">×</button></div>`
     : ""
 }
 <script>${js}</script>

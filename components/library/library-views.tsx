@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ExternalLink, Info } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EAReviewedBadge } from "@/components/ea-reviewed-badge";
 import { FormFiles } from "@/components/library/form-files";
@@ -138,10 +139,10 @@ export function LibraryEntryView({ slug }: { slug: string }) {
                   href={entry.irs.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-primary px-3.5 text-sm font-medium text-primary-foreground transition-colors outline-none hover:bg-primary/80 focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className={cn(buttonVariants({ size: "lg" }), "w-full")}
                 >
                   {entry.irs.label}
-                  <ExternalLink className="size-4" aria-hidden />
+                  <ExternalLink aria-hidden />
                 </a>
                 <p className="text-xs break-all text-muted-foreground">{entry.irs.url}</p>
               </CardContent>

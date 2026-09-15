@@ -23,7 +23,8 @@ export type NavItem = {
   urgent?: boolean;
 };
 
-export type NavGroup = { id: string; label: string; items: NavItem[] };
+// `sidebar: false` keeps a group out of the sidebar but still names its pages in breadcrumbs.
+export type NavGroup = { id: string; label: string; items: NavItem[]; sidebar?: boolean };
 
 const noticesNeedingAction = openNotices.filter((n) => n.status === "action-needed").length;
 
@@ -52,8 +53,10 @@ export const navGroups: NavGroup[] = [
     items: [{ href: "/library", label: "Library", icon: BookOpen }],
   },
   {
+    // Reached from the account menu (name, top right), not the sidebar.
     id: "account",
     label: "Account",
+    sidebar: false,
     items: [
       { href: "/settings", label: "Settings", icon: Settings },
       { href: "/settings/billing", label: "Billing & plan", icon: CreditCard },

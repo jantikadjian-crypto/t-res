@@ -16,7 +16,7 @@ const stagePct = Math.round(((currentStageIndex + 1) / caseStages.length) * 100)
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const activeHref = activeNavHref(pathname);
-  const { openActions } = useCase();
+  const { openActions, openNotices } = useCase();
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
   const nextAction = openActions[0];
 
@@ -47,7 +47,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </Link>
 
       <nav aria-label="Main" className="space-y-1">
-        {navGroups.map((group) => {
+        {navGroups.filter((group) => group.sidebar !== false).map((group) => {
           const open = !collapsedGroups.includes(group.id);
           return (
             <div key={group.id}>
@@ -67,8 +67,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               <div id={`nav-${group.id}`} hidden={!open} className="mt-1 space-y-1">
                 {group.items.map(({ href, label, icon: Icon, count, urgent }) => {
                   const active = href === activeHref;
-                  // Action items change as things get done this session.
-                  const shown = href === "/action-items" ? openActions.length : count;
+                  // Action items and notices change as things get done this session.
+                  const shown = href === "/action-items" ? openActions.length : href === "/notices" ? openNotices.length : count;
+                  const alert = href === "/notices" ? openNotices.some((n) => n.status === "action-needed") : urgent;
                   return (
                     <Link
                       key={href}
@@ -86,7 +87,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                         <span
                           className={cn(
                             "min-w-5 rounded-md border px-1.5 text-center text-xs font-semibold tabular-nums",
-                            urgent ? "border-red-200 bg-red-50 text-red-600" : "border-transparent bg-muted text-muted-foreground"
+                            alert ? "border-red-200 bg-red-50 text-red-600" : "border-transparent bg-muted text-muted-foreground"
                           )}
                         >
                           {shown}

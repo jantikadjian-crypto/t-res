@@ -150,10 +150,13 @@ export function NoticeScreen() {
             <FileUp aria-hidden />
             Upload a PDF
           </Button>
-          <Button variant="outline" onClick={() => cameraRef.current?.click()}>
-            <Camera aria-hidden />
-            Take a photo
-          </Button>
+          {/* Only on phones and tablets, where it opens the camera. */}
+          <span className="hidden pointer-coarse:contents">
+            <Button variant="outline" onClick={() => cameraRef.current?.click()}>
+              <Camera aria-hidden />
+              Take a photo
+            </Button>
+          </span>
           <Button variant="ghost" onClick={() => receive("sample-letter.pdf")}>
             Try a sample letter
           </Button>
