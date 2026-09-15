@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ChevronDown, Inbox, LayoutDashboard, LogOut, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
+import { ChevronDown, Inbox, LayoutDashboard, LogOut, ShieldCheck, UserRound, Users, type LucideIcon } from "lucide-react";
 import { useCase } from "@/components/case-provider";
 import { useProSession } from "@/components/pro/pro-session";
-import { practitioner, taxpayer } from "@/lib/mockData";
+import { practitioner, proClients, taxpayer } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export function ProWordmark({ className }: { className?: string }) {
@@ -26,9 +26,14 @@ const initials = practitioner.name
   .join("")
   .slice(0, 2);
 
-const pageTitles: Record<string, string> = { "/pro": "Today" };
+const pageTitle = (pathname: string) =>
+  pathname === "/pro" ? "Today" : pathname === "/pro/clients" ? "Clients" : pathname.startsWith("/pro/clients/") ? "Client" : "T-Res Pro";
 
-type NavItem = { href: string; label: string; icon: LucideIcon; count?: number; note?: string };
+// `alert`: the count means something is waiting (yellow); otherwise it's just a total.
+type NavItem = { href: string; label: string; icon: LucideIcon; count?: number; note?: string; alert?: boolean };
+
+const isActive = (pathname: string, href: string) =>
+  href === "/pro" ? pathname === "/pro" : pathname === href || pathname.startsWith(`${href}/`);
 
 const itemClass =
   "flex h-9 items-center gap-2 rounded-md pr-2 pl-4 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -59,7 +64,8 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
 
   const nav: NavItem[] = [
     { href: "/pro", label: "Today", icon: LayoutDashboard },
-    { href: "/plcy", label: "Approvals", icon: Inbox, count: pending, note: "in PLCY" },
+    { href: "/pro/clients", label: "Clients", icon: Users, count: proClients.length },
+    { href: "/plcy", label: "Approvals", icon: Inbox, count: pending, note: "in PLCY", alert: true },
   ];
 
   const signOutNow = () => {
@@ -86,8 +92,8 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
         </div>
 
         <nav aria-label="T-Res Pro" className="space-y-1">
-          {nav.map(({ href, label, icon: Icon, count, note }) => {
-            const active = pathname === href;
+          {nav.map(({ href, label, icon: Icon, count, note, alert }) => {
+            const active = isActive(pathname, href);
             return (
               <Link
                 key={href}
@@ -104,7 +110,7 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
                   <span
                     className={cn(
                       "min-w-5 rounded-md border px-1.5 text-center text-xs font-semibold tabular-nums",
-                      count > 0 ? "border-yellow-200 bg-yellow-50 text-yellow-700" : "border-transparent bg-muted text-muted-foreground"
+                      alert && count > 0 ? "border-yellow-200 bg-yellow-50 text-yellow-700" : "border-transparent bg-muted text-muted-foreground"
                     )}
                   >
                     {count}
@@ -131,7 +137,7 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
               <Link href="/pro" className="md:hidden" aria-label="T-Res Pro, Today">
                 <ProWordmark />
               </Link>
-              <span className="hidden text-sm font-medium md:inline">{pageTitles[pathname] ?? "T-Res Pro"}</span>
+              <span className="hidden text-sm font-medium md:inline">{pageTitle(pathname)}</span>
             </div>
 
             <div className="relative">

@@ -1689,3 +1689,263 @@ export const proLaneSuggestions = [
 
 // This week across the practice, from PLCY.
 export const proWeek = { aiActions: 214, handledByPolicy: 206, eaMinutes: 110 };
+
+// One fictional client's case from the professional's side (Jordan's is built live instead).
+export type ProAuthorization = { form: string; what: string; status: string; date?: string; tone: Tone };
+export type ProAiOutcome = "Auto-approved" | "Approved by you" | "Resolved by you" | "Waiting for you" | "Flagged" | "Routed to you";
+export type ProClientDetail = {
+  since: string;
+  plan: string;
+  years: string;
+  authorizations: ProAuthorization[];
+  timeline: { date: string; text: string; tone: Tone }[];
+  documents: { name: string; date: string; source: "Client" | "T-Res" | "IRS" }[];
+  // `queueId`: the queue item this AI action waits on; once it's done, the outcome becomes `doneOutcome`.
+  aiActions: { date: string; title: string; outcome: ProAiOutcome; queueId?: string; doneOutcome?: ProAiOutcome }[];
+};
+
+const auth8821 = (date: string): ProAuthorization => ({
+  form: "Form 8821",
+  what: "Lets T-Res see the IRS records (read-only)",
+  status: "Signed",
+  date,
+  tone: "good",
+});
+const auth2848 = (date: string): ProAuthorization => ({
+  form: "Form 2848",
+  what: "Lets you represent the client before the IRS",
+  status: "Signed",
+  date,
+  tone: "good",
+});
+const auth2848NotNeeded: ProAuthorization = {
+  form: "Form 2848",
+  what: "Lets you represent the client before the IRS",
+  status: "Not needed: doing it themselves",
+  tone: "neutral",
+};
+
+export const proClientDetails: Record<string, ProClientDetail> = {
+  marcus: {
+    since: "2026-08-20",
+    plan: "Full Resolution",
+    years: "2020–2021",
+    authorizations: [auth8821("2026-08-20"), auth2848("2026-09-13")],
+    timeline: [
+      { date: "2026-08-20", text: "Started with T-Res in the self-serve lane", tone: "neutral" },
+      { date: "2026-09-02", text: "Payment plan answers prepared", tone: "neutral" },
+      { date: "2026-09-13", text: "LT11 arrived; case moved to you by PLCY", tone: "bad" },
+      { date: "2026-09-13", text: "Form 2848 signed", tone: "good" },
+      { date: "2026-09-14", text: "Hearing request (Form 12153) drafted and checked", tone: "warn" },
+    ],
+    documents: [
+      { name: "LT11 – Final Notice of Intent to Levy.pdf", date: "2026-09-13", source: "Client" },
+      { name: "Form 2848 (signed).pdf", date: "2026-09-13", source: "T-Res" },
+      { name: "Form 12153 – Hearing request (draft).pdf", date: "2026-09-14", source: "T-Res" },
+    ],
+    aiActions: [
+      { date: "2026-09-14", title: "Hearing request drafted", outcome: "Waiting for you", queueId: "q_marcus", doneOutcome: "Approved by you" },
+      { date: "2026-09-13", title: "Moved to you: final levy notice", outcome: "Routed to you" },
+      { date: "2026-09-13", title: "LT11 explained in plain English", outcome: "Auto-approved" },
+    ],
+  },
+  priya: {
+    since: "2026-07-15",
+    plan: "Full Resolution",
+    years: "2019–2021",
+    authorizations: [auth8821("2026-07-15"), auth2848("2026-07-16")],
+    timeline: [
+      { date: "2026-07-15", text: "Started with T-Res", tone: "neutral" },
+      { date: "2026-09-12", text: "Employer received a wage levy (Form 668-W)", tone: "bad" },
+      { date: "2026-09-13", text: "Hardship case and call sheet prepared", tone: "warn" },
+    ],
+    documents: [
+      { name: "Form 668-W copy (from employer).pdf", date: "2026-09-12", source: "Client" },
+      { name: "Pay stubs, Aug–Sep.pdf", date: "2026-09-12", source: "Client" },
+      { name: "Money snapshot (433-F figures).pdf", date: "2026-09-13", source: "T-Res" },
+    ],
+    aiActions: [
+      { date: "2026-09-13", title: "Call sheet prepared: levy release for hardship", outcome: "Waiting for you", queueId: "q_priya", doneOutcome: "Resolved by you" },
+      { date: "2026-09-13", title: "Pay stubs read and matched to the money snapshot", outcome: "Auto-approved" },
+    ],
+  },
+  daniel: {
+    since: "2026-08-28",
+    plan: "Guided",
+    years: "2020–2022",
+    authorizations: [auth8821("2026-08-28"), auth2848NotNeeded],
+    timeline: [
+      { date: "2026-08-28", text: "Started with T-Res in the self-serve lane", tone: "neutral" },
+      { date: "2026-09-10", text: "2022 return e-filed", tone: "good" },
+      { date: "2026-09-14", text: "Payment plan set up online; confirmation uploaded", tone: "neutral" },
+      { date: "2026-09-14", text: "Confirmation didn't match the answers we gave; flagged to you", tone: "warn" },
+    ],
+    documents: [
+      { name: "Payment plan confirmation.pdf", date: "2026-09-14", source: "Client" },
+      { name: "2022 Form 1040 (e-filed).pdf", date: "2026-09-10", source: "T-Res" },
+    ],
+    aiActions: [
+      { date: "2026-09-14", title: "Payment plan confirmation checked", outcome: "Flagged", queueId: "q_daniel", doneOutcome: "Resolved by you" },
+      { date: "2026-09-10", title: "2022 return prepared", outcome: "Auto-approved" },
+    ],
+  },
+  grace: {
+    since: "2026-09-01",
+    plan: "Full Resolution",
+    years: "2022",
+    authorizations: [auth8821("2026-09-01"), auth2848("2026-09-02")],
+    timeline: [
+      { date: "2026-08-29", text: "CP2000 for 2022 received", tone: "warn" },
+      { date: "2026-09-01", text: "Started with T-Res", tone: "neutral" },
+      { date: "2026-09-11", text: "Brokerage statement uploaded", tone: "neutral" },
+      { date: "2026-09-12", text: "Response letter drafted", tone: "warn" },
+    ],
+    documents: [
+      { name: "CP2000 – Proposed changes to 2022.pdf", date: "2026-09-01", source: "Client" },
+      { name: "Brokerage 1099-B, 2022.pdf", date: "2026-09-11", source: "Client" },
+      { name: "CP2000 response (draft).pdf", date: "2026-09-12", source: "T-Res" },
+    ],
+    aiActions: [
+      { date: "2026-09-12", title: "CP2000 response letter drafted", outcome: "Waiting for you", queueId: "q_grace", doneOutcome: "Approved by you" },
+      { date: "2026-09-01", title: "CP2000 explained in plain English", outcome: "Auto-approved" },
+    ],
+  },
+  tom: {
+    since: MOCK_TODAY,
+    plan: "Not chosen yet",
+    years: "2022–2023",
+    authorizations: [
+      auth8821(MOCK_TODAY),
+      { form: "Form 2848", what: "Lets you represent the client before the IRS", status: "Not signed: lane not chosen yet", tone: "warn" },
+    ],
+    timeline: [
+      { date: MOCK_TODAY, text: "Finished Get Started", tone: "neutral" },
+      { date: MOCK_TODAY, text: "Assessment ready for your approval", tone: "warn" },
+    ],
+    documents: [
+      { name: "Pay stubs, Aug–Sep.pdf", date: MOCK_TODAY, source: "Client" },
+      { name: "2022 and 2023 wage & income transcripts.pdf", date: MOCK_TODAY, source: "IRS" },
+    ],
+    aiActions: [
+      { date: MOCK_TODAY, title: "Assessment: payment plan about $310 a month", outcome: "Waiting for you", queueId: "q_tom", doneOutcome: "Approved by you" },
+      { date: MOCK_TODAY, title: "Self-serve eligibility: qualifies", outcome: "Auto-approved" },
+    ],
+  },
+  aisha: {
+    since: "2026-06-10",
+    plan: "Full Resolution",
+    years: "2017–2021",
+    authorizations: [auth8821("2026-06-10"), auth2848("2026-06-10")],
+    timeline: [
+      { date: "2026-06-10", text: "Started with T-Res", tone: "neutral" },
+      { date: "2026-07-02", text: "Financial statement (Form 433-A) gathered", tone: "neutral" },
+      { date: "2026-08-15", text: "Offer in Compromise chosen over a payment plan", tone: "neutral" },
+      { date: "2026-09-10", text: "Offer package drafted", tone: "warn" },
+    ],
+    documents: [
+      { name: "Form 433-A (draft).pdf", date: "2026-09-10", source: "T-Res" },
+      { name: "Form 656 – Offer in Compromise (draft).pdf", date: "2026-09-10", source: "T-Res" },
+      { name: "Bank statements, Apr–Jun.pdf", date: "2026-07-02", source: "Client" },
+    ],
+    aiActions: [
+      { date: "2026-09-10", title: "Offer package drafted", outcome: "Waiting for you", queueId: "q_aisha", doneOutcome: "Approved by you" },
+      { date: "2026-08-14", title: "Reasonable collection potential worked out", outcome: "Auto-approved" },
+    ],
+  },
+  robert: {
+    since: "2026-03-02",
+    plan: "Full Resolution",
+    years: "2021–2022",
+    authorizations: [auth8821("2026-03-02"), auth2848("2026-03-02")],
+    timeline: [
+      { date: "2026-03-02", text: "Started with T-Res", tone: "neutral" },
+      { date: "2026-04-10", text: "Payment plan approved: about $260 a month", tone: "good" },
+      { date: "2026-09-05", text: "Plan payment made on time", tone: "good" },
+      { date: "2026-09-08", text: "Now qualifies to do it themselves", tone: "neutral" },
+    ],
+    documents: [
+      { name: "Payment plan approval letter.pdf", date: "2026-04-10", source: "IRS" },
+      { name: "Form 433-D – Direct debit agreement.pdf", date: "2026-04-12", source: "T-Res" },
+    ],
+    aiActions: [
+      { date: "2026-09-08", title: "Self-serve eligibility: now qualifies", outcome: "Auto-approved" },
+      { date: "2026-09-05", title: "Plan payment checked: on time", outcome: "Auto-approved" },
+    ],
+  },
+  maya: {
+    since: "2026-05-18",
+    plan: "Guided",
+    years: "2022–2023",
+    authorizations: [auth8821("2026-05-18"), auth2848NotNeeded],
+    timeline: [
+      { date: "2026-05-18", text: "Started with T-Res in the self-serve lane", tone: "neutral" },
+      { date: "2026-06-01", text: "Payment plan set up online", tone: "good" },
+      { date: "2026-09-02", text: "Plan payment made on time", tone: "good" },
+      { date: "2026-09-09", text: "CP521 reminder explained", tone: "neutral" },
+    ],
+    documents: [
+      { name: "Payment plan confirmation.pdf", date: "2026-06-01", source: "Client" },
+      { name: "CP521 – Payment plan reminder.pdf", date: "2026-09-09", source: "Client" },
+    ],
+    aiActions: [
+      { date: "2026-09-09", title: "CP521 explained in plain English", outcome: "Auto-approved" },
+      { date: "2026-06-01", title: "Payment plan confirmation checked", outcome: "Auto-approved" },
+    ],
+  },
+  samuel: {
+    since: "2026-08-05",
+    plan: "Guided",
+    years: "2022",
+    authorizations: [auth8821("2026-08-05"), auth2848NotNeeded],
+    timeline: [
+      { date: "2026-08-05", text: "Started with T-Res in the self-serve lane", tone: "neutral" },
+      { date: "2026-09-01", text: "2022 return e-filed", tone: "good" },
+      { date: "2026-09-06", text: "Payment plan requested online", tone: "neutral" },
+    ],
+    documents: [
+      { name: "2022 Form 1040 (e-filed).pdf", date: "2026-09-01", source: "T-Res" },
+      { name: "CP71C – Annual reminder.pdf", date: "2026-08-05", source: "Client" },
+    ],
+    aiActions: [
+      { date: "2026-09-01", title: "2022 return prepared", outcome: "Auto-approved" },
+      { date: "2026-08-05", title: "CP71C explained in plain English", outcome: "Auto-approved" },
+    ],
+  },
+  elena: {
+    since: "2026-04-22",
+    plan: "Full Resolution",
+    years: "2020–2022",
+    authorizations: [auth8821("2026-04-22"), auth2848("2026-04-22")],
+    timeline: [
+      { date: "2026-04-22", text: "Started with T-Res", tone: "neutral" },
+      { date: "2026-06-15", text: "Money snapshot: nothing left over each month", tone: "warn" },
+      { date: "2026-07-20", text: "Collection pause (Currently Not Collectible) requested", tone: "neutral" },
+      { date: "2026-08-30", text: "Waiting on the IRS decision", tone: "neutral" },
+    ],
+    documents: [
+      { name: "Form 433-F – Collection information statement.pdf", date: "2026-07-18", source: "T-Res" },
+      { name: "CP503 – Second reminder.pdf", date: "2026-04-22", source: "Client" },
+    ],
+    aiActions: [
+      { date: "2026-07-18", title: "Money snapshot checked against IRS living-expense standards", outcome: "Auto-approved" },
+      { date: "2026-04-22", title: "CP503 explained in plain English", outcome: "Auto-approved" },
+    ],
+  },
+  nina: {
+    since: "2025-11-03",
+    plan: "Resolution + Protection",
+    years: "2019–2020",
+    authorizations: [auth8821("2025-11-03"), auth2848("2025-11-03")],
+    timeline: [
+      { date: "2025-11-03", text: "Started with T-Res", tone: "neutral" },
+      { date: "2026-01-15", text: "Paid in full", tone: "good" },
+      { date: "2026-03-02", text: "Lien withdrawal approved", tone: "good" },
+      { date: "2026-09-01", text: "Monthly transcript check: no changes", tone: "good" },
+    ],
+    documents: [
+      { name: "Form 10916(c) – Lien withdrawal.pdf", date: "2026-03-02", source: "IRS" },
+      { name: "2020 account transcript.pdf", date: "2026-09-01", source: "IRS" },
+    ],
+    aiActions: [{ date: "2026-09-01", title: "Monthly transcript check", outcome: "Auto-approved" }],
+  },
+};

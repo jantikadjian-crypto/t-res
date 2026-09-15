@@ -20,6 +20,8 @@ import { NoticeCenter } from "@/components/notices/notice-center";
 import { GovernanceInbox } from "@/components/plcy/governance-inbox";
 import { GovernanceItemView } from "@/components/plcy/governance-item";
 import { PlcyFrame } from "@/components/plcy/plcy-frame";
+import { ProClientView } from "@/components/pro/pro-client";
+import { ProClients } from "@/components/pro/pro-clients";
 import { ProFrame } from "@/components/pro/pro-frame";
 import { ProLogin } from "@/components/pro/pro-login";
 import { ProSessionProvider } from "@/components/pro/pro-session";
@@ -106,7 +108,19 @@ function route(pathname: string): ReactNode {
   if (section === "pro") {
     return (
       <ProFrame>
-        <Fragment key={pathname}>{detail === "login" ? <ProLogin /> : <ProToday />}</Fragment>
+        <Fragment key={pathname}>
+          {detail === "login" ? (
+            <ProLogin />
+          ) : detail === "clients" ? (
+            extra ? (
+              <ProClientView id={extra} />
+            ) : (
+              <ProClients />
+            )
+          ) : (
+            <ProToday />
+          )}
+        </Fragment>
       </ProFrame>
     );
   }

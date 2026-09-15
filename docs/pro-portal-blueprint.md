@@ -210,3 +210,8 @@ with clients, calendar sync, practitioner billing and payouts, and more than one
   first; fictional clients' items open in place with one action, Jordan's open their real PLCY review), Done today,
   deadlines for the next 30 days (widened from 14 so hearing deadlines show), lane changes, governance health and the
   caseload table with filters. Jordan's row, queue items and deadlines are live.
+- **Chunk 3 (Clients): built 2026-09-15.** `/pro/clients` (lane filters with counts, search, sort) and
+  `/pro/clients/[id]`: what needs you for this client (same in-place previews), tiles, timeline, documents,
+  authorizations, AI actions on the PLCY record, and the lane (with the self-serve suggestion where it applies).
+  Jordan's page is live; fictional clients have short case histories (`proClientDetails`). Today's caseload is now
+  compact and links through. Shared logic lives in `useProWorkspace()`.
