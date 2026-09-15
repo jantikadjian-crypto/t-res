@@ -3,7 +3,7 @@
 The first thing a new taxpayer sees. It turns "I got a scary letter" into a case with a plan,
 a price, and a to-do list. Target: about 10 minutes, on a phone.
 
-Status: **scope agreed 2026-09-14, not built.** Jordan Reyes' answers live in `lib/mockData.ts` →
+Status: **built 2026-09-14, all 13 screens** (pricing still placeholder). Jordan Reyes' answers live in `lib/mockData.ts` →
 `intakeAnswers`; every example below uses them.
 
 ## Decisions (agreed with Jack, 2026-09-14)

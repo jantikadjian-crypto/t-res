@@ -649,7 +649,7 @@ export type IntakeAnswers = {
     recommendedPath: string;
     estimatedMonthly: number;
     summary: string;
-    alsoDoing: string[];
+    alsoDoing: { text: string; href: string }[];
     ruledOut: { option: string; why: string }[];
     eaReviewed: boolean;
   };
@@ -689,9 +689,9 @@ export const intakeAnswers: IntakeAnswers = {
     summary:
       "You owe about $21,000 for 2021–2022, and we estimate about $4,900 more for 2023 once it's filed. With about $910 left over each month, a payment plan of roughly $440 a month over six years is the most realistic path, and it stops collection.",
     alsoDoing: [
-      "File your 2023 return first — the IRS won't approve a plan until every year is filed.",
-      "Ask for First-Time Penalty Abatement on 2021, which could save $2,310.",
-      "Pay about $900 up front to get under $25,000, so we can ask for the lien to be withdrawn.",
+      { text: "File your 2023 return first — the IRS won't approve a plan until every year is filed.", href: "/tax-years/2023" },
+      { text: "Ask for First-Time Penalty Abatement on 2021, which could save $2,310.", href: "/tax-years/2021" },
+      { text: "Pay about $900 up front to get under $25,000, so we can ask for the lien to be withdrawn.", href: "/documents/doc_668y" },
     ],
     ruledOut: [
       {
