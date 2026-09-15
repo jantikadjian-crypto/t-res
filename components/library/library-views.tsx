@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ExternalLink, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, Info, MessageCircleQuestionMark } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { GovernanceBadge } from "@/components/governance-badge";
@@ -18,6 +18,12 @@ export function LibraryView() {
       <PageHeader
         title="Library"
         description="Plain-English definitions of the IRS forms, notices and terms in your case, with printable IRS copies and links to IRS.gov."
+        actions={
+          <LinkButton href="/questions" variant="outline">
+            <MessageCircleQuestionMark aria-hidden />
+            Questions & answers
+          </LinkButton>
+        }
       />
       <LibraryBrowser />
     </>

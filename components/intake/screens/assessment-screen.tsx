@@ -304,6 +304,10 @@ export function AssessmentScreen() {
               : "You never have to call the IRS. You can switch to doing it yourself later if your situation allows."}
           </p>
         </div>
+        <Link href="/questions" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+          Questions about either option? See the answers
+          <ArrowRight className="size-3" aria-hidden />
+        </Link>
       </section>
 
       <section className="space-y-3 rounded-xl border bg-card p-5" aria-labelledby="assess-also">

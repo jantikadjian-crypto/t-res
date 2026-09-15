@@ -1,5 +1,6 @@
 // "Search everything": one index of pages, case data, the Library, settings and the wizard.
 // When you add a page or a new kind of data, add it here so it can be found.
+import { faqGroups } from "@/lib/faq";
 import { formatMoney } from "@/lib/format";
 import { intakeScreens, intakeSteps } from "@/lib/intakeScreens";
 import { libraryEntries, libraryFiles } from "@/lib/library";
@@ -17,10 +18,10 @@ import {
   type Notice,
 } from "@/lib/mockData";
 
-export type SearchKind = "Page" | "Notice" | "To-do" | "Document" | "Note" | "Tax year" | "Library" | "Settings" | "Get Started";
+export type SearchKind = "Page" | "Notice" | "To-do" | "Document" | "Note" | "Tax year" | "Library" | "Q&A" | "Settings" | "Get Started";
 
 // Tie-break order when two results score the same.
-const KIND_ORDER: SearchKind[] = ["Page", "Notice", "To-do", "Document", "Note", "Tax year", "Library", "Settings", "Get Started"];
+const KIND_ORDER: SearchKind[] = ["Page", "Notice", "To-do", "Document", "Note", "Tax year", "Library", "Q&A", "Settings", "Get Started"];
 
 export type SearchItem = {
   id: string;
@@ -40,6 +41,7 @@ const pages: SearchItem[] = [
   { id: "page-my-documents", kind: "Page", title: "My documents", subtitle: "Files you've uploaded", href: "/documents/mine", keywords: "my uploads" },
   { id: "page-waiting", kind: "Page", title: "Documents waiting on you", subtitle: "To sign, approve or upload", href: "/documents/waiting", keywords: "requested missing signature" },
   { id: "page-library", kind: "Page", title: "Library", subtitle: "IRS forms, notices and terms explained", href: "/library", keywords: "glossary definitions help reference irs forms" },
+  { id: "page-questions", kind: "Page", title: "Questions & answers", subtitle: "Straight answers for both ways of working with us", href: "/questions", keywords: "faq help questions answers concerns worried" },
   { id: "page-intake", kind: "Page", title: "Get Started", subtitle: "Your intake answers", href: "/intake/notice", keywords: "onboarding wizard intake questions" },
 ];
 
@@ -117,6 +119,16 @@ export function staticSearchItems(): SearchItem[] {
       href: `/library/${e.slug}`,
       keywords: `${e.aliases.join(" ")} ${e.kind} ${e.definition} ${e.forYou ?? ""}${libraryFiles[e.slug] ? " pdf printable download blank form sample" : ""}`,
     })),
+    ...faqGroups.flatMap((g) =>
+      g.items.map<SearchItem>((i) => ({
+        id: `faq-${i.id}`,
+        kind: "Q&A",
+        title: i.q,
+        subtitle: `Questions & answers · ${g.title}`,
+        href: `/questions#q-${i.id}`,
+        keywords: [...i.a, i.forYou ?? ""].join(" "),
+      }))
+    ),
     ...settings,
     ...intakeScreens.map<SearchItem>((s) => ({
       id: `intake-${s.slug}`,

@@ -10,6 +10,7 @@ import {
   FileWarning,
   LayoutGrid,
   ListChecks,
+  MessageCircleQuestionMark,
   MessageSquare,
   Rocket,
   Search,
@@ -28,6 +29,7 @@ const kindIcons: Record<SearchKind, LucideIcon> = {
   Note: MessageSquare,
   "Tax year": CalendarRange,
   Library: BookOpen,
+  "Q&A": MessageCircleQuestionMark,
   Settings: Settings,
   "Get Started": Rocket,
 };
@@ -38,6 +40,7 @@ const QUICK_LINKS: SearchItem[] = [
   { id: "quick-dashboard", kind: "Page", title: "Dashboard", href: "/" },
   { id: "quick-documents", kind: "Page", title: "Documents", href: "/documents" },
   { id: "quick-library", kind: "Page", title: "Library", href: "/library" },
+  { id: "quick-questions", kind: "Q&A", title: "Questions & answers", href: "/questions" },
   { id: "quick-billing", kind: "Settings", title: "Billing & plan", href: "/settings/billing" },
 ];
 

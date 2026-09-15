@@ -7,6 +7,7 @@ import {
   FolderOpen,
   Home,
   ListChecks,
+  MessageCircleQuestionMark,
   Rocket,
   Settings,
   type LucideIcon,
@@ -50,7 +51,10 @@ export const navGroups: NavGroup[] = [
   {
     id: "resources",
     label: "Resources",
-    items: [{ href: "/library", label: "Library", icon: BookOpen }],
+    items: [
+      { href: "/library", label: "Library", icon: BookOpen },
+      { href: "/questions", label: "Questions & answers", icon: MessageCircleQuestionMark },
+    ],
   },
   {
     // Reached from the account menu (name, top right), not the sidebar.
@@ -90,6 +94,8 @@ const segmentLabels: Record<string, string> = {
   notifications: "Notifications",
   security: "Security",
   cancel: "Cancel plan",
+  "self-serve": "Doing it yourself",
+  "full-support": "Full support",
 };
 
 function segmentLabel(section: string, segment: string): string {

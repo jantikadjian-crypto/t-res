@@ -11,6 +11,7 @@ import { CaseProvider } from "@/components/case-provider";
 import type { DocumentView } from "@/components/documents/document-library";
 import { DocumentDetail } from "@/components/documents/document-detail";
 import { DocumentsView } from "@/components/documents/documents-view";
+import { FaqView } from "@/components/faq/faq-view";
 import { IntakeFrame } from "@/components/intake/intake-frame";
 import { IntakeProvider } from "@/components/intake/intake-provider";
 import { screenBodies } from "@/components/intake/screen-bodies";
@@ -67,6 +68,8 @@ function page(pathname: string, section?: string, detail?: string, extra?: strin
           )}
         </SettingsLayout>
       );
+    case "questions":
+      return <FaqView tab={detail === "self-serve" || detail === "full-support" ? detail : "all"} />;
     case "library":
       return detail ? <LibraryEntryView slug={detail} /> : <LibraryView />;
     default:
