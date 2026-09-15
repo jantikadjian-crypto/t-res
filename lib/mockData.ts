@@ -493,10 +493,40 @@ export const documents: CaseDocument[] = [
     id: "doc_bank", name: "Bank statements (Jun–Aug 2026)", category: "Financial", source: "You", addedOn: "2026-09-07", sizeKb: 0, status: "requested", relatedActionId: "act_bank",
     summary: "Your Ally Bank statements for June, July and August 2026. The IRS uses them to set a payment you can afford.",
   },
+  {
+    id: "doc_paystub_0829", name: "Pay stub – Aug 29, 2026.jpg", fileName: "IMG_2044.jpg", category: "Financial", source: "You", addedOn: "2026-09-13", sizeKb: 2310, status: "in-review",
+    summary: "Your most recent pay stub from Lone Star Logistics. The IRS uses recent pay stubs to confirm your take-home pay.",
+  },
+  {
+    id: "doc_paystub_0815", name: "Pay stub – Aug 15, 2026.pdf", category: "Financial", source: "You", addedOn: "2026-09-13", sizeKb: 184, status: "in-review",
+    summary: "Your pay stub from two weeks earlier. Two recent stubs show the IRS what you usually earn.",
+  },
+  {
+    id: "doc_carloan", name: "Honda Financial – Loan Statement Aug 2026.pdf", category: "Financial", source: "You", addedOn: "2026-09-11", sizeKb: 132, status: "on-file",
+    summary: "Shows you still owe $9,800 on your 2019 Honda Civic. The IRS only counts the part of the car you own outright.",
+  },
 ];
 
 // Notes on documents, shared between Jordan and the Enrolled Agent. Keyed by document id.
 export const documentNotes: Record<string, DocumentNote[]> = {
+  doc_paystub_0829: [
+    {
+      id: "note-ps0829-1",
+      author: "you",
+      date: "2026-09-13",
+      text: "Took this photo in the ADP app. It includes 6 hours of overtime, so it's a bit higher than a normal check.",
+      editedOn: "2026-09-13",
+    },
+  ],
+  doc_carloan: [
+    { id: "note-carloan-1", author: "you", date: "2026-09-11", text: "The payment is $465 a month, auto-debited on the 3rd." },
+    {
+      id: "note-carloan-2",
+      author: "ea",
+      date: "2026-09-12",
+      text: "Got it, thanks. That matches what you told us in your money snapshot.",
+    },
+  ],
   doc_cp504: [
     { id: "note-cp504-1", author: "you", date: "2026-09-04", text: "Got this in the mail on Sep 2. The envelope said FINAL NOTICE in red." },
     {
