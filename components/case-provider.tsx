@@ -56,7 +56,8 @@ type CaseContextValue = {
   notesFor: (docId: string) => DocumentNote[];
   addDocuments: (added: CaseDocument[]) => void;
   attachFile: (docId: string, file: UploadedFile) => void;
-  addNote: (docId: string, text: string) => void;
+  // `author` is "you" (the taxpayer) unless T-Res Pro adds the note as Chris.
+  addNote: (docId: string, text: string, author?: DocumentNote["author"]) => void;
   editNote: (docId: string, noteId: string, text: string) => void;
   deleteNote: (docId: string, noteId: string) => void;
   actions: ActionItem[];
@@ -173,8 +174,8 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
     [markDone]
   );
 
-  const addNote = useCallback((docId: string, text: string) => {
-    const note: DocumentNote = { id: `note-${Date.now()}`, author: "you", date: MOCK_TODAY, text };
+  const addNote = useCallback((docId: string, text: string, author: DocumentNote["author"] = "you") => {
+    const note: DocumentNote = { id: `note-${Date.now()}`, author, date: MOCK_TODAY, text };
     setNotes((prev) => ({ ...prev, [docId]: [...(prev[docId] ?? []), note] }));
   }, []);
 

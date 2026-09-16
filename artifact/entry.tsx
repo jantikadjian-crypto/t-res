@@ -28,6 +28,9 @@ import { ProFrame } from "@/components/pro/pro-frame";
 import { ProLogin } from "@/components/pro/pro-login";
 import { ProSessionProvider } from "@/components/pro/pro-session";
 import { ProToday } from "@/components/pro/pro-today";
+import { ProDashboard } from "@/components/pro/pro-dashboard";
+import { ProDocuments } from "@/components/pro/documents/pro-documents";
+import { ProDocumentView } from "@/components/pro/documents/pro-document-view";
 import { ProBilling } from "@/components/pro/settings/pro-billing";
 import { ProFirmSettings } from "@/components/pro/settings/pro-firm-settings";
 import { ProNotificationSettings } from "@/components/pro/settings/pro-notification-settings";
@@ -123,6 +126,14 @@ function route(pathname: string): ReactNode {
               <ProClientView id={extra} />
             ) : (
               <ProClients />
+            )
+          ) : detail === "dashboard" ? (
+            <ProDashboard />
+          ) : detail === "documents" ? (
+            extra ? (
+              <ProDocumentView id={extra} />
+            ) : (
+              <ProDocuments />
             )
           ) : detail === "approvals" ? (
             extra ? (

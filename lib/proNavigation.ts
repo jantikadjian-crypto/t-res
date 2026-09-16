@@ -1,7 +1,8 @@
 // One map of T-Res Pro: the sidebar, the breadcrumbs and Pro search all read from here.
 // The taxpayer side's equivalent is lib/navigation.ts.
-import { CreditCard, Inbox, LayoutDashboard, Settings, ShieldCheck, Users, type LucideIcon } from "lucide-react";
+import { ChartColumn, CreditCard, FolderOpen, Inbox, LayoutDashboard, Settings, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 import { governanceItems, laterGovernanceItems, proClients, proQueue } from "@/lib/mockData";
+import { proDocumentName } from "@/lib/proDocuments";
 import type { Crumb } from "@/lib/navigation";
 
 // `sidebar: false` keeps an item out of the sidebar but still names its pages in breadcrumbs.
@@ -9,7 +10,9 @@ export type ProNavItem = { href: string; label: string; icon: LucideIcon; note?:
 
 export const proNav: ProNavItem[] = [
   { href: "/pro", label: "Today", icon: LayoutDashboard },
+  { href: "/pro/dashboard", label: "Dashboard", icon: ChartColumn },
   { href: "/pro/clients", label: "Clients", icon: Users },
+  { href: "/pro/documents", label: "Documents", icon: FolderOpen },
   { href: "/pro/approvals", label: "Approvals", icon: Inbox },
   // PLCY has its own frame, so this one leaves T-Res Pro.
   { href: "/plcy", label: "Governance", icon: ShieldCheck, note: "PLCY" },
@@ -39,6 +42,7 @@ const reviewTitle = (id: string) =>
   [...governanceItems, ...laterGovernanceItems, ...proQueue].find((r) => r.id === id)?.title;
 
 function segmentLabel(sectionHref: string, segment: string): string {
+  if (sectionHref === "/pro/documents") return proDocumentName(segment) ?? "Document";
   if (sectionHref === "/pro/clients") return proClients.find((c) => c.id === segment)?.name ?? "Client";
   if (sectionHref === "/pro/approvals") return reviewTitle(segment) ?? "Review";
   return segmentLabels[segment] ?? segment;

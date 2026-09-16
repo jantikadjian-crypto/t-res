@@ -5,10 +5,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { BellRing, ChevronDown, CreditCard, LogOut, Search, Settings, ShieldCheck, UserRound, Users, type LucideIcon } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { useCase } from "@/components/case-provider";
 import { useProSession } from "@/components/pro/pro-session";
 import { useProWorkspace } from "@/components/pro/use-pro-workspace";
 import { ProCommandPalette } from "@/components/search/pro-command-palette";
 import { practitioner, proClients, proPlans, taxpayer } from "@/lib/mockData";
+import { allProDocuments, isWaiting } from "@/lib/proDocuments";
 import { isProActive, proBreadcrumbsFor, proSidebarNav } from "@/lib/proNavigation";
 import { cn } from "@/lib/utils";
 
@@ -70,6 +72,7 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { session, signOut, proPlan } = useProSession();
   const { approvals } = useProWorkspace();
+  const { docs } = useCase();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const isLogin = pathname === "/pro/login";
@@ -108,6 +111,8 @@ export function ProFrame({ children }: { children: React.ReactNode }) {
 
   const counts: Record<string, { count: number; alert?: boolean }> = {
     "/pro/clients": { count: proClients.length },
+    // The documents count means "waiting on a client", not the size of the library.
+    "/pro/documents": { count: allProDocuments(docs).filter(isWaiting).length, alert: true },
     "/pro/approvals": { count: approvals.length, alert: true },
   };
   const nav: NavItem[] = proSidebarNav.map((item) => ({ ...item, ...counts[item.href] }));

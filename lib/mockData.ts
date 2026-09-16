@@ -1844,6 +1844,24 @@ export const proLaneSuggestions = [
 // This week across the practice, from PLCY.
 export const proWeek = { aiActions: 214, handledByPolicy: 206, eaMinutes: 110 };
 
+// What the practice is still waiting on from fictional clients. Jordan's requests come live from
+// CaseProvider instead, so they move as the demo moves.
+export type ProDocumentRequest = {
+  clientId: string;
+  name: string;
+  requestedOn: string;
+  why: string;
+  needs: "signature" | "upload";
+};
+
+export const proDocumentRequests: ProDocumentRequest[] = [
+  { clientId: "marcus", name: "Form 12153 – Hearing request", requestedOn: "2026-09-14", why: "Needs Marcus's signature before we file it", needs: "signature" },
+  { clientId: "priya", name: "Bank statements, Jul–Sep", requestedOn: "2026-09-13", why: "The IRS asks for three months when it releases a levy", needs: "upload" },
+  { clientId: "grace", name: "Brokerage cost-basis report, 2022", requestedOn: "2026-09-12", why: "Cuts the CP2000 bill if the basis is right", needs: "upload" },
+  { clientId: "aisha", name: "Form 656 – Offer in Compromise", requestedOn: "2026-09-10", why: "Needs Aisha's signature and the application fee", needs: "signature" },
+  { clientId: "tom", name: "2023 bank statements", requestedOn: MOCK_TODAY, why: "The last piece before the 433-F is complete", needs: "upload" },
+];
+
 // One fictional client's case from the professional's side (Jordan's is built live instead).
 export type ProAuthorization = { form: string; what: string; status: string; date?: string; tone: Tone };
 export type ProAiOutcome =

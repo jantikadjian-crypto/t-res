@@ -12,12 +12,13 @@ import {
   proTeam,
   type ProClient,
 } from "@/lib/mockData";
+import { proDocStatusMeta, type ProDocument } from "@/lib/proDocuments";
 import type { SearchItem } from "@/lib/search";
 
-export type ProSearchKind = "Page" | "Client" | "Approval" | "Task" | "Team" | "Settings";
+export type ProSearchKind = "Page" | "Client" | "Document" | "Approval" | "Task" | "Team" | "Settings";
 
 // Tie-break order when two results score the same.
-export const PRO_KIND_ORDER: ProSearchKind[] = ["Page", "Client", "Approval", "Task", "Team", "Settings"];
+export const PRO_KIND_ORDER: ProSearchKind[] = ["Page", "Client", "Document", "Approval", "Task", "Team", "Settings"];
 
 const pages: SearchItem[] = [
   {
@@ -35,6 +36,22 @@ const pages: SearchItem[] = [
     subtitle: "Your whole caseload",
     href: "/pro/clients",
     keywords: "caseload cases represented self-serve new balance stage attention",
+  },
+  {
+    id: "pro-page-documents",
+    kind: "Page",
+    title: "Documents",
+    subtitle: "Every client's paperwork in one place",
+    href: "/pro/documents",
+    keywords: "files library uploads signatures requests waiting irs transcripts paperwork",
+  },
+  {
+    id: "pro-page-dashboard",
+    kind: "Page",
+    title: "Dashboard",
+    subtitle: "How the practice is doing",
+    href: "/pro/dashboard",
+    keywords: "metrics numbers under management balances stages lanes handled by policy time saved",
   },
   {
     id: "pro-page-approvals",
@@ -176,5 +193,17 @@ export function proQueueSearchItems(rows: QueueLike[]): SearchItem[] {
     subtitle: r.client ? `${r.client} · ${r.why}` : r.why,
     href: r.href ?? (r.clientId ? `/pro/clients/${r.clientId}` : "/pro"),
     keywords: `${r.kind} ${r.deadline ?? ""} ${r.client ?? ""} queue today waiting`,
+  }));
+}
+
+/** The document library, live: Jordan's rows follow the case, so pass what the library built. */
+export function proDocumentSearchItems(documents: ProDocument[]): SearchItem[] {
+  return documents.map<SearchItem>((d) => ({
+    id: `pro-doc-${d.id}`,
+    kind: "Document",
+    title: d.name,
+    subtitle: `${d.client} · ${proDocStatusMeta[d.status].label}`,
+    href: `/pro/documents/${d.id}`,
+    keywords: `${d.source} ${d.category ?? ""} ${d.summary ?? ""} ${d.why ?? ""} ${d.taxYear ?? ""} document file`,
   }));
 }
