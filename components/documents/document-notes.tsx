@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { textareaClass } from "@/components/form";
 import { useCase } from "@/components/case-provider";
+import { GovernanceBadge } from "@/components/governance-badge";
 import { formatDate } from "@/lib/format";
 import { enrolledAgent, taxpayer, type DocumentNote } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,12 @@ const authors: Record<DocumentNote["author"], { name: string; role: string; init
     role: "You",
     initials: `${taxpayer.firstName[0]}${taxpayer.lastName[0]}`,
     avatar: "bg-muted text-foreground",
+  },
+  "t-res": {
+    name: "T-Res",
+    role: "Automatic reminder",
+    initials: "TR",
+    avatar: "bg-slate-50 text-slate-700 ring-1 ring-slate-200",
   },
   ea: {
     name: enrolledAgent.name,
@@ -60,6 +67,7 @@ function NoteItem({ docId, note }: { docId: string; note: DocumentNote }) {
             {author.role} · {formatDate(note.date)}
             {note.editedOn && " · edited"}
           </span>
+          {note.author === "t-res" && <GovernanceBadge itemId={`gov_nudge_${docId}`} />}
         </div>
 
         {editing ? (

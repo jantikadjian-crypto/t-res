@@ -23,7 +23,7 @@ import { useCase } from "@/components/case-provider";
 import { CommandPalette } from "@/components/search/command-palette";
 import { StatusDot } from "@/components/status";
 import { daysAgoLabel, formatDate } from "@/lib/format";
-import { account, caseNumber, enrolledAgent, notifications, resolutionPlans, taxpayer, transcriptsLastChecked } from "@/lib/mockData";
+import { account, caseNumber, enrolledAgent, notifications as seedNotifications, resolutionPlans, taxpayer, transcriptsLastChecked } from "@/lib/mockData";
 
 function MenuLink({
   href,
@@ -56,10 +56,11 @@ export function Topbar({ onToggleSidebar }: { onToggleSidebar: () => void }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [readIds, setReadIds] = useState<string[]>(() => notifications.filter((n) => n.read).map((n) => n.id));
+  const [readIds, setReadIds] = useState<string[]>(() => seedNotifications.filter((n) => n.read).map((n) => n.id));
   const menuButton = useRef<HTMLButtonElement>(null);
   const searchButton = useRef<HTMLButtonElement>(null);
-  const { plan, lane, escalatedOn, switchPlan, escalate } = useCase();
+  // Notifications are live: a reminder sent from T-Res Pro lands here in the same visit.
+  const { plan, lane, escalatedOn, switchPlan, escalate, notifications } = useCase();
   const unread = notifications.filter((n) => !readIds.includes(n.id)).length;
   const planName = resolutionPlans.find((p) => p.id === plan.planId)?.name;
   const planHint = plan.status === "active" ? planName : plan.status === "paused" ? "Paused" : "Canceled";

@@ -151,7 +151,8 @@ export type CaseDocument = {
 
 export type DocumentNote = {
   id: string;
-  author: "you" | "ea";
+  // "t-res" is the software itself: a reminder sent under policy, badged as such.
+  author: "you" | "ea" | "t-res";
   date: string;
   text: string;
   editedOn?: string;
@@ -1074,6 +1075,13 @@ export const governancePolicies: GovernancePolicy[] = [
     spotCheck: "Chris spot-checks 1 in 20",
   },
   {
+    id: "pol_nudge",
+    name: "Reminders to clients",
+    rule: "Reminders that only restate something the client has already been asked for, or a deadline they already know. No opinion, no figures, no new instruction, nothing under Chris's name.",
+    outcome: "Auto-approve",
+    spotCheck: "Chris spot-checks 1 in 20",
+  },
+  {
     id: "pol_emergency",
     name: "Emergencies and final levy notices",
     rule: "Money already taken from a paycheck or bank account, or a final notice before levy (LT11 or Letter 1058). Moves a self-serve case to Chris.",
@@ -1853,6 +1861,50 @@ export type ProDocumentRequest = {
   why: string;
   needs: "signature" | "upload";
 };
+
+// Outreach (docs/pro-outreach-scope.md). Phase 1 sends these and nothing else: a reminder restates what was
+// already asked for, so it goes out under `pol_nudge` with the "Checked by T-Res" badge.
+export type OutreachTemplate = {
+  id: string;
+  label: string;
+  // The document status this reminder is for.
+  chases: "waiting-signature" | "waiting-upload" | "draft";
+  body: string;
+};
+
+export const outreachTemplates: OutreachTemplate[] = [
+  {
+    id: "chase-signature",
+    label: "Waiting on a signature",
+    chases: "waiting-signature",
+    body: "{firstName}, {document} is ready for your signature. {why} You can sign it in the app — it takes about two minutes, and nothing is sent until you do.",
+  },
+  {
+    id: "chase-upload",
+    label: "Waiting on a document",
+    chases: "waiting-upload",
+    body: "{firstName}, we still need {document}. {why} You can add it from the app — a clear photo is fine.",
+  },
+  {
+    id: "chase-draft",
+    label: "Waiting on a look-over",
+    chases: "draft",
+    body: "{firstName}, {document} is ready for you to read. {why} Tell us if anything looks wrong — nothing goes to the IRS until you're happy with it.",
+  },
+];
+
+/** Fill a reminder in. Keeps the copy in one place so nobody writes a chase from scratch. */
+export function outreachMessage(
+  template: OutreachTemplate,
+  fields: { firstName: string; document: string; why?: string }
+): string {
+  return template.body
+    .replace("{firstName}", fields.firstName)
+    .replace("{document}", fields.document)
+    .replace("{why}", fields.why ?? "")
+    .replace(/s+/g, " ")
+    .trim();
+}
 
 export const proDocumentRequests: ProDocumentRequest[] = [
   { clientId: "marcus", name: "Form 12153 – Hearing request", requestedOn: "2026-09-14", why: "Needs Marcus's signature before we file it", needs: "signature" },

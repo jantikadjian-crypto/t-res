@@ -6,6 +6,7 @@ import { ArrowRight, FileText, FolderOpen, PenLine, Search, Upload } from "lucid
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { inputClass, selectClass } from "@/components/form";
 import { useCase } from "@/components/case-provider";
+import { useProSession } from "@/components/pro/pro-session";
 import { MetricTile } from "@/components/metric-tile";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status";
@@ -31,12 +32,14 @@ const withinDays = (iso: string, days: number) => {
 };
 
 export function ProDocuments() {
-  const { docs } = useCase();
+  const { docs, remindersSent } = useCase();
+  const { proReminders } = useProSession();
   const [filter, setFilter] = useState<Filter>("all");
   const [client, setClient] = useState("all");
   const [query, setQuery] = useState("");
 
   const documents = useMemo(() => allProDocuments(docs), [docs]);
+  const remindedOn = (d: ProDocument) => (d.caseDocId ? remindersSent[d.caseDocId] : proReminders[d.id]);
   const waiting = documents.filter(isWaiting);
   const signatures = documents.filter((d) => d.status === "waiting-signature");
   const thisWeek = documents.filter((d) => withinDays(d.addedOn, 7));
@@ -168,6 +171,7 @@ export function ProDocuments() {
                         <span className="block truncate text-xs text-muted-foreground">
                           {d.client} · {d.source === "Client" ? "From the client" : d.source === "IRS" ? "From the IRS" : "Prepared by T-Res"}
                           {d.why ? ` · ${d.why}` : ""}
+                          {remindedOn(d) ? ` · reminded ${formatDate(remindedOn(d)!)}` : ""}
                         </span>
                       </span>
                       <StatusBadge tone={meta.tone}>{meta.label}</StatusBadge>

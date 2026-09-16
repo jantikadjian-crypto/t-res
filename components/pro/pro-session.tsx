@@ -26,6 +26,10 @@ type ProSessionValue = {
   switchProPlan: (planId: string) => void;
   cancelProPlan: () => void;
   resumeProPlan: () => void;
+  // Reminders sent to fictional clients this visit, by document id. Jordan's live in CaseProvider,
+  // because the taxpayer app has to see them.
+  proReminders: Record<string, string>;
+  sendProReminder: (documentId: string) => void;
   team: ProTeamMember[];
   inviteMember: (member: { name: string; email: string; role: ProTeamMember["role"] }) => void;
   removeMember: (id: string) => void;
@@ -42,6 +46,7 @@ export function ProSessionProvider({ children }: { children: React.ReactNode }) 
   const [sentBack, setSentBack] = useState<Record<string, string>>({});
   const [proPlan, setProPlan] = useState<ProPlanState>({ planId: proSubscription.planId, status: "active" });
   const [team, setTeam] = useState<ProTeamMember[]>(proTeam);
+  const [proReminders, setProReminders] = useState<Record<string, string>>({});
 
   const signIn = useCallback((email: string) => {
     setSession({ email, signedInOn: MOCK_TODAY });
@@ -71,6 +76,11 @@ export function ProSessionProvider({ children }: { children: React.ReactNode }) 
   const cancelProPlan = useCallback(() => setProPlan((prev) => ({ ...prev, status: "canceled", changedOn: MOCK_TODAY })), []);
   const resumeProPlan = useCallback(() => setProPlan((prev) => ({ ...prev, status: "active", changedOn: MOCK_TODAY })), []);
 
+  const sendProReminder = useCallback(
+    (documentId: string) => setProReminders((prev) => ({ ...prev, [documentId]: MOCK_TODAY })),
+    []
+  );
+
   const inviteMember = useCallback((member: { name: string; email: string; role: ProTeamMember["role"] }) => {
     setTeam((prev) => [...prev, { id: `invite-${prev.length + 1}`, ...member, status: "Invited" }]);
   }, []);
@@ -92,6 +102,8 @@ export function ProSessionProvider({ children }: { children: React.ReactNode }) 
         switchProPlan,
         cancelProPlan,
         resumeProPlan,
+        proReminders,
+        sendProReminder,
         team,
         inviteMember,
         removeMember,

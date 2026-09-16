@@ -3,14 +3,13 @@
 How the professional reaches a client from inside T-Res — chasing a document, explaining a decision, answering a
 question — without T-Res becoming a chat app.
 
-Status: **scope for Jack, 2026-09-15.** Nothing is built yet. Open decisions are at the bottom; the build order starts
-with the cheap version.
+Status: **phase 1 built, 2026-09-15.** Phases 2 and 3 are still scope. Open decisions are at the bottom.
 
 ## The job
 
-Chasing clients is the most common thing a practice actually does. Right now nine documents across the caseload are
-waiting on a client, and T-Res Pro can't chase any of them: the **Send a reminder** button on
-`/pro/documents/[id]` sets local state, says "Reminder sent" and nothing happens anywhere. Jordan never hears about it.
+Chasing clients is the most common thing a practice actually does. Nine documents across the caseload are waiting on
+a client, and until phase 1 T-Res Pro couldn't chase any of them: the **Send a reminder** button on
+`/pro/documents/[id]` set local state, said "Reminder sent", and nothing happened anywhere. Jordan never heard about it.
 
 So the question isn't "should there be messaging". It's: **what is the smallest thing that closes the loop without
 dragging the professional back into the work?**
@@ -137,3 +136,19 @@ anything that looks like marketing to a client list.
 | Does the taxpayer get a Messages page? | **No.** Bell plus the item it is about. A separate inbox on the client side is the same trap as one on the pro side. |
 | Bulk chasing ("remind all nine") | **Not yet.** One click per client in v1; revisit once the single case feels right. |
 | Does this override CLAUDE.md's "no messaging" scope? | **Yes, deliberately** — the way billing and settings did. Update the scope line in CLAUDE.md when phase 1 lands so the playbook stays honest. |
+
+## Progress
+
+- **Phase 1 (the honest reminder): built 2026-09-15.** The reminder on `/pro/documents/[id]` is real. T-Res composes
+  it from `outreachTemplates` (one per waiting status: signature, upload, look-over), shows the professional exactly
+  what will go out before they send it, and says plainly that it goes under policy rather than under Chris's name.
+  Sending it does four things: posts the message into that document's notes thread as T-Res itself (a new
+  `"t-res"` note author, badged *Checked by T-Res* on both sides), adds a notification to the taxpayer's bell
+  (`notifications` now live in `CaseProvider`), writes an auto-approved `gov_nudge_<docId>` record under the new
+  `pol_nudge` policy so it shows in PLCY and in the client's AI actions, and marks the document as chased in the
+  library. Fictional clients' reminders live in `ProSessionProvider`; only Jordan's reach a real taxpayer app, and
+  the UI says so rather than pretending.
+- Verified end to end in the jsdom click-through: send from T-Res Pro, then find the message in the Pro thread, the
+  library, the PLCY record, the taxpayer's bell and the taxpayer's own document page. 68 checks.
+- **Phases 2 and 3 not started.** The composer, "Approve and tell the client", and replies are unchanged from the
+  scope above.

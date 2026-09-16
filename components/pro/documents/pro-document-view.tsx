@@ -2,16 +2,18 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BellRing, CheckCircle2, FileText, MessageSquare, UserRound } from "lucide-react";
+import { ArrowLeft, BellRing, CheckCircle2, FileText, MessageSquare, Send, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { textareaClass } from "@/components/form";
 import { useCase } from "@/components/case-provider";
+import { GovernanceBadge } from "@/components/governance-badge";
+import { useProSession } from "@/components/pro/pro-session";
 import { LinkButton } from "@/components/link-button";
 import { PageHeader } from "@/components/page-header";
 import { StatusBadge } from "@/components/status";
 import { daysAgoLabel, formatDate } from "@/lib/format";
-import { enrolledAgent, taxpayer } from "@/lib/mockData";
+import { enrolledAgent, outreachMessage, outreachTemplates, taxpayer } from "@/lib/mockData";
 import { allProDocuments, isWaiting, proDocStatusMeta } from "@/lib/proDocuments";
 import { cn } from "@/lib/utils";
 
@@ -58,28 +60,28 @@ function ProDocumentNotes({ caseDocId }: { caseDocId: string }) {
         ) : (
           <ol className="space-y-5" aria-label="Notes">
             {notes.map((note) => {
-              const mine = note.author === "ea";
+              // Three voices in one thread: you, the client, and T-Res itself when it sent a reminder.
+              const author =
+                note.author === "ea"
+                  ? { name: `${enrolledAgent.name} (you)`, initials: "CV", avatar: "bg-blue-50 text-blue-700 ring-1 ring-blue-200" }
+                  : note.author === "t-res"
+                    ? { name: "T-Res · automatic reminder", initials: "TR", avatar: "bg-slate-50 text-slate-700 ring-1 ring-slate-200" }
+                    : {
+                        name: `${taxpayer.firstName} ${taxpayer.lastName}`,
+                        initials: `${taxpayer.firstName[0]}${taxpayer.lastName[0]}`,
+                        avatar: "bg-muted text-foreground",
+                      };
               return (
                 <li key={note.id} className="flex gap-3">
                   <span
                     aria-hidden
-                    className={cn(
-                      "grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold",
-                      mine ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200" : "bg-muted text-foreground"
-                    )}
+                    className={cn("grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold", author.avatar)}
                   >
-                    {mine
-                      ? enrolledAgent.name
-                          .split(/\s+/)
-                          .map((p) => p[0])
-                          .join("")
-                          .replace(/[^A-Z]/gi, "")
-                          .slice(0, 2)
-                      : `${taxpayer.firstName[0]}${taxpayer.lastName[0]}`}
+                    {author.initials}
                   </span>
                   <div className="min-w-0 flex-1 space-y-1">
                     <p className="flex flex-wrap items-baseline gap-x-2 text-sm font-medium">
-                      {mine ? `${enrolledAgent.name} (you)` : `${taxpayer.firstName} ${taxpayer.lastName}`}
+                      {author.name}
                       <span className="text-xs font-normal text-muted-foreground">{formatDate(note.date)}</span>
                     </p>
                     <p className="text-sm whitespace-pre-line text-foreground/80">{note.text}</p>
@@ -123,8 +125,8 @@ function ProDocumentNotes({ caseDocId }: { caseDocId: string }) {
 }
 
 export function ProDocumentView({ id }: { id: string }) {
-  const { docs } = useCase();
-  const [reminded, setReminded] = useState(false);
+  const { docs, remindersSent, sendReminder } = useCase();
+  const { proReminders, sendProReminder } = useProSession();
   const doc = useMemo(() => allProDocuments(docs).find((d) => d.id === id), [docs, id]);
 
   if (!doc) {
@@ -141,6 +143,25 @@ export function ProDocumentView({ id }: { id: string }) {
 
   const meta = proDocStatusMeta[doc.status];
   const waiting = isWaiting(doc);
+  const firstName = doc.client.split(" ")[0];
+
+  // Phase 1 outreach: one templated reminder, no free text. It restates what was already asked for,
+  // so it goes out under the routine-reminder policy rather than under Chris's name.
+  const template = outreachTemplates.find((t) => t.chases === doc.status);
+  const reminder = template
+    ? outreachMessage(template, {
+        firstName,
+        document: doc.name.replace(/\.(pdf|png|jpe?g|docx?)$/i, ""),
+        why: doc.why,
+      })
+    : undefined;
+  const isLiveClient = !!doc.caseDocId;
+  const sentOn = isLiveClient ? remindersSent[doc.caseDocId!] : proReminders[doc.id];
+  const send = () => {
+    if (!reminder) return;
+    if (isLiveClient) sendReminder(doc.caseDocId!, reminder);
+    else sendProReminder(doc.id);
+  };
 
   return (
     <div className="space-y-6">
@@ -164,30 +185,58 @@ export function ProDocumentView({ id }: { id: string }) {
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           {waiting && (
-            <div className={cn("flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center", doc.status === "waiting-signature" ? "border-red-200 bg-red-50" : "border-yellow-200 bg-yellow-50")}>
-              <BellRing
-                className={cn("size-5 shrink-0", doc.status === "waiting-signature" ? "text-red-600" : "text-yellow-600")}
-                aria-hidden
-              />
-              <p className={cn("flex-1 text-sm", doc.status === "waiting-signature" ? "text-red-800" : "text-yellow-800")}>
-                <span className="font-medium">
-                  {doc.status === "waiting-signature"
-                    ? `Waiting on ${doc.client.split(" ")[0]} to sign.`
-                    : doc.status === "draft"
-                      ? `${doc.client.split(" ")[0]} is reviewing this draft.`
-                      : `Asked ${doc.client.split(" ")[0]} for this on ${formatDate(doc.addedOn)}.`}
-                </span>{" "}
-                {doc.why ?? "Nothing files until it's in."}
-              </p>
-              {reminded ? (
-                <p role="status" className="flex items-center gap-2 text-sm font-medium text-green-700">
-                  <CheckCircle2 className="size-4" aria-hidden />
-                  Reminder sent
+            <div className={cn("rounded-xl border p-4", doc.status === "waiting-signature" ? "border-red-200 bg-red-50" : "border-yellow-200 bg-yellow-50")}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <BellRing
+                  className={cn("size-5 shrink-0", doc.status === "waiting-signature" ? "text-red-600" : "text-yellow-600")}
+                  aria-hidden
+                />
+                <p className={cn("flex-1 text-sm", doc.status === "waiting-signature" ? "text-red-800" : "text-yellow-800")}>
+                  <span className="font-medium">
+                    {doc.status === "waiting-signature"
+                      ? `Waiting on ${firstName} to sign.`
+                      : doc.status === "draft"
+                        ? `${firstName} is reviewing this draft.`
+                        : `Asked ${firstName} for this on ${formatDate(doc.addedOn)}.`}
+                  </span>{" "}
+                  {doc.why ?? "Nothing files until it's in."}
                 </p>
-              ) : (
-                <Button variant="outline" className="bg-white" onClick={() => setReminded(true)}>
-                  Send a reminder
-                </Button>
+                {sentOn ? (
+                  <p role="status" className="flex items-center gap-2 text-sm font-medium text-green-700">
+                    <CheckCircle2 className="size-4" aria-hidden />
+                    Reminder sent {formatDate(sentOn)}
+                  </p>
+                ) : (
+                  reminder && (
+                    <Button variant="outline" className="bg-white" onClick={send}>
+                      <Send aria-hidden />
+                      Send a reminder
+                    </Button>
+                  )
+                )}
+              </div>
+
+              {reminder && (
+                <div className="mt-3 space-y-2 rounded-lg border bg-white p-3">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {sentOn ? "What T-Res sent" : "What T-Res will send"}
+                  </p>
+                  <p className="text-sm text-foreground/80">{reminder}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {sentOn && isLiveClient ? (
+                      <GovernanceBadge itemId={`gov_nudge_${doc.caseDocId}`} />
+                    ) : (
+                      <GovernanceBadge tier="checked" />
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                      {sentOn
+                        ? isLiveClient
+                          ? `${firstName} has it in their app, and it's on the governance record.`
+                          : `Recorded here. In this demo only ${taxpayer.firstName}'s app is live.`
+                        : `A reminder only restates what you've already asked for, so it goes out under policy — not under ${enrolledAgent.name}'s name.`}
+                    </span>
+                  </div>
+                </div>
               )}
             </div>
           )}

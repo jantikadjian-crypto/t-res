@@ -5,6 +5,7 @@ import {
   actionItems as seedActions,
   documentNotes,
   documents as seedDocuments,
+  enrolledAgent,
   escalationPlan,
   governanceItems as seedGovernance,
   laterDocuments,
@@ -12,8 +13,11 @@ import {
   laterNotices,
   MOCK_TODAY,
   notices as seedNotices,
+  notifications as seedNotifications,
   subscription,
+  taxpayer,
   type ActionItem,
+  type AppNotification,
   type CaseDocument,
   type DocumentNote,
   type GovernanceItem,
@@ -58,6 +62,11 @@ type CaseContextValue = {
   attachFile: (docId: string, file: UploadedFile) => void;
   // `author` is "you" (the taxpayer) unless T-Res Pro adds the note as Chris.
   addNote: (docId: string, text: string, author?: DocumentNote["author"]) => void;
+  // Outreach (docs/pro-outreach-scope.md): a reminder T-Res sends the taxpayer on the practice's behalf.
+  // It lands in the document's notes thread, in the bell, and on the PLCY record under `pol_nudge`.
+  notifications: AppNotification[];
+  remindersSent: Record<string, string>;
+  sendReminder: (docId: string, body: string) => void;
   editNote: (docId: string, noteId: string, text: string) => void;
   deleteNote: (docId: string, noteId: string) => void;
   actions: ActionItem[];
@@ -95,6 +104,9 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
   const [plan, setPlan] = useState<PlanState>({ planId: subscription.planId, status: "active" });
   const [decisions, setDecisions] = useState<Record<string, GovernanceDecision>>({});
   const [escalatedOn, setEscalatedOn] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<AppNotification[]>(seedNotifications);
+  const [nudges, setNudges] = useState<GovernanceItem[]>([]);
+  const [remindersSent, setRemindersSent] = useState<Record<string, string>>({});
 
   // The Guided plan is the self-serve lane, unless something only an EA can handle moved the case to Chris.
   const lane: Lane = escalatedOn ? "represented" : plan.planId === "guided" ? "self-serve" : "represented";
@@ -178,6 +190,43 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
     const note: DocumentNote = { id: `note-${Date.now()}`, author, date: MOCK_TODAY, text };
     setNotes((prev) => ({ ...prev, [docId]: [...(prev[docId] ?? []), note] }));
   }, []);
+
+  // One reminder does four things, or it isn't a reminder: a note in the shared thread from T-Res itself,
+  // a notification for the taxpayer, a PLCY record under the routine-reminder policy, and a date the
+  // practice can see. Nothing here goes out under Chris's name.
+  const sendReminder = useCallback(
+    (docId: string, body: string) => {
+      const name = docs.find((d) => d.id === docId)?.name ?? "a document";
+      addNote(docId, body, "t-res");
+      setRemindersSent((prev) => ({ ...prev, [docId]: MOCK_TODAY }));
+      setNotifications((prev) => [
+        { id: `notif-nudge-${docId}`, date: MOCK_TODAY, message: `Reminder from T-Res: ${name}`, read: false, href: `/documents/${docId}` },
+        ...prev.filter((n) => n.id !== `notif-nudge-${docId}`),
+      ]);
+      const record: GovernanceItem = {
+        id: `gov_nudge_${docId}`,
+        title: `Reminder sent: ${name}`,
+        kind: "Client reminder",
+        producedBy: "T-Res outreach",
+        createdOn: MOCK_TODAY,
+        confidence: 0.99,
+        policyId: "pol_nudge",
+        status: "auto-approved",
+        decidedOn: MOCK_TODAY,
+        summary: `Reminded ${taxpayer.firstName} about ${name}. It only restates what was already asked for, so it went out under policy.`,
+        output: body,
+        checks: [
+          { label: "Only restates something already requested", passed: true },
+          { label: "No figures, opinions or new instructions", passed: true },
+          { label: `Not sent under ${enrolledAgent.name}'s name`, passed: true },
+        ],
+        evidence: [{ label: name, href: `/documents/${docId}` }],
+        resultHref: `/documents/${docId}`,
+      };
+      setNudges((prev) => [record, ...prev.filter((n) => n.id !== record.id)]);
+    },
+    [addNote, docs]
+  );
 
   const editNote = useCallback(
     (docId: string, noteId: string, text: string) =>
@@ -282,7 +331,7 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
   // Live checks (e.g. "Form 2848 signed") follow the documents in this session.
   const governance = useMemo(
     () =>
-      [...seedGovernance, ...(escalatedOn ? laterGovernanceItems : [])]
+      [...nudges, ...seedGovernance, ...(escalatedOn ? laterGovernanceItems : [])]
         .filter((g) => (!g.lane || g.lane === lane) && (!g.showsAfter || doneIds.has(g.showsAfter)))
         .map((g) => ({
         ...g,
@@ -291,7 +340,7 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
           c.signedDocId ? { ...c, passed: docs.some((d) => d.id === c.signedDocId && d.status === "on-file") } : c
         ),
       })),
-    [decisions, docs, escalatedOn, lane, doneIds]
+    [decisions, docs, escalatedOn, lane, doneIds, nudges]
   );
 
   return (
@@ -302,6 +351,9 @@ export function CaseProvider({ children }: { children: React.ReactNode }) {
         addDocuments,
         attachFile,
         addNote,
+        notifications,
+        remindersSent,
+        sendReminder,
         editNote,
         deleteNote,
         actions,
