@@ -31,6 +31,8 @@ import { ProToday } from "@/components/pro/pro-today";
 import { ProDashboard } from "@/components/pro/pro-dashboard";
 import { ProDocuments } from "@/components/pro/documents/pro-documents";
 import { ProDocumentView } from "@/components/pro/documents/pro-document-view";
+import { ProLibrary } from "@/components/pro/library/pro-library";
+import { ProLibraryEntryView } from "@/components/pro/library/pro-library-entry";
 import { ProBilling } from "@/components/pro/settings/pro-billing";
 import { ProFirmSettings } from "@/components/pro/settings/pro-firm-settings";
 import { ProNotificationSettings } from "@/components/pro/settings/pro-notification-settings";
@@ -134,6 +136,12 @@ function route(pathname: string): ReactNode {
               <ProDocumentView id={extra} />
             ) : (
               <ProDocuments />
+            )
+          ) : detail === "library" ? (
+            extra ? (
+              <ProLibraryEntryView slug={extra} />
+            ) : (
+              <ProLibrary />
             )
           ) : detail === "approvals" ? (
             extra ? (

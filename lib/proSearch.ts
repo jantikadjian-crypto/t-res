@@ -13,12 +13,13 @@ import {
   type ProClient,
 } from "@/lib/mockData";
 import { proDocStatusMeta, type ProDocument } from "@/lib/proDocuments";
+import { proLibraryEntries, proNoteFor } from "@/lib/proLibrary";
 import type { SearchItem } from "@/lib/search";
 
-export type ProSearchKind = "Page" | "Client" | "Document" | "Approval" | "Task" | "Team" | "Settings";
+export type ProSearchKind = "Page" | "Client" | "Document" | "Approval" | "Task" | "Library" | "Team" | "Settings";
 
 // Tie-break order when two results score the same.
-export const PRO_KIND_ORDER: ProSearchKind[] = ["Page", "Client", "Document", "Approval", "Task", "Team", "Settings"];
+export const PRO_KIND_ORDER: ProSearchKind[] = ["Page", "Client", "Document", "Approval", "Task", "Library", "Team", "Settings"];
 
 const pages: SearchItem[] = [
   {
@@ -52,6 +53,14 @@ const pages: SearchItem[] = [
     subtitle: "How the practice is doing",
     href: "/pro/dashboard",
     keywords: "metrics numbers under management balances stages lanes handled by policy time saved",
+  },
+  {
+    id: "pro-page-library",
+    kind: "Page",
+    title: "Library",
+    subtitle: "IRS forms, notices and terms, with the practice layer",
+    href: "/pro/library",
+    keywords: "reference glossary forms notices terms statutes deadlines irs printable practice notes",
   },
   {
     id: "pro-page-approvals",
@@ -144,9 +153,18 @@ const team: SearchItem[] = proTeam.map<SearchItem>((m) => ({
   keywords: `${m.email} ${m.role} ${m.status} team seat firm staff`,
 }));
 
+const library: SearchItem[] = proLibraryEntries.map<SearchItem>((e) => ({
+  id: `pro-library-${e.slug}`,
+  kind: "Library",
+  title: e.name,
+  subtitle: proNoteFor(e.slug)?.practice ?? e.short,
+  href: `/pro/library/${e.slug}`,
+  keywords: [e.kind, e.short, e.definition, proNoteFor(e.slug)?.practice ?? "", ...e.aliases].join(" "),
+}));
+
 /** Everything that doesn't change while the professional works. */
 export function staticProSearchItems(): SearchItem[] {
-  return [...pages, ...settings, ...team];
+  return [...pages, ...settings, ...library, ...team];
 }
 
 /** The caseload, live: Jordan's row follows the case, so pass the clients from useProWorkspace(). */

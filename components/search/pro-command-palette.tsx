@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { FileText, Inbox, LayoutGrid, ListChecks, Settings, UserRound, Users, type LucideIcon } from "lucide-react";
+import { BookOpen, FileText, Inbox, LayoutGrid, ListChecks, Settings, UserRound, Users, type LucideIcon } from "lucide-react";
 import { useCase } from "@/components/case-provider";
 import { useProWorkspace } from "@/components/pro/use-pro-workspace";
 import { SearchPalette } from "@/components/search/search-palette";
@@ -22,17 +22,19 @@ const kindIcons: Record<ProSearchKind, LucideIcon> = {
   Document: FileText,
   Approval: Inbox,
   Task: ListChecks,
+  Library: BookOpen,
   Team: Users,
   Settings: Settings,
 };
 
-const SUGGESTIONS = ["LT11", "levy", "Jordan", "2848", "seats"];
+const SUGGESTIONS = ["LT11", "levy", "Jordan", "2848", "statute"];
 
 const QUICK_LINKS: SearchItem[] = [
   { id: "pro-quick-today", kind: "Page", title: "Today", href: "/pro" },
   { id: "pro-quick-clients", kind: "Page", title: "Clients", href: "/pro/clients" },
   { id: "pro-quick-documents", kind: "Page", title: "Documents", href: "/pro/documents" },
   { id: "pro-quick-approvals", kind: "Page", title: "Approvals", href: "/pro/approvals" },
+  { id: "pro-quick-library", kind: "Library", title: "Library", href: "/pro/library" },
   { id: "pro-quick-billing", kind: "Settings", title: "Billing & plan", href: "/pro/settings/billing" },
   { id: "pro-quick-plcy", kind: "Page", title: "PLCY governance console", href: "/plcy" },
 ];
