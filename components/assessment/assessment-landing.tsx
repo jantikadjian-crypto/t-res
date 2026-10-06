@@ -139,7 +139,7 @@ const PROMISES = [
   {
     icon: ShieldCheck,
     title: "Expert-Built",
-    text: "Created by IRS Tax, AI & Security Professionals",
+    text: "Built by tax resolution experts, AI engineers and security professionals",
   },
   {
     icon: TrendingDown,
@@ -246,7 +246,7 @@ export function AssessmentLanding() {
             </p>
             <ul className="space-y-2 text-sm">
               {[
-                "Created by IRS tax professionals.",
+                "Built by tax resolution experts, AI engineers and security professionals.",
                 "Calm, plain-English answers. No jargon.",
                 "If the IRS is already taking money, we move you to the front of the line.",
               ].map((t) => (
