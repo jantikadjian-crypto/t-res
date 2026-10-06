@@ -1,14 +1,30 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AlertTriangle, Camera, FileQuestion, FileUp, Loader2, Upload } from "lucide-react";
+import {
+  AlertTriangle,
+  Camera,
+  FileQuestion,
+  FileUp,
+  Loader2,
+  Upload,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GovernanceBadge } from "@/components/governance-badge";
+import { useLead } from "@/components/assessment/lead-provider";
 import { useIntake } from "@/components/intake/intake-provider";
 import { StatusBadge } from "@/components/status";
-import { daysRemainingLabel, deadlineTone, formatDate, formatMoney } from "@/lib/format";
-import { LEVY_NOTICE_CODES, SAMPLE_UPLOAD_DOCUMENT_ID } from "@/lib/intakeScreens";
+import {
+  daysRemainingLabel,
+  deadlineTone,
+  formatDate,
+  formatMoney,
+} from "@/lib/format";
+import {
+  LEVY_NOTICE_CODES,
+  SAMPLE_UPLOAD_DOCUMENT_ID,
+} from "@/lib/intakeScreens";
 import { notices, type Notice } from "@/lib/mockData";
 
 function DecodeCard({ notice }: { notice: Notice }) {
@@ -27,17 +43,23 @@ function DecodeCard({ notice }: { notice: Notice }) {
         </p>
       </div>
       <StatusBadge tone={deadlineTone(notice.respondBy)}>
-        Respond by {formatDate(notice.respondBy)} · {daysRemainingLabel(notice.respondBy)}
+        Respond by {formatDate(notice.respondBy)} ·{" "}
+        {daysRemainingLabel(notice.respondBy)}
       </StatusBadge>
       {LEVY_NOTICE_CODES.includes(notice.code) && (
         <div className="flex gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-600" aria-hidden />
+          <AlertTriangle
+            className="mt-0.5 size-4 shrink-0 text-red-600"
+            aria-hidden
+          />
           This one has a deadline. We&apos;ll put it first.
         </div>
       )}
       <div>
         <p className="text-sm font-medium">What it means</p>
-        <p className="text-sm text-muted-foreground">{notice.decode.whatItMeans}</p>
+        <p className="text-sm text-muted-foreground">
+          {notice.decode.whatItMeans}
+        </p>
       </div>
       {/* Follows the decode's PLCY record: auto-approved once its checks pass. */}
       <GovernanceBadge href={`/notices/${notice.id}`} />
@@ -47,6 +69,7 @@ function DecodeCard({ notice }: { notice: Notice }) {
 
 export function NoticeScreen() {
   const { state, update } = useIntake();
+  const { lead } = useLead();
   const [processing, setProcessing] = useState<string | null>(null);
   const [replacing, setReplacing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -57,7 +80,11 @@ export function NoticeScreen() {
   const receive = (name: string) => {
     setProcessing(name);
     window.setTimeout(() => {
-      update({ noticeDocumentId: SAMPLE_UPLOAD_DOCUMENT_ID, noLetter: false, noticeFreshUpload: true });
+      update({
+        noticeDocumentId: SAMPLE_UPLOAD_DOCUMENT_ID,
+        noLetter: false,
+        noticeFreshUpload: true,
+      });
       setProcessing(null);
       setReplacing(false);
     }, 2000);
@@ -71,11 +98,19 @@ export function NoticeScreen() {
 
   if (processing) {
     return (
-      <div className="flex items-center gap-4 rounded-xl border bg-card p-5" aria-live="polite">
-        <Loader2 className="size-6 shrink-0 animate-spin text-primary" aria-hidden />
+      <div
+        className="flex items-center gap-4 rounded-xl border bg-card p-5"
+        aria-live="polite"
+      >
+        <Loader2
+          className="size-6 shrink-0 animate-spin text-primary"
+          aria-hidden
+        />
         <div>
           <p className="font-medium">Reading {processing}…</p>
-          <p className="text-sm text-muted-foreground">Translating it into plain English. This takes a few seconds.</p>
+          <p className="text-sm text-muted-foreground">
+            Translating it into plain English. This takes a few seconds.
+          </p>
         </div>
       </div>
     );
@@ -84,6 +119,12 @@ export function NoticeScreen() {
   if (notice && !replacing) {
     return (
       <div className="space-y-4">
+        {lead && state.noticeFreshUpload && (
+          <p className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+            This is a sample letter so you can see how it works. When you upload
+            your own, this shows your notice, amount and deadline.
+          </p>
+        )}
         <DecodeCard notice={notice} />
         <Button variant="outline" onClick={() => setReplacing(true)}>
           Use a different letter
@@ -96,11 +137,15 @@ export function NoticeScreen() {
     return (
       <div className="space-y-4">
         <div className="flex gap-3 rounded-xl border bg-card p-5">
-          <FileQuestion className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+          <FileQuestion
+            className="mt-0.5 size-5 shrink-0 text-primary"
+            aria-hidden
+          />
           <div>
             <p className="font-medium">No letter? No problem.</p>
             <p className="text-sm text-muted-foreground">
-              Once you authorize us in step 3, we&apos;ll pull your records straight from the IRS.
+              Once you authorize us in step 3, we&apos;ll pull your records
+              straight from the IRS.
             </p>
           </div>
         </div>
@@ -113,6 +158,25 @@ export function NoticeScreen() {
 
   return (
     <div className="space-y-4">
+      {lead && (
+        <div className="rounded-xl border bg-card p-5">
+          <p className="font-medium">
+            What you told us{lead.name ? `, ${lead.name}` : ""}
+          </p>
+          <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+            <li>Situation: {lead.situation}</li>
+            <li>About what you owe: {lead.owedLabel}</li>
+            <li>Unfiled years: {lead.unfiledLabel}</li>
+            <li>
+              IRS took money or contacted your employer: {lead.takenLabel}
+            </li>
+          </ul>
+          <p className="mt-2 text-xs text-muted-foreground">
+            You won&apos;t be asked these again. Your letter fills in the exact
+            notice, amount and deadline.
+          </p>
+        </div>
+      )}
       <div
         className="flex flex-col items-center gap-4 rounded-xl border-2 border-dashed bg-card p-8 text-center"
         onDragOver={(e) => e.preventDefault()}
@@ -127,7 +191,9 @@ export function NoticeScreen() {
         </span>
         <div>
           <p className="font-medium">Drop your letter here</p>
-          <p className="text-sm text-muted-foreground">A PDF, or a clear photo of every page</p>
+          <p className="text-sm text-muted-foreground">
+            A PDF, or a clear photo of every page
+          </p>
         </div>
         <input
           ref={fileRef}
@@ -153,7 +219,10 @@ export function NoticeScreen() {
           </Button>
           {/* Only on phones and tablets, where it opens the camera. */}
           <span className="hidden pointer-coarse:contents">
-            <Button variant="outline" onClick={() => cameraRef.current?.click()}>
+            <Button
+              variant="outline"
+              onClick={() => cameraRef.current?.click()}
+            >
               <Camera aria-hidden />
               Take a photo
             </Button>
@@ -168,14 +237,22 @@ export function NoticeScreen() {
           variant="link"
           className="px-0"
           onClick={() => {
-            update({ noLetter: true, noticeDocumentId: null, noticeFreshUpload: false });
+            update({
+              noLetter: true,
+              noticeDocumentId: null,
+              noticeFreshUpload: false,
+            });
             setReplacing(false);
           }}
         >
           I don&apos;t have a letter
         </Button>
         {replacing && (
-          <Button variant="link" className="px-0 text-muted-foreground" onClick={() => setReplacing(false)}>
+          <Button
+            variant="link"
+            className="px-0 text-muted-foreground"
+            onClick={() => setReplacing(false)}
+          >
             Keep the letter I uploaded
           </Button>
         )}

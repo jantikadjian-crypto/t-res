@@ -7,6 +7,8 @@ import ActionItemsPage from "@/app/(app)/action-items/page";
 import DashboardPage from "@/app/(app)/page";
 import SettingsLayout from "@/app/(app)/settings/layout";
 import ProSettingsLayout from "@/app/(pro)/pro/settings/layout";
+import { LeadProvider } from "@/components/assessment/lead-provider";
+import { AssessmentLanding } from "@/components/assessment/assessment-landing";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { CaseProvider } from "@/components/case-provider";
 import type { DocumentView } from "@/components/documents/document-library";
@@ -115,6 +117,8 @@ function route(pathname: string): ReactNode {
     );
   }
 
+  if (section === "assessment") return <AssessmentLanding />;
+
   if (section === "sign") return <SignFlow key={pathname} docId={detail ?? ""} />;
 
   if (section === "pro") {
@@ -197,11 +201,13 @@ function App() {
   }, [pathname]);
 
   return (
-    <CaseProvider>
-      <ProSessionProvider>
-        <div className="min-h-screen bg-canvas antialiased">{route(pathname)}</div>
-      </ProSessionProvider>
-    </CaseProvider>
+    <LeadProvider>
+      <CaseProvider>
+        <ProSessionProvider>
+          <div className="min-h-screen bg-canvas antialiased">{route(pathname)}</div>
+        </ProSessionProvider>
+      </CaseProvider>
+    </LeadProvider>
   );
 }
 

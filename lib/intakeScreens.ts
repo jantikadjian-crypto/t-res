@@ -61,6 +61,36 @@ export function initialIntakeState(): IntakeState {
   };
 }
 
+// A visitor from the public /assessment page starts with nothing but what they told us there: no letter,
+// no income, no expenses, no demo client's answers. The "assessment" block is still the demo's stand-in
+// until the assessment screen is made data-driven.
+export function freshIntakeState(lead: {
+  situation: string;
+  unfiled: "none" | "1-2" | "3+" | "unsure";
+  taken: "yes" | "no" | "unsure";
+}): IntakeState {
+  return {
+    submittedOn: "",
+    noticeDocumentId: null,
+    situation: lead.situation,
+    unfiledAnswer: lead.unfiled === "none" ? "none" : lead.unfiled === "unsure" ? "not-sure" : "some",
+    unfiledYears: [],
+    incomeTypes: [],
+    moneyTakenOrEmployerContacted: lead.taken === "yes" ? true : lead.taken === "no" ? false : null,
+    authorization: { form8821SignedOn: null, form2848: null },
+    household: { size: 1, payFrequency: PAY_FREQUENCIES[1] },
+    monthlyIncome: [],
+    monthlyExpenses: [],
+    assets: [],
+    assessment: structuredClone(intakeAnswers.assessment),
+    chosenPlanId: null,
+    noLetter: false,
+    noticeFreshUpload: false,
+    laterDocs: [],
+    checklistUploads: {},
+  };
+}
+
 export function isUrgent(s: IntakeState): boolean {
   return s.situation === EMERGENCY_SITUATION || s.moneyTakenOrEmployerContacted === true;
 }
