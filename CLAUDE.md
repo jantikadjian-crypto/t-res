@@ -38,6 +38,7 @@
 - Links that look like buttons use `<LinkButton />` from /components/link-button.tsx.
 - AI-generated content gets `<GovernanceBadge />` from /components/governance-badge.tsx: pass `itemId`, or the `href` of the page the output appears on, to follow its PLCY record; `tier="approved"` only for content Chris approved himself (e.g. Library entries).
 - Mock "today" is fixed in mockData (`MOCK_TODAY`) so day counts stay stable in demos.
+- Lead-generation page (`/assessment`, `app/(public)/assessment`, `components/assessment/`): the public front door where every lead starts, step 1 "Acquire: Assessment". Five quick questions give a first read (urgent / self-serve / Tax Specialist), then it continues into `/intake/notice`. Copy says "Tax Specialist (CPA or Enrolled Agent)", never a person's name, and never promises an outcome. The answers live in `LeadProvider` (root layout and artifact entry); when a lead exists, `IntakeProvider` starts from `freshIntakeState(lead)` instead of Jordan's replay, and the notice screen shows their answers with an empty upload. Only the notice screen is lead-aware so far. Shareable link: `PRODUCT=assessment node scripts/build-artifact.mjs <out.html>`. Nothing is stored or sent in v1.
 
 ## Working rules
 - One feature per session. Plan first, then build. Commit after every working screen.

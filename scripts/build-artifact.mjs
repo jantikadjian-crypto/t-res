@@ -25,8 +25,13 @@ const products = {
     description: "Interactive progress build of T-Res Pro, the side of T-Res for Enrolled Agents, CPAs and tax attorneys.",
     start: "/pro/login",
   },
+  assessment: {
+    title: "T-Res Free Assessment",
+    description: "The T-Res lead-generation page: a free two-minute IRS tax resolution assessment.",
+    start: "/assessment",
+  },
 };
-const product = products[process.env.PRODUCT === "pro" ? "pro" : "taxpayer"];
+const product = products[process.env.PRODUCT] ?? products.taxpayer;
 
 // The CSS the production build generated for every class the app uses.
 const indexHtml = fs.readFileSync(path.join(root, ".next/server/app/index.html"), "utf8");

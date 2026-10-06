@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, use, useCallback, useState } from "react";
-import { initialIntakeState, type IntakeState } from "@/lib/intakeScreens";
+import { useLead } from "@/components/assessment/lead-provider";
+import { freshIntakeState, initialIntakeState, type IntakeState } from "@/lib/intakeScreens";
 
 type IntakeContextValue = {
   state: IntakeState;
@@ -13,10 +14,12 @@ type IntakeContextValue = {
 const IntakeContext = createContext<IntakeContextValue | null>(null);
 
 // Lives in the wizard layout, which doesn't remount between screens, so answers
-// survive Back/Continue. Seeded with Jordan's answers (replayable wizard).
+// survive Back/Continue. A visitor who came through /assessment starts fresh from what they told us there;
+// anyone else gets Jordan's answers (replayable demo).
 export function IntakeProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<IntakeState>(initialIntakeState);
-  const [replayBannerOpen, setReplayBannerOpen] = useState(true);
+  const { lead } = useLead();
+  const [state, setState] = useState<IntakeState>(() => (lead ? freshIntakeState(lead) : initialIntakeState()));
+  const [replayBannerOpen, setReplayBannerOpen] = useState(!lead);
   const update = useCallback((patch: Partial<IntakeState>) => setState((s) => ({ ...s, ...patch })), []);
   const dismissReplayBanner = useCallback(() => setReplayBannerOpen(false), []);
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LeadProvider } from "@/components/assessment/lead-provider";
 import { CaseProvider } from "@/components/case-provider";
 import { ProSessionProvider } from "@/components/pro/pro-session";
 import "./globals.css";
@@ -14,9 +15,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full bg-canvas">
-        <CaseProvider>
-          <ProSessionProvider>{children}</ProSessionProvider>
-        </CaseProvider>
+        <LeadProvider>
+          <CaseProvider>
+            <ProSessionProvider>{children}</ProSessionProvider>
+          </CaseProvider>
+        </LeadProvider>
       </body>
     </html>
   );
