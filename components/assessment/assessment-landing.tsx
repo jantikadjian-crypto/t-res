@@ -139,7 +139,7 @@ const PROMISES = [
   {
     icon: ShieldCheck,
     title: "Expert-Built",
-    text: "Created by IRS Tax Professionals.",
+    text: "Created by IRS Tax, AI & Security Professionals",
   },
   {
     icon: TrendingDown,
