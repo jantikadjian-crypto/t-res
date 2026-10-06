@@ -248,7 +248,6 @@ export function AssessmentLanding() {
               {[
                 "Created by IRS tax professionals.",
                 "Calm, plain-English answers. No jargon.",
-                "Every AI result is checked under rules a licensed Tax Specialist (CPA or Enrolled Agent) approved.",
                 "If the IRS is already taking money, we move you to the front of the line.",
               ].map((t) => (
                 <li key={t} className="flex gap-2">
