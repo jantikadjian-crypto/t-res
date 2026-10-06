@@ -10,7 +10,7 @@ import { planPriceNote } from "@/components/plan-features";
 import { StatusDot } from "@/components/status";
 import { formatDate, formatMoney } from "@/lib/format";
 import { ONLINE_PLAN_LIMIT, selfServeCheck } from "@/lib/intakeScreens";
-import { enrolledAgent, intakeAnswers, nextNotice, resolutionPlans, taxYears, totalOwed, yearBalance } from "@/lib/mockData";
+import { intakeAnswers, nextNotice, resolutionPlans, taxYears, totalOwed, yearBalance } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 type Plan = (typeof resolutionPlans)[number];
@@ -128,24 +128,24 @@ export function AssessmentScreen() {
   const representedSteps: Step[] = [
     {
       title: "Sign Form 2848",
-      text: `So ${enrolledAgent.name} can speak to the IRS for you.`,
+      text: `So a tax professional can speak to the IRS for you.`,
       href: "/sign/doc_2848",
       link: "Sign",
     },
     {
-      title: `${enrolledAgent.name} answers your ${nextNotice.code}`,
+      title: `A tax professional answers your ${nextNotice.code}`,
       text: `Sent before ${deadline}, with a request to hold collection.`,
       href: `/notices/${nextNotice.id}`,
       link: "The notice",
     },
     {
-      title: `${enrolledAgent.name} sets up your payment plan`,
+      title: `A tax professional sets up your payment plan`,
       text: `About ${monthly} a month, plus a request to remove your 2021 penalties.`,
       href: "/library/installment-agreement",
       link: "How it works",
     },
     {
-      title: `${enrolledAgent.name} asks for the lien to be withdrawn`,
+      title: `A tax professional asks for the lien to be withdrawn`,
       text: "Once the plan is running by direct debit.",
       href: "/library/lien-withdrawal",
       link: "What it is",
@@ -155,7 +155,7 @@ export function AssessmentScreen() {
 
   return (
     <div className="space-y-6">
-      {/* A money recommendation: PLCY routes it to Chris, so it carries his approval. */}
+      {/* A money recommendation: PLCY routes it to a tax professional, so it carries their approval. */}
       <GovernanceBadge itemId="gov_assessment" />
 
       <section className="space-y-3 rounded-xl border bg-card p-5" aria-labelledby="assess-stand">
@@ -219,7 +219,7 @@ export function AssessmentScreen() {
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-yellow-600" aria-hidden />
             <p>
               Your money snapshot shows {formatMoney(Math.max(0, leftOver))} left over, less than this payment.{" "}
-              {enrolledAgent.name} will look at a lower payment, or at pausing collection.{" "}
+              A tax professional will look at a lower payment, or at pausing collection.{" "}
               <Link href="/intake/money-out" className="font-medium underline">
                 Check your numbers
               </Link>
@@ -239,7 +239,7 @@ export function AssessmentScreen() {
             <p className="text-sm text-muted-foreground">
               {lane.eligible
                 ? "You can do this yourself. We prepare everything, and you stay in charge with the IRS."
-                : `${enrolledAgent.name} should handle this one. Here's why:`}
+                : `A tax professional should handle this one. Here's why:`}
             </p>
           </div>
           <GovernanceBadge itemId="gov_lane" />
@@ -271,15 +271,15 @@ export function AssessmentScreen() {
           <LaneCard
             checked={!selfServe}
             onClick={() => chooseLane(false)}
-            title={`Have ${enrolledAgent.name} represent you`}
-            blurb={`${enrolledAgent.name} signs on as your representative and deals with the IRS for you.`}
+            title={`Have a tax professional represent you`}
+            blurb={`A tax professional signs on as your representative and deals with the IRS for you.`}
             plan={represented}
             recommended={!lane.eligible}
           />
         </ChoiceGroup>
 
         <div className="rounded-lg bg-accent/50 p-4">
-          <p className="mb-3 text-sm font-medium">{selfServe ? "Your steps" : `What ${enrolledAgent.name} does for you`}</p>
+          <p className="mb-3 text-sm font-medium">{selfServe ? "Your steps" : `What a tax professional does for you`}</p>
           <ol className="space-y-3">
             {steps.map((s, i) => (
               <li key={s.title} className="flex gap-3 text-sm">
@@ -300,7 +300,7 @@ export function AssessmentScreen() {
           <p className="mt-4 flex gap-2 border-t pt-3 text-xs text-muted-foreground">
             <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden />
             {selfServe
-              ? `No Form 2848 needed. ${enrolledAgent.name} spot-checks the rules behind your plan, and if anything changes, like a new notice or a levy, we hand your case to ${enrolledAgent.name} right away.`
+              ? `No Form 2848 needed. A tax professional spot-checks the rules behind your plan, and if anything changes, like a new notice or a levy, we hand your case to a tax professional right away.`
               : "You never have to call the IRS. You can switch to doing it yourself later if your situation allows."}
           </p>
         </div>

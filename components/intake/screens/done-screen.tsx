@@ -8,7 +8,7 @@ import { LinkButton } from "@/components/link-button";
 import { sumAmounts } from "@/components/intake/money-fields";
 import { daysRemainingLabel, formatDate, formatMoney } from "@/lib/format";
 import { FIRST_SCREEN, isUrgent, selfServeCheck } from "@/lib/intakeScreens";
-import { enrolledAgent, nextNotice, resolutionPlans } from "@/lib/mockData";
+import { nextNotice, resolutionPlans } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 type NextStep = { icon: LucideIcon; tone: string; title: string; detail: string; href: string; cta: string };
@@ -28,14 +28,14 @@ export function DoneScreen() {
           icon: ShieldCheck,
           tone: "bg-blue-50 text-blue-600",
           title: "T-Res prepares everything for you",
-          detail: `Your 2023 return, your payment plan answers and the letters to mail. ${enrolledAgent.name} spot-checks the rules and steps in if anything changes.`,
+          detail: `Your 2023 return, your payment plan answers and the letters to mail. A tax professional spot-checks the rules and steps in if anything changes.`,
           href: "/action-items",
           cta: "See your steps",
         }
       : {
           icon: UserCheck,
           tone: "bg-blue-50 text-blue-600",
-          title: `${enrolledAgent.name} reviews your case`,
+          title: "A tax professional reviews your case",
           detail: urgent ? "Today, because the IRS has already taken money." : "Within one business day.",
           href: "/settings/security",
           cta: "Who can act for you",

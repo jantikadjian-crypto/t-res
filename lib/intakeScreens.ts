@@ -131,13 +131,13 @@ export function selfServeCheck(s: IntakeState): { eligible: boolean; criteria: L
             ? "All your returns are filed."
             : unfiled.length <= MAX_SELF_SERVE_UNFILED
               ? `Only ${unfiled.join(" and ")} ${unfiled.length === 1 ? "isn't" : "aren't"} filed, and we'll prepare ${unfiled.length === 1 ? "it" : "them"} for you to file first.`
-              : `${unfiled.length} years aren't filed. Catching up on that many takes an Enrolled Agent.`,
+              : `${unfiled.length} years aren't filed. Catching up on that many takes a tax professional.`,
     },
     {
       key: "money",
       passed: !urgent,
       text: urgent
-        ? "The IRS has already taken money or contacted your employer, so this needs an Enrolled Agent today."
+        ? "The IRS has already taken money or contacted your employer, so this needs a tax professional today."
         : "The IRS hasn't taken any money or contacted your employer.",
     },
     {
@@ -251,7 +251,7 @@ export const intakeScreens: IntakeScreen[] = [
     slug: "assessment",
     step: "assessment",
     title: "Here's what we think you should do.",
-    why: "Based on your answers and your IRS records, reviewed by an Enrolled Agent.",
+    why: "Based on your answers and your IRS records, reviewed by a tax professional.",
     isAnswered: () => true,
   },
   {

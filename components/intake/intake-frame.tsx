@@ -19,7 +19,7 @@ import {
   prevSlug,
   questionPosition,
 } from "@/lib/intakeScreens";
-import { enrolledAgent, intakeAnswers } from "@/lib/mockData";
+import { intakeAnswers } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 // Full-screen wizard frame: no app sidebar. Header, progress, step rail, question, Back/Continue.
@@ -128,8 +128,8 @@ export function IntakeFrame({ children }: { children: React.ReactNode }) {
             <div role="alert" className="mb-6 flex gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
               <AlertTriangle className="mt-0.5 size-5 shrink-0 text-red-600" aria-hidden />
               <p className="text-sm text-red-800">
-                <span className="font-medium text-red-900">{enrolledAgent.name} will review your case today.</span>{" "}
-                Signing Form 2848 below lets him contact the IRS to get the money released.
+                <span className="font-medium text-red-900">A tax professional will review your case today.</span>{" "}
+                Signing Form 2848 below lets a tax professional contact the IRS to get the money released.
               </p>
             </div>
           )}
