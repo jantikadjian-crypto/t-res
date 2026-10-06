@@ -248,7 +248,7 @@ export function AssessmentLanding() {
               {[
                 "Built by tax resolution experts, AI engineers and security professionals.",
                 "Calm, plain-English answers. No jargon.",
-                "Your privacy and security are our highest priority.",
+                "Your information is encrypted and never sold.",
                 "If the IRS is already taking money, we move you to the front of the line.",
               ].map((t) => (
                 <li key={t} className="flex gap-2">
