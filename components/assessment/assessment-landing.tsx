@@ -246,7 +246,7 @@ export function AssessmentLanding() {
             </p>
             <ul className="space-y-2 text-sm">
               {[
-                "Created by IRS tax professionals: CPAs and Enrolled Agents.",
+                "Created by IRS tax professionals.",
                 "Calm, plain-English answers. No jargon.",
                 "Every AI result is checked under rules a licensed Tax Specialist (CPA or Enrolled Agent) approved.",
                 "If the IRS is already taking money, we move you to the front of the line.",
