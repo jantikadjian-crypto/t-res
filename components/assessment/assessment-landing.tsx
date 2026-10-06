@@ -446,8 +446,8 @@ export function AssessmentLanding() {
                     </Button>
                   </div>
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Lock className="size-3" aria-hidden /> Private. We
-                    don&apos;t sell your information.
+                    <Lock className="size-3" aria-hidden /> Private &amp; Encrypted.
+                    We don&apos;t sell your information.
                   </p>
                 </div>
               )}
