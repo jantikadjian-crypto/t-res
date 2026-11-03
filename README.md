@@ -39,10 +39,12 @@ Open http://localhost:3000. Before committing, run `npm run lint` and `npm run b
 npm run build
 ```
 
-The app deploys to Vercel straight from this repo with no configuration: see
-[docs/deploy-to-vercel.md](docs/deploy-to-vercel.md). Share `/demo`, the front door that explains the prototype and
+The app deploys to Netlify straight from this repo: see
+[docs/deploy-to-netlify.md](docs/deploy-to-netlify.md). Share `/demo`, the front door that explains the prototype and
 links to the public assessment, the taxpayer's app and T-Res Pro. Set a `DEMO_PASSWORD` environment variable to put
-the whole deployment behind one shared password (`proxy.ts`); leave it unset and the site is open.
+the whole deployment behind one shared password; leave it unset and the site is open. The gate is a Netlify edge
+function (`netlify/edge-functions/demo-gate.ts`), not a Next `proxy.ts` — Netlify's Next.js runtime can't package one
+yet, so don't add one.
 
 ## Printable IRS forms
 

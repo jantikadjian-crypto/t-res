@@ -1,0 +1,9 @@
+# How Netlify builds T-Res. Netlify detects Next.js and installs its own Next.js runtime, so there
+# is nothing to configure beyond the Node version. The demo password gate is a Netlify edge
+# function (netlify/edge-functions/demo-gate.ts), declared by its own `config` export.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
