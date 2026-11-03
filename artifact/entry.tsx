@@ -9,6 +9,7 @@ import SettingsLayout from "@/app/(app)/settings/layout";
 import ProSettingsLayout from "@/app/(pro)/pro/settings/layout";
 import { LeadProvider } from "@/components/assessment/lead-provider";
 import { AssessmentLanding } from "@/components/assessment/assessment-landing";
+import { DemoLanding } from "@/components/demo/demo-landing";
 import { AppShell } from "@/components/app-shell/app-shell";
 import { CaseProvider } from "@/components/case-provider";
 import type { DocumentView } from "@/components/documents/document-library";
@@ -118,6 +119,8 @@ function route(pathname: string): ReactNode {
   }
 
   if (section === "assessment") return <AssessmentLanding />;
+
+  if (section === "demo") return <DemoLanding />;
 
   if (section === "sign") return <SignFlow key={pathname} docId={detail ?? ""} />;
 

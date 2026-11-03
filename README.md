@@ -33,6 +33,17 @@ Open http://localhost:3000. Before committing, run `npm run lint` and `npm run b
 
 `npm run build:artifact` builds the app and bundles it into a single HTML file at `.artifact/index.html` (hash routing, see `artifact/entry.tsx`). Every feature works in that file, so it can be shared as a link. Set `STAMP="…"` to add a small progress note in the corner.
 
+## Put it online
+
+```bash
+npm run build
+```
+
+The app deploys to Vercel straight from this repo with no configuration: see
+[docs/deploy-to-vercel.md](docs/deploy-to-vercel.md). Share `/demo`, the front door that explains the prototype and
+links to the public assessment, the taxpayer's app and T-Res Pro. Set a `DEMO_PASSWORD` environment variable to put
+the whole deployment behind one shared password (`proxy.ts`); leave it unset and the site is open.
+
 ## Printable IRS forms
 
 The Library ships public-domain PDFs from IRS.gov (forms, publications and sample notices) with page previews. The list lives in `scripts/irs-forms.json`. To add a file, add it there and run:
