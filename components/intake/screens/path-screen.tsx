@@ -8,7 +8,7 @@ import { useIntake } from "@/components/intake/intake-provider";
 import { PlanFeatureList, planPriceNote } from "@/components/plan-features";
 import { formatMoney } from "@/lib/format";
 import { selfServeCheck } from "@/lib/intakeScreens";
-import { enrolledAgent, resolutionPlans } from "@/lib/mockData";
+import { resolutionPlans } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 export function PathScreen() {
@@ -69,7 +69,7 @@ export function PathScreen() {
 
       <p className="flex gap-2 rounded-xl bg-accent/60 p-4 text-sm">
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-        You won&apos;t be charged today. {enrolledAgent.name} confirms your plan before anything is billed.
+        You won&apos;t be charged today. A tax professional confirms your plan before anything is billed.
       </p>
 
       {currentPlan && state.chosenPlanId !== currentPlan.id && (

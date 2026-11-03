@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLead } from "@/components/assessment/lead-provider";
 import { CheckCircle2, Eye, MessageSquareText, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, inputClass } from "@/components/form";
@@ -9,7 +10,7 @@ import { useIntake } from "@/components/intake/intake-provider";
 import { StatusBadge } from "@/components/status";
 import { formatDate } from "@/lib/format";
 import { isUrgent } from "@/lib/intakeScreens";
-import { enrolledAgent, MOCK_TODAY, taxpayerIdentity } from "@/lib/mockData";
+import { MOCK_TODAY, taxpayerIdentity } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
 
 function FormCard({
@@ -59,13 +60,22 @@ export function AuthorizationScreen() {
   const { form8821SignedOn, form2848 } = state.authorization;
 
   // "later" is stored as waiting-for-signature; "now" is null until signed. Urgent cases must sign now.
-  const choice2848 = urgent || form2848 !== "waiting-for-signature" ? "now" : "later";
+  const choice2848 =
+    urgent || form2848 !== "waiting-for-signature" ? "now" : "later";
   const needs8821 = form8821SignedOn === null;
   const needs2848 = choice2848 === "now" && form2848 !== "signed";
-  const formsToSign = [needs8821 && "Form 8821", needs2848 && "Form 2848"].filter(Boolean) as string[];
+  const formsToSign = [
+    needs8821 && "Form 8821",
+    needs2848 && "Form 2848",
+  ].filter(Boolean) as string[];
 
-  const [legalName, setLegalName] = useState(taxpayerIdentity.legalName);
-  const [address, setAddress] = useState(taxpayerIdentity.address);
+  // A visitor from /assessment fills these in themselves. Only the demo replay shows Jordan's details.
+  const { lead } = useLead();
+  const [legalName, setLegalName] = useState(
+    lead ? "" : taxpayerIdentity.legalName,
+  );
+  const [address, setAddress] = useState(lead ? "" : taxpayerIdentity.address);
+  const [ssnLast4, setSsnLast4] = useState("");
   const [signature, setSignature] = useState("");
   const [consent, setConsent] = useState(false);
 
@@ -86,10 +96,15 @@ export function AuthorizationScreen() {
         icon={Eye}
         form="Form 8821 · required"
         title="Lets us see your IRS records"
-        points={["Read-only: we can't change anything or make payments.", "Lets us pull your IRS transcripts today."]}
+        points={[
+          "Read-only: we can't change anything or make payments.",
+          "Lets us pull your IRS transcripts today.",
+        ]}
         status={
           form8821SignedOn ? (
-            <StatusBadge tone="good">Signed {formatDate(form8821SignedOn)}</StatusBadge>
+            <StatusBadge tone="good">
+              Signed {formatDate(form8821SignedOn)}
+            </StatusBadge>
           ) : (
             <StatusBadge tone="warn">Needs your signature</StatusBadge>
           )
@@ -98,10 +113,14 @@ export function AuthorizationScreen() {
 
       <FormCard
         icon={MessageSquareText}
-        form={urgent ? "Form 2848 · required today" : "Form 2848 · power of attorney"}
-        title={`Lets ${enrolledAgent.name} speak to the IRS for you`}
+        form={
+          urgent
+            ? "Form 2848 · required today"
+            : "Form 2848 · power of attorney"
+        }
+        title={`Lets a tax professional speak to the IRS for you`}
         points={[
-          `${enrolledAgent.name} handles IRS calls and letters, so you don't have to.`,
+          `A tax professional handles IRS calls and letters, so you don't have to.`,
           "You can cancel it at any time.",
         ]}
         status={
@@ -110,21 +129,37 @@ export function AuthorizationScreen() {
           ) : choice2848 === "later" ? (
             <StatusBadge tone="neutral">On your to-do list</StatusBadge>
           ) : (
-            <StatusBadge tone={urgent ? "bad" : "warn"}>Needs your signature</StatusBadge>
+            <StatusBadge tone={urgent ? "bad" : "warn"}>
+              Needs your signature
+            </StatusBadge>
           )
         }
       >
         {!urgent && form2848 !== "signed" && (
-          <ChoiceGroup label="When do you want to sign Form 2848?" className="grid gap-3 space-y-0 sm:grid-cols-2">
+          <ChoiceGroup
+            label="When do you want to sign Form 2848?"
+            className="grid gap-3 space-y-0 sm:grid-cols-2"
+          >
             <ChoiceCard
               checked={choice2848 === "now"}
-              onClick={() => update({ authorization: { ...state.authorization, form2848: null } })}
+              onClick={() =>
+                update({
+                  authorization: { ...state.authorization, form2848: null },
+                })
+              }
               title="Sign now"
-              description={`${enrolledAgent.name} can start calling the IRS right away.`}
+              description={`A tax professional can start calling the IRS right away.`}
             />
             <ChoiceCard
               checked={choice2848 === "later"}
-              onClick={() => update({ authorization: { ...state.authorization, form2848: "waiting-for-signature" } })}
+              onClick={() =>
+                update({
+                  authorization: {
+                    ...state.authorization,
+                    form2848: "waiting-for-signature",
+                  },
+                })
+              }
               title="I'll sign later"
               description="We'll add it to your to-do list."
             />
@@ -136,18 +171,60 @@ export function AuthorizationScreen() {
         <div className="space-y-4 rounded-xl border bg-card p-5">
           <div className="flex items-center gap-2">
             <PenLine className="size-4 text-primary" aria-hidden />
-            <p className="font-medium">Sign {formsToSign.join(" and ")} electronically</p>
+            <p className="font-medium">
+              Sign {formsToSign.join(" and ")} electronically
+            </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="auth-name" label="Legal name">
-              <input id="auth-name" className={inputClass} value={legalName} onChange={(e) => setLegalName(e.target.value)} />
+              <input
+                id="auth-name"
+                className={inputClass}
+                value={legalName}
+                onChange={(e) => setLegalName(e.target.value)}
+              />
             </Field>
-            <Field id="auth-ssn" label="Social Security number" hint="From your IRS records. Nothing is sent in this demo.">
-              <input id="auth-ssn" className={inputClass} value={taxpayerIdentity.ssnMasked} readOnly />
-            </Field>
+            {lead ? (
+              <Field
+                id="auth-ssn"
+                label="Last 4 of your Social Security number"
+                hint="Nothing is sent in this demo."
+              >
+                <input
+                  id="auth-ssn"
+                  className={inputClass}
+                  inputMode="numeric"
+                  autoComplete="off"
+                  maxLength={4}
+                  placeholder="0000"
+                  value={ssnLast4}
+                  onChange={(e) =>
+                    setSsnLast4(e.target.value.replace(/\D/g, ""))
+                  }
+                />
+              </Field>
+            ) : (
+              <Field
+                id="auth-ssn"
+                label="Social Security number"
+                hint="From your IRS records. Nothing is sent in this demo."
+              >
+                <input
+                  id="auth-ssn"
+                  className={inputClass}
+                  value={taxpayerIdentity.ssnMasked}
+                  readOnly
+                />
+              </Field>
+            )}
             <div className="sm:col-span-2">
               <Field id="auth-address" label="Home address">
-                <input id="auth-address" className={inputClass} value={address} onChange={(e) => setAddress(e.target.value)} />
+                <input
+                  id="auth-address"
+                  className={inputClass}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
               </Field>
             </div>
             <div className="sm:col-span-2">
@@ -163,7 +240,10 @@ export function AuthorizationScreen() {
               </Field>
             </div>
           </div>
-          <label htmlFor="auth-consent" className="flex items-start gap-3 text-sm">
+          <label
+            htmlFor="auth-consent"
+            className="flex items-start gap-3 text-sm"
+          >
             <input
               id="auth-consent"
               type="checkbox"
@@ -171,19 +251,30 @@ export function AuthorizationScreen() {
               onChange={(e) => setConsent(e.target.checked)}
               className="mt-0.5 size-4 accent-primary"
             />
-            I agree to sign {formsToSign.join(" and ")} electronically, and that my typed name counts as my signature.
+            I agree to sign {formsToSign.join(" and ")} electronically, and that
+            my typed name counts as my signature.
           </label>
-          <Button onClick={sign} disabled={!signature.trim() || !consent}>
+          <Button
+            onClick={sign}
+            disabled={
+              !signature.trim() ||
+              !consent ||
+              (!!lead && (!legalName.trim() || ssnLast4.length !== 4))
+            }
+          >
             <PenLine aria-hidden />
             Sign {formsToSign.length === 1 ? formsToSign[0] : "both forms"}
           </Button>
         </div>
       ) : (
         <div className="flex gap-3 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-green-600" aria-hidden />
+          <CheckCircle2
+            className="mt-0.5 size-4 shrink-0 text-green-600"
+            aria-hidden
+          />
           <p>
             {form2848 === "signed"
-              ? `All signed. ${enrolledAgent.name} can pull your records and speak to the IRS for you.`
+              ? `All signed. A tax professional can pull your records and speak to the IRS for you.`
               : "You're authorized. We can pull your IRS records now, and Form 2848 is on your to-do list."}
           </p>
         </div>

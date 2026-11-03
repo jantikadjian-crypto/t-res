@@ -25,6 +25,11 @@ const products = {
     description: "Interactive progress build of T-Res Pro, the side of T-Res for Enrolled Agents, CPAs and tax attorneys.",
     start: "/pro/login",
   },
+  demo: {
+    title: "T-Res Prototype",
+    description: "Explore the T-Res prototype: the public assessment, the taxpayer's app, and T-Res Pro.",
+    start: "/demo",
+  },
   assessment: {
     title: "T-Res Free Assessment",
     description: "The T-Res lead-generation page: a free two-minute IRS tax resolution assessment.",
